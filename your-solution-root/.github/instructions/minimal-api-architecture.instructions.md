@@ -25,6 +25,22 @@ Linee guida di progettazione specifiche per progetti Minimal Api scritti in .Net
 
 ---
 
+## 📑 Indice delle Regole
+
+Questo documento contiene 9 regole fondamentali per lo sviluppo di Minimal API:
+
+1. **[REGOLA 1: Endpoint sempre in Extension Methods](#-regola-1-endpoint-sempre-in-extension-methods)** - Organizzazione degli endpoint in classi statiche
+2. **[REGOLA 2: Formato URL Standardizzato](#-regola-2-formato-url-standardizzato-obbligatorio)** - Pattern obbligatorio `api/v{version:apiVersion}/{gruppo}`
+3. **[REGOLA 3: Usa Route Groups](#-regola-3-usa-route-groups)** - Configurazione comune per gruppi di endpoint
+4. **[REGOLA 4: Configurazione standard del versioning](#-regola-4-configurazione-standard-del-versioning)** - Setup API versioning con URL segment reader
+5. **[REGOLA 5: Dependency Injection nei Parametri](#-regola-5-dependency-injection-nei-parametri)** - Parametri espliciti vs AsParameters
+6. **[REGOLA 6: Metadata OpenAPI Completi](#-regola-6-metadata-openapi-completi)** - Documenta tutti gli endpoint
+7. **[REGOLA 7: Registrazione in Program.cs](#-regola-7-registrazione-in-programcs)** - Chiamata agli extension methods
+8. **[REGOLA 8: Trasformatore OpenAPI](#-regola-8-trasformatore-openapi-con-informazioni-di-progetto)** - Informazioni del progetto nella documentazione
+9. **[REGOLA 9: Endpoint GET con database provider](#-regola-9-endpoint-get-che-usa-un-database-provider)** - Pattern completo per endpoint con EF Core
+
+---
+
 ## Architettura del Progetto
 
 ### Struttura delle Cartelle
@@ -333,4 +349,237 @@ builder.Services.AddOpenApi(options =>
 - Hardcodare informazioni generiche senza personalizzarle per il progetto
 - Omettere l'anno di creazione nel campo Name
 - Dimenticare di registrare il transformer nella pipeline OpenAPI
+
+### ✅ REGOLA 9: Endpoint GET che usa un database provider
+
+Usa questo pattern quando devi esporre un GET che richiama una funzione del provider (es. `AntifrodeProvider.GetLog106Async`). Mantieni versione in URL, filtri dedicati, mapping manuale e ProblemDetails per assenza dati.
+
+```csharp
+// File: Endpoints/D106Mapping.cs
+public static class D106Mapping
+{
+    public static IEndpointRouteBuilder MapD106Endpoints(
+        this IEndpointRouteBuilder routes,
+        ApiVersionSet versionSet)
+    {
+        var group = routes.MapGroup("api/v{version:apiVersion}/d106")
+            .WithTags("D106")
+            .WithApiVersionSet(versionSet)
+            .MapToApiVersion(ApiVersionFactory.Version1);
+
+        group.MapGet("/", GetLogsHandler)
+            .RequireAuthorization()
+            .Produces<IEnumerable<Log106Result>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithSummary("Recupera i log D106 per intervallo di date")
+            .WithDescription("Legge dal provider e mappa le entity in DTO");
+
+        return routes;
+    }
+
+    private static async Task<IResult> GetLogsHandler(
+        DateTime FromDate,
+        DateTime ToDate,
+        AntifrodeProvider provider,
+        CancellationToken cancellationToken)
+    {
+        var filter = new Log106Filter
+        {
+            FromLogDate = FromDate,
+            ToLogDate = ToDate
+        };
+
+        var result = await provider.GetLog106Async(filter, l => l.ToLog106Result(), cancellationToken);
+        if (!result.Any())
+        {
+            var problem = new ProblemDetails
+            {
+                Title = "Data Not Found",
+                Status = StatusCodes.Status404NotFound,
+                Detail = "No logs found for the specified date range."
+            };
+
+            return TypedResults.Problem(problem);
+        }
+
+        return Results.Ok(result);
+    }
+}
+```
+
+**Regole chiave:**
+- Gruppo con URL `api/v{version:apiVersion}/{dominio}` e `RequireAuthorization` a livello di endpoint.
+- Parametri query espliciti (o `[AsParameters]` se >2), servizi DI dopo i parametri, `CancellationToken` per ultimo.
+- Guarda l'entità restituita dal provider e crea nella cartella Dto una classe dedicata (es. `Log106Result`). Crea un extension method per il mapping (es. `ToLog106Result`)
+- Usa i parametri per istanziare il filtro dedicato (es. `Log106Filter`) e passalo al provider insieme alla proiezione verso DTO (`ToLog106Result`).
+- Se nessun dato, restituisci `TypedResults.Problem` con 404; altrimenti `Results.Ok` con la lista di DTO.
+- Dichiarare `.Produces(...)` coerenti con gli esiti (200/204/400/404) e metadata OpenAPI (summary/description).
+- Aggiungi un test .http per verificare l'endpoint.
+
+---
+
+## 🔧 Troubleshooting - Errori Comuni
+
+### Errore: "The ApiVersionReader must be capable of reading the API version from the URL path segment"
+
+**Causa:** Stai usando `MapToApiVersion` ma il version reader non è `UrlSegmentApiVersionReader`.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO
+builder.Services.AddApiVersioning(options =>
+{
+    options.ApiVersionReader = new UrlSegmentApiVersionReader(); // OBBLIGATORIO
+    // ...
+});
+```
+
+### Errore: "No route matches the supplied values"
+
+**Causa:** Il placeholder `{version:apiVersion}` non è nel path corretto.
+
+**Soluzione:** Assicurati che il formato sia `api/v{version:apiVersion}/{gruppo}`:
+```csharp
+// ❌ ERRATO
+var group = routes.MapGroup("api/weatherforecast/v{version:apiVersion}");
+
+// ✅ CORRETTO
+var group = routes.MapGroup("api/v{version:apiVersion}/weatherforecast");
+```
+
+### Errore: "An API version is required, but was not specified"
+
+**Causa:** L'endpoint non ha una versione assegnata tramite `MapToApiVersion`.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO
+var group = routes.MapGroup("api/v{version:apiVersion}/weatherforecast")
+    .WithApiVersionSet(versionSet)
+    .MapToApiVersion(ApiVersionFactory.Version1); // OBBLIGATORIO
+```
+
+### Errore: Scalar non mostra alcun endpoint
+
+**Causa:** Manca la configurazione dell'API Explorer con formato gruppo e sostituzione URL.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO
+builder.Services.AddApiVersioning(options => { /* ... */ })
+    .AddApiExplorer(options =>  // OBBLIGATORIO per Scalar
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
+```
+
+### Errore: "Cannot resolve service for type 'MyProvider'"
+
+**Causa:** Provider non registrato in Program.cs o registrato con lifetime errato.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO - Usa extension method
+builder.Services.AddMyProvider(builder.Configuration);
+
+// Oppure registrazione diretta come Scoped
+builder.Services.AddScoped<MyProvider>();
+```
+
+### Errore: 404 su endpoint che dovrebbe esistere
+
+**Causa:** Extension method non chiamato in Program.cs.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO - Verifica che sia chiamato DOPO app.MapOpenApi()
+app.MapOpenApi(); // Prima
+app.MapWeatherForecastEndpoints(versionSet); // Dopo
+```
+
+### Errore: "The JSON value could not be converted to System.DateTime"
+
+**Causa:** Formato data non valido nella query string.
+
+**Soluzione:** Usa formato ISO 8601:
+```http
+# ✅ CORRETTO
+GET https://localhost:7029/api/v1/logs?FromDate=2025-01-22&ToDate=2025-01-23
+
+# ❌ ERRATO
+GET https://localhost:7029/api/v1/logs?FromDate=22/01/2025&ToDate=23/01/2025
+```
+
+### Warning: "This async method lacks 'await' operators"
+
+**Causa:** Metodo dichiarato async ma non usa await.
+
+**Soluzione:**
+```csharp
+// Se non hai operazioni async, rimuovi async/await
+private static IResult Handler(MyProvider provider)
+{
+    var result = provider.GetData(); // Sincrono
+    return Results.Ok(result);
+}
+
+// Se hai operazioni async, usa await
+private static async Task<IResult> Handler(MyProvider provider, CancellationToken ct)
+{
+    var result = await provider.GetDataAsync(ct); // Asincrono
+    return Results.Ok(result);
+}
+```
+
+### Errore: "AmbiguousMatchException: The request matched multiple endpoints"
+
+**Causa:** Due endpoint con stesso HTTP verb e route.
+
+**Soluzione:** Usa route diverse o parametri di query/route per disambiguare:
+```csharp
+// ❌ ERRATO - Route ambigue
+group.MapGet("/", Handler1);
+group.MapGet("/", Handler2);
+
+// ✅ CORRETTO
+group.MapGet("/", Handler1);
+group.MapGet("/detailed", Handler2);
+```
+
+### Problema: Scalar mostra endpoint ma non gruppi/tags
+
+**Causa:** Manca `WithTags()` nel group.
+
+**Soluzione:**
+```csharp
+// ✅ CORRETTO
+var group = routes.MapGroup("api/v{version:apiVersion}/weatherforecast")
+    .WithTags("WeatherForecast") // IMPORTANTE per organizzazione in Scalar
+    .WithApiVersionSet(versionSet)
+    .MapToApiVersion(ApiVersionFactory.Version1);
+```
+
+---
+
+## 📚 Risorse Aggiuntive
+
+### Documentazione Ufficiale
+- [ASP.NET Core Minimal APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis)
+- [API Versioning](https://github.com/dotnet/aspnet-api-versioning/wiki)
+- [Scalar Documentation](https://scalar.com/docs)
+- [OpenAPI in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/)
+
+### Best Practices
+- Usa sempre `CancellationToken` per operazioni async
+- Preferisci `TypedResults` a `Results` per type safety
+- Documenta tutti gli status code possibili con `.Produces()`
+- Usa route groups per evitare ripetizioni
+- Testa gli endpoint con file `.http` durante lo sviluppo
+
+---
+
+*Documento generato il 2025 - Versione 1.1*
 
