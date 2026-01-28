@@ -84,6 +84,11 @@ Ogni file `card-<nome_progetto>.md` deve seguire questa struttura:
 - **Versioning API:** [URL Segment / Query String / Header / Nessuno]
 - **Versioni Supportate:** [es: v1, v2]
 
+
+---
+*Card generata il: [data] | Versione template: [recupera versione da card-project-generator.md]*
+```
+
 ## 4. Regole di Compilazione
 
 - Se un campo/sezione non ha dati disponibili, **lascialo vuoto** ma mantieni la struttura
@@ -97,9 +102,21 @@ Ogni file `card-<nome_progetto>.md` deve seguire questa struttura:
 
 ## 5. Ultimo aggiornamento
 
-indica sempre in fondo alla scheda la data dell'ultima generazione e il motore llm usato.
-esempio
-*Card generata il: [data] | Versione template: 2.0*
+Indica sempre in fondo alla scheda:
+- **Data corrente** nel formato `yyyy-MM-dd` (es: 2025-01-15)
+- **Motore LLM** usato per la generazione (es: GitHub Copilot)
 
+**Formato esatto:**
+```markdown
 ---
-*Ultimo aggiornamento template: 2026 - v2.0*
+*Card generata il: yyyy-MM-dd | Versione template: 2.0 | LLM: [nome motore]*
+```
+
+**Esempio:**
+```markdown
+---
+*Card generata il: 2025-01-15 | Versione template: 2.0 | LLM: GitHub Copilot*
+**IMPORTANTE:** La versione del template deve essere sempre recuperata dalla riga finale di questo file.
+**IMPORTANTE:** La versione del LLM usata deve essere quella che l'agente sta effettivamente usando.
+---
+*Versione template: 1.3 | LLM: GitHub Copilot*
