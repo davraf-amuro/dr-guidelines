@@ -196,12 +196,6 @@ Quando il template viene aggiornato:
 - Verifica che la versione .NET specificata sia installata
 - Controlla che non ci siano conflitti con impostazioni nei file `.csproj`
 
-## 📞 Supporto
-
-Per problemi o domande sul template, contatta:
-- **Email**: tron@twt.it
-- **Repository**: Questo repository
-
 ---
 
 *Documento aggiornato: Gennaio 2025*
