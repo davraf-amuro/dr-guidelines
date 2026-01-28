@@ -58,9 +58,6 @@ xcopy "C:\TWTCollection\Raffagli\Davraf_Guidelines\your-solution-root\*" . /E /H
 <PropertyGroup>
   <!-- Aggiorna con il nome del tuo progetto -->
   <Product>Il Mio Progetto API</Product>
-
-  <!-- Aggiorna l'anno -->
-  <Copyright>© 2025 Voisoft per Unidata spa. All rights reserved.</Copyright>
 </PropertyGroup>
 ```
 
@@ -79,7 +76,7 @@ Sostituisci il contenuto con informazioni specifiche del tuo progetto.
 
 ### 4. Verifica GitHub Copilot
 
-1. Apri Visual Studio 2022
+1. Apri Visual Studio
 2. Vai su **Tools** > **Options** > **GitHub Copilot**
 3. Verifica che Copilot sia abilitato
 4. Prova a scrivere codice e verifica che Copilot suggerisca codice secondo le tue linee guida
@@ -145,15 +142,6 @@ MioProgetto/
 ├── MioProgetto.sln
 └── README.md
 ```
-
-## 🔄 Aggiornamenti del Template
-
-Quando il template viene aggiornato:
-
-1. **Backup** dei file personalizzati (README.md, Directory.Build.props)
-2. **Copia** i nuovi file dal template
-3. **Merge** le tue personalizzazioni
-4. **Commit** le modifiche con messaggio chiaro
 
 ## ❓ FAQ
 
