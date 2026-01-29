@@ -53,4 +53,4 @@ Ottieni la data corrente con `Get-Date -Format "yyyy-MM-dd"` e genera il footer:
 La versione template è nell'ultima riga di questo file.
 
 ---
-*Versione prompt: 1.1*
+*Ultimo aggiornamento il 2025-01-29 - Versione 1.4*

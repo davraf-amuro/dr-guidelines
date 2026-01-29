@@ -63,5 +63,5 @@ src/
 
 ---
 
-*Ultimo aggiornamento: 2024 - v1.0*
+*Ultimo aggiornamento il 2025-01-29 - Versione 1.4*
 

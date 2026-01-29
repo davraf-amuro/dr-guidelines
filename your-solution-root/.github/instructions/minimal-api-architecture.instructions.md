@@ -581,5 +581,5 @@ var group = routes.MapGroup("api/v{version:apiVersion}/weatherforecast")
 
 ---
 
-*Documento generato il 2025 - Versione 1.1*
+*Ultimo aggiornamento il 2025-01-29 - Versione 1.4*
 

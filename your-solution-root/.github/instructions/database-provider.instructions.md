@@ -664,4 +664,4 @@ Dopo la generazione automatica, verificare:
 
 ---
 
-*Documento generato il 2024 - Versione 1.3*
+*Ultimo aggiornamento il 2025-01-29 - Versione 1.4*
