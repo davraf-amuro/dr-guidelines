@@ -1,67 +1,30 @@
-# Copilot Instructions
+# Copilot Instructions (AI Agent)
 
-Questo progetto è un **Minimal API Template** basato su **.NET 10** e **C# 14.0**.
+Progetto: Minimal API Template su .NET 10 e C# 14.
 
-## 📚 Istruzioni Modulari
+## Istruzioni modulari
+- Minimal API rules: instructions/minimal-api-architecture.instructions.md
+- Database provider rules: instructions/database-provider.instructions.md
 
-Per approfondire argomenti specifici, consulta:
+## Stack e architettura
+- Minimal APIs + Asp.Versioning (UrlSegmentApiVersionReader)
+- Scalar per documentazione, ProblemDetails per errori
+- Struttura base: src/<project>/Program.cs, Endpoints/, Infrastructure/
 
-- **[Minimal Api Architecture](instructions/minimal-api-architecture.instructions.md)** - Regole e pattern per lo sviluppo di Minimal API endpoints con versioning, routing e OpenAPI
-- **[Database Provider](instructions/database-provider.instructions.md)** - Template e best practices per la creazione di provider infrastructure con EF Core
+## Convenzioni essenziali
+- Endpoint in extension methods: app.Map{Domain}Endpoints(versionSet)
+- Versioning URL: /api/v{version}/...
+- OpenAPI in Development, Scalar UI
+- Primary constructors, async/await per I/O
+- Logging strutturato con placeholder
+- Naming: namespace snake_case, classi PascalCase, variabili camelCase
 
-## 🏗️ Architettura Generale
+## ✅ Checklist Post-Generazione
+- [ ] Ho seguito le istruzioni modulari pertinenti
+- [ ] Endpoint creati come extension methods e mappati in Program.cs
+- [ ] Versioning URL segment configurato correttamente
+- [ ] OpenAPI + Scalar coerenti con le regole del progetto
+- [ ] Logging strutturato e async/await usati dove serve
 
-### Tecnologie Utilizzate
-- **.NET 10** con **C# 14.0**
-- **Minimal APIs** per endpoint RESTful
-- **API Versioning** (Asp.Versioning) con URL segment reader
-- **Scalar** per documentazione API
-- **Problem Details** per gestione errori standardizzata
-
-### Struttura Progetto
-```
-src/
-??? minimal-api-template.api/
-    ??? Program.cs              (entry point e configurazione)
-    ??? Endpoints/              (endpoint organizzati per dominio)
-    ??? Infrastructure/         (provider, DbContext, entities)
-```
-
-### Pattern e Convenzioni
-
-#### Endpoint
-- Organizzati per dominio in classi statiche con metodi di estensione
-- Pattern: `app.Map{Domain}Endpoints(apiVersionSet)`
-- Ogni endpoint deve specificare la versione API nel group
-
-#### Versioning
-- Default version: v1
-- Reader: `UrlSegmentApiVersionReader` (es: `/api/v1/resource`)
-- Format: `'v'VVV` (es: v1, v2)
-
-#### Configurazione
-- OpenAPI abilitato solo in Development
-- Scalar UI per documentazione interattiva
-- HTTPS Redirection abilitato
-- Problem Details per errori consistenti
-
-## ✨ Best Practices
-
-### Codice
-- Usa **primary constructors** per dependency injection
-- Preferisci **async/await** per operazioni I/O
-- Segui il pattern **minimal API** senza controller
-
-### Logging
-- Usa structured logging con placeholder: `{PropertyName}`
-- Livelli appropriati: Information, Warning, Error
-
-### Naming
-- Namespace: `minimal_api_template.api` (snake_case per progetti)
-- Classi/Metodi: PascalCase
-- Parametri/variabili: camelCase
-
----
-
-*Ultimo aggiornamento il 2025-01-29 - Versione 1.4*
+*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
 
