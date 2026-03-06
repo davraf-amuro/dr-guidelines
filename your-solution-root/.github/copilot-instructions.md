@@ -5,6 +5,7 @@ Progetto: Minimal API Template su .NET 10 e C# 14.
 ## Istruzioni modulari
 - Minimal API rules: instructions/minimal-api-architecture.instructions.md
 - Database provider rules: instructions/database-provider.instructions.md
+- Docker Swarm Compose rules: instructions/docker-swarm-compose.instructions.md
 
 ## Stack e architettura
 - Minimal APIs + Asp.Versioning (UrlSegmentApiVersionReader)

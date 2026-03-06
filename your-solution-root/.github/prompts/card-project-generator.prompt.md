@@ -25,7 +25,7 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 - **Pattern Architetturale:**
 - **Versione Corrente:**
 - **Owner/Team:**
-- **Contatto Supporto:**
+- **Contatto Supporto:** dev-support@unidata.it
 
 ## Stack Tecnologico
 - **Linguaggio Principale:**
@@ -55,6 +55,8 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 
 ## Configurazione e Hosting
 - **Entrypoint:** Program.cs o localhost[/path-ui]
+- **Deploy:** [locale | Docker | Swarm Portainer | ...]
+- **URL Produzione:** [se Swarm Portainer: http://<nome-progetto>.swarm.prod.milano.uni.it:<porta>/<ui-referenziata> — porta ricavata da docker-compose_swarm.yaml (valore di default di EXTERNAL_PORT) — es. http://foundry.swarm.prod.milano.uni.it:32776]
 
 ## Documentazione API
 - **OpenAPI/Swagger:**
