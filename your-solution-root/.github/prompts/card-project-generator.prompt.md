@@ -65,7 +65,7 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 - **Versioni Supportate:**
 
 ---
-*Card generata il: yyyy-MM-dd | Versione template: 2.0 | LLM: GitHub Copilot*
+*Card generata il: yyyy-MM-dd | Versione template: 2.0 | LLM: {LLM}*
 ```
 
 ## Regole
@@ -82,4 +82,4 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 - [ ] Nessun segreto esposto
 - [ ] Footer con data e LLM presente
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-11

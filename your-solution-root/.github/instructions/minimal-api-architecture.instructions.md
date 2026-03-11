@@ -40,7 +40,7 @@ Scopo: regole obbligatorie per progetti Minimal API .NET 10. Segui sempre. Testo
 6) OpenAPI metadata completo: Produces + WithSummary + WithDescription + WithName
 7) Program.cs deve chiamare gli extension methods dopo MapOpenApi
 8) Transformer OpenAPI: classe AddDocumentInformations in Transformers/ + registrazione AddOpenApi
-9) GET con provider: filtro dedicato, mapping manuale a DTO, ProblemDetails 404 se vuoto
+9) GET con provider: filtro dedicato, Expression statica per proiezione DTO, ProblemDetails 404 se vuoto
 
 ## Pattern richiesti (copiabili)
 
@@ -122,7 +122,7 @@ public class AddDocumentInformations : IOpenApiDocumentTransformer
 private static async Task<IResult> GetHandler(DateTime FromDate, DateTime ToDate, MyProvider provider, CancellationToken ct)
 {
     var filter = new MyFilter { FromDate = FromDate, ToDate = ToDate };
-    var result = await provider.GetAsync(filter, e => e.ToDto(), ct);
+    var result = await provider.GetMyEntityAsync(filter, MyEntityExtensions.ToMyEntityResult, ct);
     if (!result.Any())
     {
         return TypedResults.Problem(new ProblemDetails
@@ -133,7 +133,7 @@ private static async Task<IResult> GetHandler(DateTime FromDate, DateTime ToDate
         });
     }
 
-    return Results.Ok(result);
+    return TypedResults.Ok(result);
 }
 ```
 
@@ -153,11 +153,11 @@ private static async Task<IResult> GetHandler(DateTime FromDate, DateTime ToDate
 - [ ] Metadata OpenAPI completi (Produces, Summary, Description, Name)
 - [ ] Transformer AddDocumentInformations creato e registrato
 - [ ] Program.cs chiama MapOpenApi prima dei Map*Endpoints
-- [ ] GET con provider: filter + mapping DTO + ProblemDetails 404 se vuoto
+- [ ] GET con provider: filter + Expression statica per proiezione DTO + ProblemDetails 404 se vuoto
 - [ ] File .http aggiunto per endpoint nuovi
 
 ## Test
 - Aggiungi sempre un file .http per endpoint nuovi
 
-*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-26 15:01
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-11
 

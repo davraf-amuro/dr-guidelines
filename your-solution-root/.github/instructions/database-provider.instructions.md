@@ -190,15 +190,11 @@ var result = await provider.Get{Entity}Async(
 
 ---
 
-## 📖 Riferimento: Provider Antifrode Esistente
+## 📖 Riferimento: Provider Esistente
 
-**Invece di duplicare codice, CONSULTA i file esistenti nel progetto**:
-- `src/D106.Api/Infrastructure/Antifrode/` - Implementazione completa
-- Entities: `Log106.cs`, `CS2K.cs`
-- Filters: `Log106Filter.cs`, `CS2KFilter.cs`
-- DTOs: `Dto/Log106Extensions.cs`, `Dto/CS2KExtensions.cs`
-
-**Struttura identica da replicare** per nuovo provider.
+**Prima di creare un nuovo provider, verifica se ne esiste già uno nel progetto**:
+- Cerca in `src/{PROJECT}.Api/Infrastructure/` provider con struttura analoga
+- Replica la stessa struttura: Entities, Filters, DTO, Extensions, ProviderExtensions
 
 ---
 
@@ -264,4 +260,4 @@ var context = new TDbContext(options, NullLoggerFactory.Instance);
 
 ---
 
-*Template v1.6 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.7 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-11
