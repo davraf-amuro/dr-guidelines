@@ -24,10 +24,10 @@ Analizza le classi in Endpoints/ e genera un documento per ogni group (MapGroup)
 6. Ultimo aggiornamento: footer con data
 
 ## Footer
-Usa la data odierna nel formato `yyyy-MM-dd`:
+Usa la data corrente (Get-Date -Format "yyyy-MM-dd"):
 ```markdown
 ---
-*Card generata il: yyyy-MM-dd | Versione template: x.x | LLM: {LLM}*
+*Card generata il: yyyy-MM-dd | Versione template: x.x | LLM: GitHub Copilot*
 ```
 La versione template e in fondo a questo file.
 
@@ -38,4 +38,4 @@ La versione template e in fondo a questo file.
 - [ ] Riferimenti a file .http se presenti
 - [ ] Footer con data e LLM
 
-*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-11
+*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00

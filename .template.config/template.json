@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Davide Raffagli",
+  "classifications": [ "Config", "GitHub Copilot", ".NET 10" ],
+  "identity": "Davraf.Guidelines",
+  "name": "Davraf Guidelines – Copilot + EditorConfig per .NET 10",
+  "shortName": "davraf-guidelines",
+  "description": "Aggiunge .github/copilot-instructions.md, instruction files modulari (Minimal API, Database Provider, Docker Swarm, Windows Service), .editorconfig, Directory.Build.props, global.json, .gitignore e .gitattributes configurati per .NET 10.",
+  "tags": {
+    "language": "",
+    "type": "solution"
+  },
+  "sourceName": "YourProject",
+  "preferNameDirectory": false
+}
