@@ -4,4 +4,4 @@
 - Rispondi sempre in **italiano**
 
 ## Standard di progetto .NET
-@my-minimalapi.md
+@.github/copilot-instructions.md
