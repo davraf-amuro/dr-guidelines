@@ -7,6 +7,7 @@ Progetto: Minimal API Template su .NET 10 e C# 14.
 - Database provider rules: instructions/database-provider.instructions.md
 - Docker Swarm Compose rules: instructions/docker-swarm-compose.instructions.md
 - Windows Service rules: instructions/windows-service.instructions.md
+- Gestione dati sensibili (tutti i progetti): instructions/sensitive-data.instructions.md
 
 ## Stack e architettura
 - Minimal APIs + Asp.Versioning (UrlSegmentApiVersionReader)
