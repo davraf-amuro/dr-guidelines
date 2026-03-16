@@ -19,6 +19,22 @@ Lo script:
 
 ---
 
+## 🔧 Progetto Esistente — Aggiungere le Guidelines
+
+Se hai già un progetto .NET con repository git, esegui dalla **root del progetto**:
+
+```powershell
+# 1. Aggiungi davraf-guidelines come submodule
+git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
+
+# 2. Esegui il setup
+.\davraf-guidelines\setup.ps1
+```
+
+> `setup.ps1` è sicuro su progetti esistenti: salta i file già presenti (`[SKIP]`), copia i file `.github/` uno per uno senza sovrascrivere, e aggiunge la regola a `CLAUDE.md` solo se non è già presente.
+
+---
+
 ## 📦 Cosa viene configurato
 
 Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
@@ -84,6 +100,9 @@ Copy-Item -Recurse .claude\skills\tavolo "$env:USERPROFILE\.claude\skills\tavolo
 ---
 
 ## ❓ FAQ
+
+### Q: Posso usare le guidelines su un progetto già esistente?
+**A:** SÌ — `CreateNewSolution.ps1` funziona solo per nuovi progetti (esce se la cartella esiste già). Per un progetto esistente, aggiungi manualmente il submodule ed esegui `setup.ps1` come descritto nella sezione [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines).
 
 ### Q: Devo committare i file `.github/`?
 **A:** SÌ se hai `.github/` come cartella normale. Se usi junction, il contenuto è nel submodule.
