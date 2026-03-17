@@ -1,5 +1,8 @@
-# Claude Code local settings
+# Claude Code local settings (ma i comandi condivisi vanno in repo)
 .claude/
+!.claude/
+!.claude/commands/
+!.claude/commands/**
 my-minimalapi.md
 
 ## Ignore Visual Studio temporary files, build results, and
