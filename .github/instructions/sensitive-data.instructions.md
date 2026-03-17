@@ -1,3 +1,7 @@
+---
+applyTo: "**"
+---
+
 # Gestione Dati Sensibili (AI Agent)
 
 Scopo: regole obbligatorie per la gestione di credenziali e parametri sensibili in tutti i progetti .NET. Segui sempre. Testo ottimizzato per token.
@@ -53,4 +57,4 @@ Quando l'utente fornisce dati sensibili (credenziali, password, API key, connect
 - [ ] `appsettings.local.json` è in `.gitignore`
 - [ ] `appsettings.local.json` è caricato in `Program.cs`
 
-*Template v1.0 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-16
+*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28

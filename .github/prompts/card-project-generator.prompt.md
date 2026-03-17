@@ -1,3 +1,9 @@
+---
+agent: 'agent'
+description: 'Genera schede riassuntive per ogni progetto nella solution'
+tools: ['search/codebase']
+---
+
 # Prompt: Card Project Generator (AI Agent)
 
 Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se non trovi info.
@@ -82,4 +88,4 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 - [ ] Nessun segreto esposto
 - [ ] Footer con data e LLM presente
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28

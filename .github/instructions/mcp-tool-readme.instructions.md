@@ -1,3 +1,7 @@
+---
+applyTo: "tools/**/README.md"
+---
+
 # Istruzioni — README dei Tool MCP
 
 Ogni tool MCP nella cartella `tools/` ha un proprio repository Git e un `README.md` che segue questa struttura canonica.

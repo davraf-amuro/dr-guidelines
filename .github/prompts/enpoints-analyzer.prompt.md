@@ -1,3 +1,9 @@
+---
+agent: 'agent'
+description: 'Analizza gli endpoint Minimal API e genera documentazione in docs/'
+tools: ['search/codebase']
+---
+
 # Prompt: Endpoints Analyzer (AI Agent)
 
 Analizza le classi in Endpoints/ e genera un documento per ogni group (MapGroup).
@@ -38,4 +44,4 @@ La versione template e in fondo a questo file.
 - [ ] Riferimenti a file .http se presenti
 - [ ] Footer con data e LLM
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28

@@ -2,13 +2,6 @@
 
 Progetto: Minimal API Template su .NET 10 e C# 14.
 
-## Istruzioni modulari
-- Minimal API rules: instructions/minimal-api-architecture.instructions.md
-- Database provider rules: instructions/database-provider.instructions.md
-- Docker Swarm Compose rules: instructions/docker-swarm-compose.instructions.md
-- Windows Service rules: instructions/windows-service.instructions.md
-- Gestione dati sensibili (tutti i progetti): instructions/sensitive-data.instructions.md
-
 ## Stack e architettura
 - Minimal APIs + Asp.Versioning (UrlSegmentApiVersionReader)
 - Scalar per documentazione, ProblemDetails per errori
@@ -29,5 +22,5 @@ Progetto: Minimal API Template su .NET 10 e C# 14.
 - [ ] OpenAPI + Scalar coerenti con le regole del progetto
 - [ ] Logging strutturato e async/await usati dove serve
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
 

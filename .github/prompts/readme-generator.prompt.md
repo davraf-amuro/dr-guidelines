@@ -1,3 +1,9 @@
+---
+agent: 'agent'
+description: 'Crea o aggiorna il README.md usando solo dati presenti nel repository'
+tools: ['search/codebase']
+---
+
 # Prompt: README Generator (AI Agent)
 
 Crea o aggiorna README.md usando solo dati presenti nel repository. Non inventare.
@@ -35,4 +41,4 @@ La versione template e in fondo a questo file.
 - [ ] Nessuna sezione extra
 - [ ] Footer con data e LLM
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-02-09 10:00
+*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
