@@ -1,8 +1,5 @@
-# Claude Code local settings (escludi tutto tranne skills condivise)
-.claude/settings.json
+# Claude Code local settings
 .claude/settings.local.json
-.claude/todos/
-.claude/memory/
 my-minimalapi.md
 
 ## Ignore Visual Studio temporary files, build results, and
