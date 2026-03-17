@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pdf-reader": {
+      "type": "stdio",
+      "command": "pdf-reader-mcp"
+    }
+  }
+}

@@ -99,6 +99,35 @@ Copy-Item -Recurse .claude\skills\tavolo "$env:USERPROFILE\.claude\skills\tavolo
 
 ---
 
+## 🔌 MCP Servers
+
+Questo repository include un `.mcp.json` di riferimento con i MCP server consigliati.
+
+### `pdf-reader` — Lettura di file PDF
+
+Permette a Claude Code di leggere e interrogare file PDF direttamente nel progetto.
+
+**Prerequisito** (una volta sola, come amministratore):
+```powershell
+npm install -g @fabriqa.ai/pdf-reader-mcp
+```
+
+**Setup nel progetto** — aggiungi al `.mcp.json` della root del tuo progetto:
+```json
+{
+  "mcpServers": {
+    "pdf-reader": {
+      "type": "stdio",
+      "command": "pdf-reader-mcp"
+    }
+  }
+}
+```
+
+Poi riavvia Claude Code per caricare il server.
+
+---
+
 ## ❓ FAQ
 
 ### Q: Posso usare le guidelines su un progetto già esistente?
