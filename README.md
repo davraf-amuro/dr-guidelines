@@ -72,10 +72,12 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI |
-| `database-provider.instructions.md` | EF Core, DbContext, migrations |
+| `database-provider.instructions.md` | EF Core, DbContext, provider |
 | `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
 | `windows-service.instructions.md` | Windows Service con .NET |
+| `sensitive-data.instructions.md` | Gestione credenziali e dati sensibili |
 | `mcp-tool-readme.instructions.md` | Creazione README per MCP server |
+| `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
 
 ---
 
@@ -83,18 +85,32 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 
 Questo repository include skill per **Claude Code** in `.claude/skills/`.
 
-### `/tavolo` — Tavolo di Lavoro Multi-Agente
+### `/warroom` — Tavolo di Lavoro Multi-Agente
 
 Lancia 4 esperti in parallelo (ARCH, BE, UI, UX) per analizzare una domanda tecnica o di prodotto da più angolazioni.
 
 **Setup globale** (una volta sola):
 ```powershell
-Copy-Item -Recurse .claude\skills\tavolo "$env:USERPROFILE\.claude\skills\tavolo"
+Copy-Item -Recurse .claude\skills\warroom "$env:USERPROFILE\.claude\skills\warroom"
 ```
 
 **Uso:**
 ```
-/tavolo come strutturiamo l'autenticazione in questa Minimal API?
+/warroom come strutturiamo l'autenticazione in questa Minimal API?
+```
+
+### `/professor` — Redazione Documentazione
+
+Esperto tecnico che crea, aggiorna e revisiona documentazione con linguaggio chiaro e accessibile. Rispetta le instruction files del progetto prima di scrivere.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item .claude\skills\professor.md "$env:USERPROFILE\.claude\skills\professor.md"
+```
+
+**Uso:**
+```
+/professor aggiorna il README con la nuova skill appena aggiunta
 ```
 
 ---
