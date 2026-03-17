@@ -124,6 +124,30 @@ if (-not (Test-Path $claudeMd)) {
     }
 }
 
+# --- Cartella .claude/skills ---
+Write-Host ""
+Write-Host "Cartella .claude/skills:" -ForegroundColor White
+
+$claudeSkillsSrc  = Join-Path $guidelinesDir ".claude\skills"
+$claudeSkillsDest = Join-Path $projectRoot   ".claude\skills"
+
+if (Test-Path $claudeSkillsSrc) {
+    if (-not (Test-Path $claudeSkillsDest)) {
+        New-Item -ItemType Directory -Path $claudeSkillsDest -Force | Out-Null
+    }
+    foreach ($f in Get-ChildItem $claudeSkillsSrc -File) {
+        $destFile = Join-Path $claudeSkillsDest $f.Name
+        if (Test-Path $destFile) {
+            Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
+        } else {
+            Copy-Item -Path $f.FullName -Destination $destFile
+            Write-Host "  [OK]   $($f.Name)" -ForegroundColor Green
+        }
+    }
+} else {
+    Write-Host "  [WARN] Non trovata: .claude/skills" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "Setup completato." -ForegroundColor Cyan
 Write-Host "Per aggiornare le linee guida in futuro:" -ForegroundColor White
