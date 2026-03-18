@@ -1,7 +1,6 @@
 ---
 name: warroom
 description: Simula un tavolo di lavoro multi-agente dove 4 esperti con prospettive diverse discutono un argomento tecnico o di prodotto. Invoca con /warroom [domanda] quando si vuole sentire più angolazioni su una scelta architetturale, di design, di UX o di implementazione.
-disable-model-invocation: true
 ---
 
 # Tavolo di Lavoro Multi-Agente
