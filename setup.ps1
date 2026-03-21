@@ -135,6 +135,7 @@ if (Test-Path $claudeSkillsSrc) {
     if (-not (Test-Path $claudeSkillsDest)) {
         New-Item -ItemType Directory -Path $claudeSkillsDest -Force | Out-Null
     }
+    # Copia file nella root di skills
     foreach ($f in Get-ChildItem $claudeSkillsSrc -File) {
         $destFile = Join-Path $claudeSkillsDest $f.Name
         if (Test-Path $destFile) {
@@ -142,6 +143,16 @@ if (Test-Path $claudeSkillsSrc) {
         } else {
             Copy-Item -Path $f.FullName -Destination $destFile
             Write-Host "  [OK]   $($f.Name)" -ForegroundColor Green
+        }
+    }
+    # Copia sottocartelle (ogni skill è una cartella con SKILL.md)
+    foreach ($dir in Get-ChildItem $claudeSkillsSrc -Directory) {
+        $destDir = Join-Path $claudeSkillsDest $dir.Name
+        if (Test-Path $destDir) {
+            Write-Host "  [SKIP] $($dir.Name)/" -ForegroundColor DarkGray
+        } else {
+            Copy-Item -Path $dir.FullName -Destination $destDir -Recurse
+            Write-Host "  [OK]   $($dir.Name)/" -ForegroundColor Green
         }
     }
 } else {
