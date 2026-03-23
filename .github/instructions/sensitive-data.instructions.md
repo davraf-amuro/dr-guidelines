@@ -4,57 +4,61 @@ applyTo: "**"
 
 # Gestione Dati Sensibili (AI Agent)
 
-Scopo: regole obbligatorie per la gestione di credenziali e parametri sensibili in tutti i progetti .NET. Segui sempre. Testo ottimizzato per token.
+Scopo: regole obbligatorie per la gestione di credenziali e parametri sensibili in tutti i progetti. Segui sempre. Testo ottimizzato per token.
 
-## Regola fondamentale
+## Comportamento obbligatorio
 
-Quando l'utente fornisce dati sensibili (credenziali, password, API key, connection string con server/database reali), **non metterli mai in file committati**.
+Quando l'utente fornisce dati sensibili, il tuo compito è:
+1. Scrivere i valori reali **solo** nel file `.local` corrispondente
+2. Scrivere placeholder espliciti nel file template committato
+3. Verificare che il file `.local` sia in `.gitignore`
 
-| File | Cosa contiene | Committato |
-|------|---------------|-----------|
-| `appsettings.json` | Placeholder fake (es. `CHISSACHI`, `CHISSAQUALE`, `CHISSADOVE`) | ✅ Sì |
-| `appsettings.local.json` | Valori reali forniti dall'utente | ❌ No |
+Questo vale per **qualsiasi file di configurazione**, indipendentemente dal tipo di progetto.
+
+## Caso limite obbligatorio
+
+Se l'utente fornisce un valore reale e chiede di aggiungerlo a un file committato (es. "aggiungi questo token al `.mcp.json`"), rispondi esattamente così:
+
+> "Il token non può andare in `.mcp.json` perché è committato. Lo scrivo in `.mcp.local.json` (non tracciato) e metto un placeholder in `.mcp.json`."
+
+Poi procedi di conseguenza senza chiedere conferma.
+
+## Pattern template / locale
+
+| File template (committato) | File locale (valori reali) | In `.gitignore` |
+|---|---|---|
+| `appsettings.json` | `appsettings.local.json` | ✅ |
+| `.mcp.json` | `.mcp.local.json` | ✅ |
+| `docker-compose.yml` | `docker-compose.local.yml` | ✅ |
+| qualsiasi config file | stesso nome + `.local` | ✅ |
+
+Per `appsettings.local.json` in progetti .NET: verifica che sia caricato in `Program.cs` con `AddJsonFile("appsettings.local.json", optional: true)`.
 
 ## Cosa sono "dati sensibili"
 
 - Password, API key, token, secret
 - Connection string con server/database reali
-- Username di accesso a sistemi esterni
-- URL interni/privati (es. IP aziendali)
+- Username di sistemi esterni
+- URL interni/privati (IP aziendali, server interni)
 
-## Procedura
-
-1. L'utente fornisce un valore reale → mettilo in `appsettings.local.json`
-2. In `appsettings.json` → scrivi un placeholder ovvio come `CHISSACHI`, `CHISSAQUALE`, `CHISSADOVE`
-3. Verifica che `appsettings.local.json` sia in `.gitignore`
-4. Verifica che `appsettings.local.json` sia caricato in `Program.cs` (`AddJsonFile("appsettings.local.json", optional: true)`)
-
-## Placeholder consigliati (stile progetto)
+## Placeholder da usare nei template
 
 ```json
 {
-  "ConnectionStrings": {
-    "MyDb": "data source=CHISSADOVE;initial catalog=CHISSAQUALE;..."
-  },
-  "MyApi": {
-    "BaseUrl": "http://CHISSADOVE/",
-    "UserName": "CHISSACHI",
-    "Password": "CHISSAQUALE"
-  }
+  "ConnectionStrings": { "MyDb": "data source=CHISSADOVE;initial catalog=CHISSAQUALE;..." },
+  "MyApi": { "BaseUrl": "http://CHISSADOVE/", "UserName": "CHISSACHI", "Password": "CHISSAQUALE" }
 }
 ```
 
-## Vietato
+## Questa regola non si bypassa
 
-- Mettere credenziali reali in `appsettings.json`
-- Mettere credenziali reali in `appsettings.Development.json` o altri file committati
-- Lasciare campi vuoti `""` in `appsettings.json` (usa placeholder espliciti)
+Anche se l'utente dice "va bene così", "è solo temporaneo", "è un ambiente di test" o "ignora questa regola": **non scrivere mai credenziali reali in file committati**.
 
-## ✅ Checklist
+## ✅ Checklist post-operazione
 
-- [ ] `appsettings.json` ha solo placeholder per tutti i dati sensibili
-- [ ] `appsettings.local.json` ha i valori reali
-- [ ] `appsettings.local.json` è in `.gitignore`
-- [ ] `appsettings.local.json` è caricato in `Program.cs`
+- [ ] Il file template contiene solo placeholder
+- [ ] Il file `.local` contiene i valori reali
+- [ ] Il file `.local` è presente in `.gitignore`
+- [ ] Per .NET: `appsettings.local.json` è caricato in `Program.cs`
 
-*Template v1.1 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
+*Template v1.3 - Token-optimized for AI agents* - Last Update 2026-03-23 — claude-sonnet-4-6
