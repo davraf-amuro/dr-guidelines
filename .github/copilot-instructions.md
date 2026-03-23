@@ -22,5 +22,11 @@ Progetto: Minimal API Template su .NET 10 e C# 14.
 - [ ] OpenAPI + Scalar coerenti con le regole del progetto
 - [ ] Logging strutturato e async/await usati dove serve
 
+## ✅ Verifica post-modifica (qualsiasi file)
+Dopo ogni modifica a un file:
+1. Rileggi il file modificato
+2. Confronta il contenuto con quanto richiesto
+3. Solo se corrispondono, dichiara la modifica completata
+
 *Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
 
