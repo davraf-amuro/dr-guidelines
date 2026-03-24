@@ -6,33 +6,39 @@ applyTo: "**"
 
 Scopo: regole obbligatorie per la gestione di credenziali e parametri sensibili in tutti i progetti. Segui sempre. Testo ottimizzato per token.
 
-## Comportamento obbligatorio
+## Regola generale
 
-Quando l'utente fornisce dati sensibili, il tuo compito è:
-1. Scrivere i valori reali **solo** nel file `.local` corrispondente
-2. Scrivere placeholder espliciti nel file template committato
-3. Verificare che il file `.local` sia in `.gitignore`
+Per qualsiasi file di configurazione con dati sensibili:
+1. Crea un file `.local` con i valori reali — **non tracciato**
+2. Tieni il file originale con placeholder — **committato**
+3. Aggiungi il file `.local` a `.gitignore`
 
-Questo vale per **qualsiasi file di configurazione**, indipendentemente dal tipo di progetto.
+| File committato (placeholder) | File locale (valori reali) | In `.gitignore` |
+|---|---|---|
+| `appsettings.json` | `appsettings.local.json` | `appsettings.local.json` ✅ |
+| `docker-compose.yml` | `docker-compose.local.yml` | `docker-compose.local.yml` ✅ |
+
+Per `appsettings.local.json` in progetti .NET: verifica che sia caricato in `Program.cs` con `AddJsonFile("appsettings.local.json", optional: true)`.
+
+## Eccezione: `.mcp.json`
+
+`.mcp.json` segue una regola diversa rispetto agli altri file di configurazione.
+
+| File locale (valori reali) | File esempio (committato, placeholder) | In `.gitignore` |
+|---|---|---|
+| `.mcp.json` | `.mcp.example.json` | `.mcp.json` ✅ |
+
+- Il file reale `.mcp.json` va in `.gitignore`
+- Il file committato è `.mcp.example.json` con placeholder al posto dei dati sensibili
+- Non esiste un `.mcp.local.json`
 
 ## Caso limite obbligatorio
 
-Se l'utente fornisce un valore reale e chiede di aggiungerlo a un file committato (es. "aggiungi questo token al `.mcp.json`"), rispondi esattamente così:
+Se l'utente fornisce un valore reale e chiede di aggiungerlo a un file committato, rispondi esattamente così (adattando i nomi):
 
-> "Il token non può andare in `.mcp.json` perché è committato. Lo scrivo in `.mcp.local.json` (non tracciato) e metto un placeholder in `.mcp.json`."
+> "Il token non può andare in `<file committato>` perché è tracciato da git. Lo scrivo in `<file locale>` e metto un placeholder in `<file committato>`."
 
-Poi procedi di conseguenza senza chiedere conferma.
-
-## Pattern template / locale
-
-| File template (committato) | File locale (valori reali) | In `.gitignore` |
-|---|---|---|
-| `appsettings.json` | `appsettings.local.json` | ✅ |
-| `.mcp.json` | `.mcp.local.json` | ✅ |
-| `docker-compose.yml` | `docker-compose.local.yml` | ✅ |
-| qualsiasi config file | stesso nome + `.local` | ✅ |
-
-Per `appsettings.local.json` in progetti .NET: verifica che sia caricato in `Program.cs` con `AddJsonFile("appsettings.local.json", optional: true)`.
+Poi procedi senza chiedere conferma.
 
 ## Cosa sono "dati sensibili"
 
@@ -41,7 +47,7 @@ Per `appsettings.local.json` in progetti .NET: verifica che sia caricato in `Pro
 - Username di sistemi esterni
 - URL interni/privati (IP aziendali, server interni)
 
-## Placeholder da usare nei template
+## Placeholder da usare nei file committati
 
 ```json
 {
@@ -56,9 +62,10 @@ Anche se l'utente dice "va bene così", "è solo temporaneo", "è un ambiente di
 
 ## ✅ Checklist post-operazione
 
-- [ ] Il file template contiene solo placeholder
-- [ ] Il file `.local` contiene i valori reali
-- [ ] Il file `.local` è presente in `.gitignore`
+- [ ] Il file committato contiene solo placeholder
+- [ ] Il file locale (non tracciato) contiene i valori reali
+- [ ] Il file locale è presente in `.gitignore`
+- [ ] Per `.mcp.json`: esiste `.mcp.example.json` committato e `.mcp.json` è in `.gitignore`
 - [ ] Per .NET: `appsettings.local.json` è caricato in `Program.cs`
 
-*Template v1.3 - Token-optimized for AI agents* - Last Update 2026-03-23 — claude-sonnet-4-6
+*Template v1.6 - Token-optimized for AI agents* - Last Update 2026-03-24 — claude-sonnet-4-6
