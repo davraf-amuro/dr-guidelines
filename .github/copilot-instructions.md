@@ -28,5 +28,12 @@ Dopo ogni modifica a un file:
 2. Confronta il contenuto con quanto richiesto
 3. Solo se corrispondono, dichiara la modifica completata
 
-*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
+## Ciclo di sviluppo obbligatorio
+Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
+- **Dichiara** scope e file prima di agire
+- **Esegui** un'operazione alla volta
+- **Verifica** (rileggi) dopo ogni modifica
+- **Segnala** incertezza — non assumere silenziosamente
+
+*Template v1.3 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-25 — claude-sonnet-4-6
 

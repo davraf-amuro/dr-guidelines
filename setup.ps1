@@ -4,13 +4,31 @@
 .DESCRIPTION
     Da eseguire dalla root del progetto host OPPURE direttamente:
         .\davraf-guidelines\setup.ps1
+
     Copia i file di configurazione e collega .github/ tramite junction.
     Non richiede privilegi amministrativi.
+
+    Usa -Update per sovrascrivere i file già presenti con la versione aggiornata
+    delle guidelines (utile dopo `git submodule update --remote davraf-guidelines`).
+.PARAMETER Update
+    Se specificato, sovrascrive i file di configurazione già presenti nel progetto
+    con la versione corrente delle guidelines. Non sovrascrive CLAUDE.md.
 .EXAMPLE
+    # Prima installazione
     cd C:\MioProgetto
     git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
     .\davraf-guidelines\setup.ps1
+
+.EXAMPLE
+    # Aggiornamento dopo submodule update
+    git submodule update --remote davraf-guidelines
+    .\davraf-guidelines\setup.ps1 -Update
 #>
+
+[CmdletBinding()]
+param(
+    [switch]$Update
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -19,6 +37,9 @@ $projectRoot   = (Get-Item $guidelinesDir).Parent.FullName
 
 Write-Host ""
 Write-Host "Davraf Guidelines Setup" -ForegroundColor Cyan
+if ($Update) {
+    Write-Host "  Modalità : UPDATE (sovrascrive file esistenti)" -ForegroundColor Yellow
+}
 Write-Host "  Guidelines : $guidelinesDir"
 Write-Host "  Progetto   : $projectRoot"
 Write-Host ""
@@ -33,12 +54,13 @@ function Copy-GuidelineFile {
         Write-Host "  [WARN] Non trovato: $FileName" -ForegroundColor Yellow
         return
     }
-    if (Test-Path $dest) {
+    if ((Test-Path $dest) -and -not $Update) {
         Write-Host "  [SKIP] Esiste già: $FileName" -ForegroundColor DarkGray
         return
     }
-    Copy-Item -Path $src -Destination $dest
-    Write-Host "  [OK]   $FileName" -ForegroundColor Green
+    Copy-Item -Path $src -Destination $dest -Force
+    $tag = if ($Update -and (Test-Path $dest)) { "[UPD] " } else { "[OK]  " }
+    Write-Host "  $tag $FileName" -ForegroundColor Green
 }
 
 function New-Junction {
@@ -72,8 +94,8 @@ $githubDest = Join-Path $projectRoot   ".github"
 if (-not (Test-Path $githubDest)) {
     New-Junction -Link $githubDest -Target $githubSrc
 } else {
-    # Esiste già: copia file per file per non sovrascrivere contenuto esistente
-    Write-Host "  [INFO] .github esiste, copia file per file..." -ForegroundColor Cyan
+    $mode = if ($Update) { "aggiornamento" } else { "copia nuovi file" }
+    Write-Host "  [INFO] .github esiste, $mode..." -ForegroundColor Cyan
 
     $subDirs = @("", "instructions", "prompts")
     foreach ($sub in $subDirs) {
@@ -87,18 +109,20 @@ if (-not (Test-Path $githubDest)) {
         if (Test-Path $srcFolder) {
             foreach ($f in Get-ChildItem $srcFolder -File) {
                 $destFile = Join-Path $destFolder $f.Name
-                if (Test-Path $destFile) {
+                if ((Test-Path $destFile) -and -not $Update) {
                     Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
                 } else {
-                    Copy-Item -Path $f.FullName -Destination $destFile
-                    Write-Host "  [OK]   $($f.Name)" -ForegroundColor Green
+                    $isUpdate = $Update -and (Test-Path $destFile)
+                    Copy-Item -Path $f.FullName -Destination $destFile -Force
+                    $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
+                    Write-Host "  $tag  $($f.Name)" -ForegroundColor Green
                 }
             }
         }
     }
 }
 
-# --- CLAUDE.md ---
+# --- CLAUDE.md --- (mai sovrascritto, anche con -Update)
 Write-Host ""
 Write-Host "CLAUDE.md:" -ForegroundColor White
 
@@ -138,21 +162,24 @@ if (Test-Path $claudeSkillsSrc) {
     # Copia file nella root di skills
     foreach ($f in Get-ChildItem $claudeSkillsSrc -File) {
         $destFile = Join-Path $claudeSkillsDest $f.Name
-        if (Test-Path $destFile) {
+        if ((Test-Path $destFile) -and -not $Update) {
             Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
         } else {
-            Copy-Item -Path $f.FullName -Destination $destFile
-            Write-Host "  [OK]   $($f.Name)" -ForegroundColor Green
+            $isUpdate = $Update -and (Test-Path $destFile)
+            Copy-Item -Path $f.FullName -Destination $destFile -Force
+            $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
+            Write-Host "  $tag  $($f.Name)" -ForegroundColor Green
         }
     }
     # Copia sottocartelle (ogni skill è una cartella con SKILL.md)
     foreach ($dir in Get-ChildItem $claudeSkillsSrc -Directory) {
         $destDir = Join-Path $claudeSkillsDest $dir.Name
-        if (Test-Path $destDir) {
+        if ((Test-Path $destDir) -and -not $Update) {
             Write-Host "  [SKIP] $($dir.Name)/" -ForegroundColor DarkGray
         } else {
-            Copy-Item -Path $dir.FullName -Destination $destDir -Recurse
-            Write-Host "  [OK]   $($dir.Name)/" -ForegroundColor Green
+            Copy-Item -Path $dir.FullName -Destination $destDir -Recurse -Force
+            $tag = if ($Update -and (Test-Path $destDir)) { "[UPD]" } else { "[OK] " }
+            Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
         }
     }
 } else {
@@ -161,6 +188,8 @@ if (Test-Path $claudeSkillsSrc) {
 
 Write-Host ""
 Write-Host "Setup completato." -ForegroundColor Cyan
+Write-Host ""
 Write-Host "Per aggiornare le linee guida in futuro:" -ForegroundColor White
 Write-Host "  git submodule update --remote davraf-guidelines" -ForegroundColor DarkCyan
+Write-Host "  .\davraf-guidelines\setup.ps1 -Update" -ForegroundColor DarkCyan
 Write-Host ""

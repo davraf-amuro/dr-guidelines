@@ -56,11 +56,15 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 Quando le guidelines vengono aggiornate, esegui dalla root del tuo progetto:
 
 ```powershell
+# 1. Aggiorna il submodule all'ultima versione
 git submodule update --remote davraf-guidelines
+
+# 2. Propaga le modifiche ai file copiati nel progetto
+.\davraf-guidelines\setup.ps1 -Update
 ```
 
-I file copiati (`.editorconfig`, `Directory.Build.props`, ecc.) vanno aggiornati manualmente rieseguendo `setup.ps1`.
-La cartella `.github/` è collegata via junction e si aggiorna automaticamente.
+Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, ecc.) con la versione aggiornata delle guidelines. `CLAUDE.md` non viene mai sovrascritto.
+La cartella `.github/` è collegata via junction e si aggiorna automaticamente al passo 1.
 
 ---
 
@@ -71,6 +75,7 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 | File | Quando usarlo |
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
+| `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
 | `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI |
 | `database-provider.instructions.md` | EF Core, DbContext, provider |
 | `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
@@ -111,6 +116,34 @@ Copy-Item .claude\skills\professor.md "$env:USERPROFILE\.claude\skills\professor
 **Uso:**
 ```
 /professor aggiorna il README con la nuova skill appena aggiunta
+```
+
+### `/tattico` — Progettazione Prompt AI
+
+Esperto nella creazione e revisione di prompt per agenti e assistenti IA. Analizza pattern di fallimento, identifica ambiguità e suggerisce miglioramenti strutturali.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\tattico "$env:USERPROFILE\.claude\skills\tattico"
+```
+
+**Uso:**
+```
+/tattico rivedi il prompt di sistema dell'agente di onboarding
+```
+
+### `/tech` — Rilascio e Infrastruttura
+
+Specialista di deployment e infrastruttura IT. Conosce Docker, IIS, Git, Swagger/OpenAPI e la preparazione di ambienti per l'esecuzione di software.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\tech "$env:USERPROFILE\.claude\skills\tech"
+```
+
+**Uso:**
+```
+/tech pianifica il rilascio della nuova versione su Docker Swarm
 ```
 
 ---
@@ -163,4 +196,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Marzo 2026*
+*Documento aggiornato: Marzo 2026 — Revisione v1.1 — 2026-03-25 — claude-sonnet-4-6*
