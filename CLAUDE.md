@@ -8,3 +8,6 @@
 
 ## Standard di progetto .NET
 @.github/copilot-instructions.md
+
+## Regola MCP Server
+@.github/instructions/mcp-server-discovery.instructions.md
