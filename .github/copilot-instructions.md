@@ -28,6 +28,9 @@ Dopo ogni modifica a un file:
 2. Confronta il contenuto con quanto richiesto
 3. Solo se corrispondono, dichiara la modifica completata
 
+## Gestione documentazione
+Quando l'utente chiede di **sistemare, rifare, creare o aggiornare documenti** (README, istruzioni, guide, doc tecnica), invoca **direttamente la skill `/professor`** senza attendere conferma.
+
 ## Ciclo di sviluppo obbligatorio
 Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Dichiara** scope e file prima di agire
@@ -35,5 +38,5 @@ Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza — non assumere silenziosamente
 
-*Template v1.3 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-25 — claude-sonnet-4-6
+*Template v1.4 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-30 — claude-sonnet-4-6
 
