@@ -13,6 +13,9 @@
 .PARAMETER Update
     Se specificato, sovrascrive i file di configurazione già presenti nel progetto
     con la versione corrente delle guidelines. Non sovrascrive CLAUDE.md.
+.PARAMETER IncludeWorkflows
+    Se specificato, copia anche .github/workflows/ nel progetto host.
+    Per default la cartella è esclusa perché le pipeline CI/CD dipendono dall'ambiente.
 .EXAMPLE
     # Prima installazione
     cd C:\MioProgetto
@@ -27,7 +30,8 @@
 
 [CmdletBinding()]
 param(
-    [switch]$Update
+    [switch]$Update,
+    [switch]$IncludeWorkflows
 )
 
 $ErrorActionPreference = "Stop"
@@ -97,26 +101,29 @@ if (-not (Test-Path $githubDest)) {
     $mode = if ($Update) { "aggiornamento" } else { "copia nuovi file" }
     Write-Host "  [INFO] .github esiste, $mode..." -ForegroundColor Cyan
 
-    $subDirs = @("", "instructions", "prompts")
-    foreach ($sub in $subDirs) {
-        $srcFolder  = if ($sub) { Join-Path $githubSrc  $sub } else { $githubSrc }
-        $destFolder = if ($sub) { Join-Path $githubDest $sub } else { $githubDest }
+    $srcFolders = @($githubSrc) + (
+        Get-ChildItem $githubSrc -Directory |
+        Where-Object { $_.Name -ne "workflows" -or $IncludeWorkflows } |
+        ForEach-Object { $_.FullName }
+    )
+
+    foreach ($srcFolder in $srcFolders) {
+        $rel        = $srcFolder.Substring($githubSrc.Length).TrimStart('\','/')
+        $destFolder = if ($rel) { Join-Path $githubDest $rel } else { $githubDest }
 
         if (-not (Test-Path $destFolder)) {
             New-Item -ItemType Directory -Path $destFolder | Out-Null
         }
 
-        if (Test-Path $srcFolder) {
-            foreach ($f in Get-ChildItem $srcFolder -File) {
-                $destFile = Join-Path $destFolder $f.Name
-                if ((Test-Path $destFile) -and -not $Update) {
-                    Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
-                } else {
-                    $isUpdate = $Update -and (Test-Path $destFile)
-                    Copy-Item -Path $f.FullName -Destination $destFile -Force
-                    $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
-                    Write-Host "  $tag  $($f.Name)" -ForegroundColor Green
-                }
+        foreach ($f in Get-ChildItem $srcFolder -File) {
+            $destFile = Join-Path $destFolder $f.Name
+            if ((Test-Path $destFile) -and -not $Update) {
+                Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
+            } else {
+                $isUpdate = $Update -and (Test-Path $destFile)
+                Copy-Item -Path $f.FullName -Destination $destFile -Force
+                $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
+                Write-Host "  $tag  $($f.Name)" -ForegroundColor Green
             }
         }
     }
@@ -144,7 +151,11 @@ if (-not (Test-Path $claudeMd)) {
         Add-Content -Path $claudeMd -Value $claudeRule -Encoding UTF8
         Write-Host "  [OK]   Regola aggiunta a CLAUDE.md esistente" -ForegroundColor Green
     } else {
-        Write-Host "  [SKIP] Regola già presente in CLAUDE.md" -ForegroundColor DarkGray
+        if ($existing -notlike "*$($claudeRule.Trim())*") {
+            Write-Host "  [WARN] La sezione 'Davraf Guidelines' in CLAUDE.md potrebbe essere obsoleta — verifica manualmente" -ForegroundColor Yellow
+        } else {
+            Write-Host "  [SKIP] Regola già presente e aggiornata in CLAUDE.md" -ForegroundColor DarkGray
+        }
     }
 }
 
@@ -188,6 +199,12 @@ if (Test-Path $claudeSkillsSrc) {
 
 Write-Host ""
 Write-Host "Setup completato." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Attenzioni manuali:" -ForegroundColor White
+Write-Host "  - CLAUDE.md: non sovrascritta automaticamente, verificare se allineata al submodule" -ForegroundColor Yellow
+if (-not $IncludeWorkflows) {
+    Write-Host "  - .github/workflows/: non copiata (usa -IncludeWorkflows per includerla)" -ForegroundColor Yellow
+}
 Write-Host ""
 Write-Host "Per aggiornare le linee guida in futuro:" -ForegroundColor White
 Write-Host "  git submodule update --remote davraf-guidelines" -ForegroundColor DarkCyan
