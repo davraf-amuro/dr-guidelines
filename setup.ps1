@@ -108,7 +108,7 @@ if (-not (Test-Path $githubDest)) {
     )
 
     foreach ($srcFolder in $srcFolders) {
-        $rel        = $srcFolder.Substring($githubSrc.Length).TrimStart('\','/')
+        $rel        = if ($srcFolder -eq $githubSrc) { "" } else { Split-Path -Leaf $srcFolder }
         $destFolder = if ($rel) { Join-Path $githubDest $rel } else { $githubDest }
 
         if (-not (Test-Path $destFolder)) {
@@ -151,7 +151,8 @@ if (-not (Test-Path $claudeMd)) {
         Add-Content -Path $claudeMd -Value $claudeRule -Encoding UTF8
         Write-Host "  [OK]   Regola aggiunta a CLAUDE.md esistente" -ForegroundColor Green
     } else {
-        if ($existing -notlike "*$($claudeRule.Trim())*") {
+        $claudeRuleTrimmed = $claudeRule.Trim()
+        if ($existing -notlike "*$claudeRuleTrimmed*") {
             Write-Host "  [WARN] La sezione 'Davraf Guidelines' in CLAUDE.md potrebbe essere obsoleta — verifica manualmente" -ForegroundColor Yellow
         } else {
             Write-Host "  [SKIP] Regola già presente e aggiornata in CLAUDE.md" -ForegroundColor DarkGray
