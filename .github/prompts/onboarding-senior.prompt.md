@@ -54,4 +54,4 @@ Link ai file di riferimento più importanti nel repository.
 - Non inventare nulla: ogni affermazione deve essere verificabile nel codice o nei file di configurazione
 - Se un'informazione non è ricavabile, scrivi `Da verificare con il team`
 - Niente tutorial: un senior sa già come funziona .NET, spiega solo le specificità di *questo* progetto
-- Footer: `*Documento generato il: yyyy-MM-dd HH:mm | LLM: [indicare il modello usato]*`
+- Footer: `*Revisione v1.0 — {YYYY-MM-DD HH:MM} — {modello-llm}*`
