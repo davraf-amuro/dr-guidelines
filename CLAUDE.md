@@ -12,6 +12,10 @@
 ## Regola MCP Server
 @.github/instructions/mcp-server-discovery.instructions.md
 
+## Modifiche al codice
+
+Ogni richiesta che comporta una modifica al codice **deve essere proposta come plan** prima di essere eseguita. Non scrivere codice senza che il piano sia stato approvato esplicitamente dall'utente.
+
 ## Invocazione automatica delle skill
 
 Quando l'utente esprime un intento che corrisponde a una delle skill disponibili,
