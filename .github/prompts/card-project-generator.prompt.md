@@ -71,7 +71,7 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 - **Versioni Supportate:**
 
 ---
-*Card generata il: yyyy-MM-dd | Versione template: 2.0 | LLM: GitHub Copilot*
+*Card generata il: yyyy-MM-dd HH:mm | Versione template: 2.0 | LLM: [indicare il modello usato]*
 ```
 
 ## Regole

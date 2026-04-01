@@ -30,10 +30,10 @@ Analizza le classi in Endpoints/ e genera un documento per ogni group (MapGroup)
 6. Ultimo aggiornamento: footer con data
 
 ## Footer
-Usa la data corrente (Get-Date -Format "yyyy-MM-dd"):
+Usa data e ora correnti (Get-Date -Format "yyyy-MM-dd HH:mm"):
 ```markdown
 ---
-*Card generata il: yyyy-MM-dd | Versione template: x.x | LLM: GitHub Copilot*
+*Card generata il: yyyy-MM-dd HH:mm | Versione template: x.x | LLM: [indicare il modello usato]*
 ```
 La versione template e in fondo a questo file.
 

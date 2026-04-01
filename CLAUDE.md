@@ -16,6 +16,12 @@
 
 Ogni richiesta che comporta una modifica al codice **deve essere proposta come plan** prima di essere eseguita. Non scrivere codice senza che il piano sia stato approvato esplicitamente dall'utente.
 
+## Citazione fonti e modello
+
+Alla fine di ogni risposta, se sono stati letti file o consultati documenti:
+- Cita i file usati come fonti (path relativo)
+- Indica il modello LLM usato (es. `claude-sonnet-4-6`)
+
 ## Invocazione automatica delle skill
 
 Quando l'utente esprime un intento che corrisponde a una delle skill disponibili,
