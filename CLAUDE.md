@@ -11,3 +11,20 @@
 
 ## Regola MCP Server
 @.github/instructions/mcp-server-discovery.instructions.md
+
+## Invocazione automatica delle skill
+
+Quando l'utente esprime un intento che corrisponde a una delle skill disponibili,
+**invoca direttamente la skill** senza attendere conferma. Usa il contesto della
+conversazione come argomento passato alla skill.
+
+| Se l'utente dice qualcosa come... | Invoca |
+|-----------------------------------|--------|
+| "vai professor", "scrivi la doc", "aggiorna il README", "genera la scheda del progetto", "documenta gli endpoint", "prepara l'onboarding" | `/professor [richiesta]` |
+| "consulta il warroom", "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/warroom [domanda o contesto]` |
+| "chiedi al tattico", "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/tattico [prompt o descrizione]` |
+| "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker", "procedura di deploy" | `/tech [task]` |
+
+Quando invochi una skill, passa come argomento tutto il contesto utile già presente
+nella conversazione (codice aperto, domanda originale, file citati) — non chiedere
+all'utente di ripetere le informazioni.
