@@ -22,7 +22,7 @@ Se sì, **leggi il file template** e seguilo come guida strutturale.
 | Task | File template da leggere | Output atteso |
 |------|--------------------------|---------------|
 | Scheda riassuntiva del progetto | `.github/prompts/card-project-generator.prompt.md` | `docs/card-<progetto>.md` |
-| Documentazione endpoint Minimal API | `.github/prompts/enpoints-analyzer.prompt.md` | `docs/endpoint-<group>.md` |
+| Documentazione endpoint Minimal API | `.github/prompts/endpoints-analyzer.prompt.md` | `docs/endpoint-<group>.md` |
 | Onboarding per developer senior | `.github/prompts/onboarding-senior.prompt.md` | `docs/onboarding.md` |
 | Creare o aggiornare README | `.github/prompts/readme-generator.prompt.md` | `README.md` |
 
