@@ -98,6 +98,11 @@ $githubDest = Join-Path $projectRoot   ".github"
 if (-not (Test-Path $githubDest)) {
     New-Junction -Link $githubDest -Target $githubSrc
 } else {
+    $junctionTarget = (Get-Item $githubDest -Force).Target
+    if ($junctionTarget -and ((Resolve-Path $junctionTarget).Path -eq (Resolve-Path $githubSrc).Path)) {
+        Write-Host "  [SKIP] .github è una junction verso la stessa sorgente, nessuna copia necessaria." -ForegroundColor DarkGray
+    } else {
+
     $mode = if ($Update) { "aggiornamento" } else { "copia nuovi file" }
     Write-Host "  [INFO] .github esiste, $mode..." -ForegroundColor Cyan
 
@@ -127,6 +132,7 @@ if (-not (Test-Path $githubDest)) {
             }
         }
     }
+    } # end else (not junction)
 }
 
 # --- CLAUDE.md --- (mai sovrascritto, anche con -Update)
