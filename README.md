@@ -146,6 +146,35 @@ Copy-Item -Recurse .claude\skills\tech "$env:USERPROFILE\.claude\skills\tech"
 /tech pianifica il rilascio della nuova versione su Docker Swarm
 ```
 
+### `/audit-api` — Audit Backend .NET
+
+Esegue un audit completo del backend .NET 10 / Minimal APIs / C# 14 in tre fasi:
+1. **Dead code** — classi, DTO, middleware, registrazioni DI non usate
+2. **Pattern compliance** — endpoint come extension methods, versioning, ProblemDetails, logging strutturato, async/await
+3. **Performance** — N+1, CancellationToken mancante, operazioni sincrone su I/O
+
+Produce un report strutturato per severità (`[ERROR]` / `[WARNING]` / `[INFO]`). Non modifica file: propone un plan mode al termine.
+
+**Uso:**
+```
+/audit-api
+/audit-api -- focus solo sulla fase 2 pattern compliance
+```
+
+### `/audit-fe` — Audit Frontend
+
+Rileva automaticamente lo stack frontend usato nel progetto (React, Vue, Angular, Blazor…), poi esegue un audit in tre fasi:
+1. **Dead code** — componenti, hook, import, route non usati
+2. **Pattern compliance** — convenzioni del framework rilevato, struttura cartelle, naming
+3. **Performance** — re-render inutili, chiamate API ridondanti, lazy loading mancante
+
+Produce un report strutturato per severità. Non modifica file: propone un plan mode al termine.
+
+**Uso:**
+```
+/audit-fe
+```
+
 ---
 
 ## 🔌 MCP Servers
@@ -196,4 +225,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Marzo 2026 — Revisione v1.1 — 2026-03-25 — claude-sonnet-4-6*
+*Documento aggiornato: Aprile 2026 — Revisione v1.2 — 2026-04-06 — claude-sonnet-4-6*
