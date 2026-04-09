@@ -193,6 +193,37 @@ Copy-Item -Recurse .claude\skills\audit-fe "$env:USERPROFILE\.claude\skills\audi
 /audit-fe
 ```
 
+### `/promote-to` — Commit, Push e Pull Request
+
+Promuove il branch corrente verso un branch target: fa commit delle modifiche pendenti (se presenti), push e apre una Pull Request su GitHub. Chiede sempre conferma prima del merge, a meno che non sia passato `--merge`.
+
+**Sintassi:**
+```
+/promote-to <target-branch> [--merge] [--delete]
+```
+
+| Flag | Comportamento |
+|------|---------------|
+| *(nessuno)* | commit → push → PR → chiede "eseguo il merge?" |
+| `--merge` | commit → push → PR → merge automatico senza chiedere |
+| `--delete` | dopo il merge, elimina il branch sorgente |
+| `--merge --delete` | tutto automatico: PR + merge + eliminazione branch |
+
+> Il branch sorgente non viene **mai** eliminato senza `--delete` esplicito.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\promote-to "$env:USERPROFILE\.claude\skills\promote-to"
+```
+
+**Uso:**
+```
+/promote-to master
+/promote-to staging --merge
+/promote-to main --delete
+/promote-to staging --merge --delete
+```
+
 ---
 
 ## 🔌 MCP Servers
