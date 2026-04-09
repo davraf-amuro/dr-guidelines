@@ -92,7 +92,15 @@ Questo repository include skill per **Claude Code** in `.claude/skills/`.
 
 ### `/warroom` — Tavolo di Lavoro Multi-Agente
 
-Lancia 4 esperti in parallelo (ARCH, BE, UI, UX) per analizzare una domanda tecnica o di prodotto da più angolazioni.
+Lancia 5 esperti in parallelo per analizzare una domanda tecnica o di prodotto da più angolazioni.
+
+| Agente | Ruolo |
+|--------|-------|
+| **ARCH** | Architetto software — coesione, debito tecnico, pattern |
+| **BE** | Backend senior — complessità implementativa, sicurezza, carico |
+| **UI** | Frontend senior — componenti, design system, accessibilità |
+| **UX** | UX designer — flussi reali, bisogni utente, percezione |
+| **DBADMIN** | DBA watchdog — sorveglia le proposte e interviene solo quando logica di database può ridurre la complessità del codice |
 
 **Setup globale** (una volta sola):
 ```powershell
@@ -110,7 +118,7 @@ Esperto tecnico che crea, aggiorna e revisiona documentazione con linguaggio chi
 
 **Setup globale** (una volta sola):
 ```powershell
-Copy-Item .claude\skills\professor.md "$env:USERPROFILE\.claude\skills\professor.md"
+Copy-Item -Recurse .claude\skills\professor "$env:USERPROFILE\.claude\skills\professor"
 ```
 
 **Uso:**
@@ -155,6 +163,11 @@ Esegue un audit completo del backend .NET 10 / Minimal APIs / C# 14 in tre fasi:
 
 Produce un report strutturato per severità (`[ERROR]` / `[WARNING]` / `[INFO]`). Non modifica file: propone un plan mode al termine.
 
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\audit-api "$env:USERPROFILE\.claude\skills\audit-api"
+```
+
 **Uso:**
 ```
 /audit-api
@@ -169,6 +182,11 @@ Rileva automaticamente lo stack frontend usato nel progetto (React, Vue, Angular
 3. **Performance** — re-render inutili, chiamate API ridondanti, lazy loading mancante
 
 Produce un report strutturato per severità. Non modifica file: propone un plan mode al termine.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\audit-fe "$env:USERPROFILE\.claude\skills\audit-fe"
+```
 
 **Uso:**
 ```
@@ -225,4 +243,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Aprile 2026 — Revisione v1.2 — 2026-04-06 — claude-sonnet-4-6*
+*Documento aggiornato: Aprile 2026 — Revisione v1.3 — 2026-04-09 — claude-sonnet-4-6*

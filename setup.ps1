@@ -159,7 +159,7 @@ if (-not (Test-Path $claudeMd)) {
     } else {
         $claudeRuleTrimmed = $claudeRule.Trim()
         if ($existing -notlike "*$claudeRuleTrimmed*") {
-            Write-Host "  [WARN] La sezione 'Davraf Guidelines' in CLAUDE.md potrebbe essere obsoleta — verifica manualmente" -ForegroundColor Yellow
+            Write-Host "  [WARN] La sezione 'Davraf Guidelines' in CLAUDE.md potrebbe essere obsoleta - verifica manualmente" -ForegroundColor Yellow
         } else {
             Write-Host "  [SKIP] Regola già presente e aggiornata in CLAUDE.md" -ForegroundColor DarkGray
         }
