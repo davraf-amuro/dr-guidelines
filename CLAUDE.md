@@ -14,7 +14,47 @@
 
 ## Modifiche al codice
 
-Ogni richiesta che comporta una modifica al codice **deve essere proposta come plan** prima di essere eseguita. Non scrivere codice senza che il piano sia stato approvato esplicitamente dall'utente.
+⛔ STOP — Prima di scrivere qualsiasi codice, devi completare questi tre passi e documentarli nel tuo output:
+
+1. **Leggi** `.github/copilot-instructions.md` e **cita** la sezione rilevante per il task corrente.
+2. **Identifica e leggi** il file `.github/instructions/*.md` pertinente al task. Se non sei sicuro di quale, elenca i file disponibili e scegli.
+3. **Dichiara** scope, file che modificherai e cosa NON toccherai — formato obbligatorio:
+   > "Modificherò `[file]` per `[motivo]`. Non toccherò `[fuori scope]`."
+
+Non procedere finché questi tre passi non sono completati e visibili nel tuo output.
+
+⛔ OBBLIGO DI RENDICONTO — Prima di scrivere qualsiasi codice, elenca esplicitamente nel tuo output tutti i file che hai letto, nel formato:
+
+```
+File letti:
+- .github/copilot-instructions.md  ✓
+- .github/instructions/database-provider.instructions.md  ✓
+```
+
+Se non hai letto un file che avresti dovuto leggere, dichiaralo come `✗ non letto` e leggilo prima di procedere. Non è accettabile procedere senza questo elenco visibile.
+
+---
+
+### Checklist pre-task (obbligatoria, da compilare ad ogni task)
+
+- [ ] Ho letto `.github/copilot-instructions.md`? (cita la sezione rilevante)
+- [ ] Ho identificato e letto il file istruzioni modulare pertinente? (indica quale)
+- [ ] Ho dichiarato scope, file da modificare e perimetro negativo?
+- [ ] So esattamente quali file creerò/modificherò? (elencali)
+- [ ] Ho verificato che la struttura richiesta non esista già nel progetto?
+
+Se anche una risposta è NO → fermati e completa il passo prima di procedere.
+
+---
+
+⛔ OGNI MODIFICA — a qualsiasi file (codice, docs, config, test) — richiede un piano approvato.
+
+1. Usa `EnterPlanMode` per proporre il piano
+2. Dichiara: scope, file che modificherai, motivazione, perimetro negativo
+3. Attendi approvazione esplicita dell'utente
+4. Usa `ExitPlanMode` per procedere
+
+Il hook `pre_tool_use.py` blocca `Edit`/`Write`/`MultiEdit` automaticamente (validità 30 minuti dall'ultimo `ExitPlanMode`). Percorsi esenti: `.claude/` · `.ai/`
 
 ## Citazione fonti e modello
 
