@@ -204,6 +204,19 @@ if (Test-Path $claudeSkillsSrc) {
     Write-Host "  [WARN] Non trovata: .claude/skills" -ForegroundColor Yellow
 }
 
+# --- Cartella docs/ ---
+Write-Host ""
+Write-Host "Cartella docs:" -ForegroundColor White
+
+$docsDest = Join-Path $projectRoot "docs"
+
+if (-not (Test-Path $docsDest)) {
+    New-Item -ItemType Directory -Path $docsDest | Out-Null
+    Write-Host "  [OK]   docs/ creata" -ForegroundColor Green
+} else {
+    Write-Host "  [SKIP] docs/ esiste già" -ForegroundColor DarkGray
+}
+
 Write-Host ""
 Write-Host "Setup completato." -ForegroundColor Cyan
 Write-Host ""

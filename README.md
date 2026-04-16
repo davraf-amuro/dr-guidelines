@@ -47,6 +47,8 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 | `.gitignore` | copia | File ignorati da Git |
 | `.gitattributes` | copia | Normalizzazione line endings |
 | `.github/` | junction | Istruzioni Copilot e prompt modulari |
+| `.claude/skills/` | copia | Skill Claude Code (warroom, professor, tattico, tech, ecc.) |
+| `docs/` | creato vuoto | Cartella destinazione documentazione generata (professor, card, onboarding) |
 | `CLAUDE.md` | generato | Istruzioni per Claude Code |
 
 ---
@@ -83,6 +85,9 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 | `sensitive-data.instructions.md` | Gestione credenziali e dati sensibili |
 | `mcp-tool-readme.instructions.md` | Creazione README per MCP server |
 | `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
+| `mcp-server-discovery.instructions.md` | Ricerca e creazione MCP server |
+| `code-organization.instructions.md` | Struttura classi e file (tutti i linguaggi) |
+| `frontend-organization.instructions.md` | Struttura componenti Vue e WPF/MVVM |
 
 ---
 
@@ -224,6 +229,20 @@ Copy-Item -Recurse .claude\skills\promote-to "$env:USERPROFILE\.claude\skills\pr
 /promote-to staging --merge --delete
 ```
 
+### `/get-latest` — Aggiornamento Submodule
+
+Aggiorna il submodule `davraf-guidelines` all'ultima versione remota e propaga le modifiche ai file copiati nel progetto host tramite `setup.ps1 -Update`.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\get-latest "$env:USERPROFILE\.claude\skills\get-latest"
+```
+
+**Uso:**
+```
+/get-latest
+```
+
 ---
 
 ## 🔌 MCP Servers
@@ -274,4 +293,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Aprile 2026 — Revisione v1.3 — 2026-04-09 — claude-sonnet-4-6*
+*Documento aggiornato: Aprile 2026 — Revisione v1.4 — 2026-04-16 11:00 — claude-sonnet-4-6*
