@@ -135,34 +135,50 @@ if (-not (Test-Path $githubDest)) {
     } # end else (not junction)
 }
 
-# --- CLAUDE.md --- (mai sovrascritto, anche con -Update)
+# --- CLAUDE.md --- (merge automatico della sezione Davraf Guidelines)
 Write-Host ""
 Write-Host "CLAUDE.md:" -ForegroundColor White
 
-$claudeMd   = Join-Path $projectRoot "CLAUDE.md"
-$claudeRule = @"
+$claudeMd      = Join-Path $projectRoot "CLAUDE.md"
+$claudeMdSrc   = Join-Path $guidelinesDir "CLAUDE.md"
 
-## Davraf Guidelines
+# Leggi il contenuto sorgente dal submodule, rimuovi il titolo h1
+$srcRaw        = Get-Content $claudeMdSrc -Raw -Encoding UTF8
+$srcBody       = ($srcRaw -replace "^#[^\n]*\n+", "").TrimStart()
 
-Leggi sempre `.github/copilot-instructions.md` all'inizio di ogni conversazione.
-Prima di generare codice, leggi il file di istruzioni modulare pertinente al task in `.github/instructions/`.
-"@
+# Blocco da iniettare (marcatore di inizio + contenuto + sentinel di fine)
+$davrafBlock   = "## Davraf Guidelines`n`n$srcBody`n<!-- /davraf-guidelines -->`n"
 
 if (-not (Test-Path $claudeMd)) {
-    Set-Content -Path $claudeMd -Value "# Claude Code Instructions$claudeRule" -Encoding UTF8
-    Write-Host "  [OK]   CLAUDE.md creato" -ForegroundColor Green
+    Set-Content -Path $claudeMd -Value $davrafBlock -Encoding UTF8
+    Write-Host "  [OK]   CLAUDE.md creato con sezione Davraf Guidelines" -ForegroundColor Green
 } else {
-    $existing = Get-Content $claudeMd -Raw
-    if ($existing -notlike "*Davraf Guidelines*") {
-        Add-Content -Path $claudeMd -Value $claudeRule -Encoding UTF8
-        Write-Host "  [OK]   Regola aggiunta a CLAUDE.md esistente" -ForegroundColor Green
-    } else {
-        $claudeRuleTrimmed = $claudeRule.Trim()
-        if ($existing -notlike "*$claudeRuleTrimmed*") {
-            Write-Host "  [WARN] La sezione 'Davraf Guidelines' in CLAUDE.md potrebbe essere obsoleta - verifica manualmente" -ForegroundColor Yellow
+    $existing = Get-Content $claudeMd -Raw -Encoding UTF8
+
+    if ($existing -notmatch "## Davraf Guidelines") {
+        # Nessuna sezione esistente: inserisci dopo il titolo h1 (se presente)
+        if ($existing -match "^(#[^\n]*\n+)(.*)$") {
+            $newContent = $Matches[1] + "`n" + $davrafBlock + "`n" + $Matches[2]
         } else {
-            Write-Host "  [SKIP] Regola già presente e aggiornata in CLAUDE.md" -ForegroundColor DarkGray
+            $newContent = $davrafBlock + "`n" + $existing
         }
+        Set-Content -Path $claudeMd -Value $newContent -Encoding UTF8 -NoNewline
+        Write-Host "  [OK]   Sezione Davraf Guidelines inserita in CLAUDE.md" -ForegroundColor Green
+    } elseif ($Update) {
+        # Sostituisci il blocco tra ## Davraf Guidelines e il separatore --- seguito da ## (sezioni progetto)
+        # Pattern: da "## Davraf Guidelines" fino a "---\n" che precede una riga "## " o fine file
+        # Fine sezione identificata dal sentinel <!-- /davraf-guidelines -->
+        $pattern     = "(?s)(## Davraf Guidelines\r?\n).*?(<!-- /davraf-guidelines -->)"
+        $replacement = "## Davraf Guidelines`n`n$srcBody`n<!-- /davraf-guidelines -->"
+        if ($existing -match $pattern) {
+            $newContent = [regex]::Replace($existing, $pattern, $replacement)
+            Set-Content -Path $claudeMd -Value $newContent -Encoding UTF8 -NoNewline
+            Write-Host "  [UPD]  Sezione Davraf Guidelines aggiornata in CLAUDE.md" -ForegroundColor Green
+        } else {
+            Write-Host "  [WARN] Trovata intestazione 'Davraf Guidelines' ma sentinel '<!-- /davraf-guidelines -->' non trovato - verifica manualmente" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  [SKIP] Sezione Davraf Guidelines già presente (usa -Update per aggiornare)" -ForegroundColor DarkGray
     }
 }
 
@@ -221,7 +237,7 @@ Write-Host ""
 Write-Host "Setup completato." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Attenzioni manuali:" -ForegroundColor White
-Write-Host "  - CLAUDE.md: non sovrascritta automaticamente, verificare se allineata al submodule" -ForegroundColor Yellow
+Write-Host "  - CLAUDE.md: sezione 'Davraf Guidelines' aggiornata automaticamente; le sezioni specifiche del progetto sono preservate" -ForegroundColor Yellow
 if (-not $IncludeWorkflows) {
     Write-Host "  - .github/workflows/: non copiata (usa -IncludeWorkflows per includerla)" -ForegroundColor Yellow
 }
