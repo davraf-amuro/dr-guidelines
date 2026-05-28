@@ -83,6 +83,7 @@ Ricavate da `.github/instructions/`:
 | `.mcp.json` → in `.gitignore`; committare `.mcp.example.json` | `sensitive-data.instructions.md` |
 | Footer obbligatorio nei file `docs/`: `*Revisione vN — YYYY-MM-DD HH:MM — modello*` | `doc-versioning.instructions.md` |
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
+| Ogni nuovo progetto include `HealthMapping.cs`: `/health` (infrastruttura) + `GET /api/v1/status` (consumer, in Scalar) | `minimal-api-architecture.instructions.md` |
 
 ---
 
@@ -128,10 +129,10 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 | `.github/instructions/dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI |
 | `.github/instructions/code-organization.instructions.md` | Organizzazione classi e file (tutti i linguaggi) |
 | `.github/instructions/frontend-organization.instructions.md` | Struttura componenti Vue e WPF |
-| `.github/instructions/minimal-api-architecture.instructions.md` | Regole endpoint, versioning, OpenAPI |
+| `.github/instructions/minimal-api-architecture.instructions.md` | Regole endpoint, versioning, OpenAPI; pattern starter HealthMapping |
 | `docs/card-davraf-guidelines.md` | Scheda riassuntiva del progetto |
 | `README.md` | Guida completa all'uso come submodule |
 
 ---
 
-*Revisione v1.0 — 2026-04-16 11:00 — claude-sonnet-4-6*
+*Revisione v1.1 — 2026-05-28 23:30 — claude-sonnet-4-6*

@@ -78,7 +78,7 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI |
+| `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI; pattern starter HealthMapping |
 | `database-provider.instructions.md` | EF Core, DbContext, provider |
 | `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
 | `windows-service.instructions.md` | Windows Service con .NET |
@@ -293,4 +293,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Aprile 2026 — Revisione v1.4 — 2026-04-16 11:00 — claude-sonnet-4-6*
+*Documento aggiornato: Maggio 2026 — Revisione v1.5 — 2026-05-28 23:30 — claude-sonnet-4-6*
