@@ -14,6 +14,7 @@ Progetto: Minimal API Template su .NET 10 e C# 14.
 - Primary constructors, async/await per I/O
 - Logging strutturato con placeholder
 - Naming: namespace snake_case, classi PascalCase, variabili camelCase
+- Validazione input: ogni endpoint con body usa `IValidator<T>`; segui `input-validation.instructions.md`
 
 ## ✅ Checklist Post-Generazione
 - [ ] Ho seguito le istruzioni modulari pertinenti
