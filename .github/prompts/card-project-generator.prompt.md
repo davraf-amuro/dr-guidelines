@@ -9,14 +9,22 @@ tools: ['search/codebase']
 Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se non trovi info.
 
 ## Output
-- Crea/aggiorna docs/card-<nome_progetto>.md
+- Crea/aggiorna docs/card-<nome_progetto>.md **per ogni progetto trovato nel repository**
+- Se nel repository ci sono più progetti (es. API + Web, backend + worker), genera una card per ognuno
+  - Esempio: docs/card-NomeApi.md + docs/card-NomeWeb.md
 - Se c'e una solution (.sln/.slnx), riferiscila nel campo Solution
 - Se non c'e solution ma c'e .code-workspace, usa il campo Workspace
 
-## Analisi (se presenti)
+## Analisi backend .NET (se presenti)
 - .csproj, appsettings*.json, launchSettings.json
 - Program.cs o entry point
 - DbContext, provider/repository, using statements
+
+## Analisi frontend (se presenti)
+- package.json: name, version, dependencies, devDependencies
+- vite.config.ts / next.config.js / angular.json: porta dev, proxy, alias
+- tsconfig.json: target, paths
+- Framework rilevato dalle dipendenze (Vue, React, Angular, Svelte, Nuxt…)
 
 ## Template card
 ```markdown

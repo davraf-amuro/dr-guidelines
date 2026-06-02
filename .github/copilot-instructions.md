@@ -36,5 +36,8 @@ Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza — non assumere silenziosamente
 
+Task con ≥ 2 operazioni: crea piano su disco in `.ai/plans/` prima di procedere.
+Segui `plan-tracking.instructions.md` per struttura e verifica finale.
+
 *Template v1.4 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-30 — claude-sonnet-4-6
 

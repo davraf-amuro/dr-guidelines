@@ -65,6 +65,19 @@ Anche una risposta NO → fermati, completa passo prima di procedere.
 
 Hook `pre_tool_use.py` blocca `Edit`/`Write`/`MultiEdit` automaticamente (validità 30 minuti dall'ultimo `ExitPlanMode`). Percorsi esenti: `.claude/` · `.ai/`
 
+## Piano obbligatorio su disco
+
+⛔ OGNI task con ≥ 2 operazioni richiede piano persistito su disco **prima** di EnterPlanMode.
+
+Segui `plan-tracking.instructions.md`:
+1. Crea `.ai/plans/<YYYY-MM-DD>-<slug>/plan.md` con obiettivo, scope, fasi, criteri di verifica
+2. Entra in EnterPlanMode e proponi piano all'utente
+3. Durante esecuzione, marca `[x]` ogni fase completata in `plan.md`
+4. A task completato, verifica ogni criterio → aggiorna `Stato: COMPLETATO`
+5. Dichiara: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
+
+Piano `IN CORSO` in `.ai/plans/` all'avvio sessione → riprendi da ultima fase incompleta.
+
 ## Citazione fonti e modello
 
 Fine risposta, se letti file o consultati documenti:
