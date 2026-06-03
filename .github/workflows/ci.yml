@@ -15,15 +15,32 @@ jobs:
         with:
           submodules: true
 
+      - name: Detect .NET solution/project files
+        id: detect_dotnet
+        run: |
+          if find . -maxdepth 2 -type f \( -name "*.sln" -o -name "*.csproj" -o -name "*.fsproj" -o -name "*.vbproj" \) | grep -q .; then
+            echo "has_dotnet=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_dotnet=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-dotnet@v4
+        if: steps.detect_dotnet.outputs.has_dotnet == 'true'
         with:
           dotnet-version: '10.0.x'
 
       - name: Restore
+        if: steps.detect_dotnet.outputs.has_dotnet == 'true'
         run: dotnet restore
 
       - name: Build
+        if: steps.detect_dotnet.outputs.has_dotnet == 'true'
         run: dotnet build --configuration Release --no-restore
 
       - name: Test
+        if: steps.detect_dotnet.outputs.has_dotnet == 'true'
         run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Skip when repository has no .NET solution/project
+        if: steps.detect_dotnet.outputs.has_dotnet != 'true'
+        run: echo "No .NET solution/project found in repository root. Skipping restore/build/test."
