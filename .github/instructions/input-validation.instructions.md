@@ -17,6 +17,20 @@ Scopo: regole obbligatorie per la validazione di ogni dato in ingresso da fonti 
 
 Prima di scrivere il validator, **chiedi al developer come validare ogni singolo campo in input**. Non assumere regole di validazione in autonomia.
 
+> **Eccezione — schema disponibile via MCP `db-schema`**: non chiedere nulla. Vedi sezione dedicata sotto.
+
+---
+
+## Override: schema disponibile via MCP db-schema
+
+Se la struttura della tabella è stata letta tramite MCP `db-schema`, **non chiedere le regole di validazione** — genera il validator direttamente:
+
+- Regole inferibili dal metadato → applica subito (vedi mapping in `minimal-api-architecture.instructions.md` § "Scoperta automatica struttura DB via MCP")
+- Campi con regole non determinabili → nessun errore per quel campo + commento `// TODO: validazione`
+- Il validator deve compilare ed essere funzionante da subito
+
+Il comportamento standard ("chiedi prima") si applica **solo** quando lo schema non è disponibile via MCP.
+
 ---
 
 ## Pattern obbligatorio
