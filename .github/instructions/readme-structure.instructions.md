@@ -24,7 +24,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 | 7 | Claude Code Skills | 🤖 | Una voce per ogni skill in `.claude/skills/` |
 | 8 | MCP Servers | 🔌 | Una voce per ogni server in `.mcp.json` |
 | 9 | FAQ | ❓ | Domande frequenti in formato Q/A |
-| 10 | Footer | — | `*Documento aggiornato: Mese Anno*` |
+| 10 | Footer | — | `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello*` |
 
 ---
 
@@ -72,8 +72,9 @@ Il README deve contenere queste sezioni, in questo ordine:
 - Non rimuovere voci esistenti senza motivo esplicito
 
 ### 10 — Footer
-- Formato esatto: `*Documento aggiornato: Mese Anno*`
-- Aggiorna mese e anno ad ogni modifica significativa
+- Formato esatto: `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello-llm*`
+- Aggiorna mese/anno, numero revisione, data e modello ad ogni modifica significativa
+- Incrementa la revisione di 0.1 per modifiche normali, di 1.0 per ristrutturazioni (stessa logica di `doc-versioning.instructions.md`)
 
 ---
 
@@ -87,4 +88,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | `setup.ps1` installa nuovi file | Tabella "Cosa viene configurato" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v1.0 - davraf-guidelines - Last Update 2026-03-17 21:28*
+*Template v1.1 - davraf-guidelines - Last Update 2026-06-10 — claude-fable-5*
