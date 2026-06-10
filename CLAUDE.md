@@ -63,8 +63,6 @@ Anche una risposta NO → fermati, completa passo prima di procedere.
 3. Attendi approvazione esplicita utente
 4. Usa `ExitPlanMode` per procedere
 
-Hook `pre_tool_use.py` blocca `Edit`/`Write`/`MultiEdit` automaticamente (validità 30 minuti dall'ultimo `ExitPlanMode`). Percorsi esenti: `.claude/` · `.ai/`
-
 ## Piano obbligatorio su disco
 
 ⛔ OGNI task con ≥ 2 operazioni richiede piano persistito su disco **prima** di EnterPlanMode.
