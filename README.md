@@ -78,15 +78,19 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI; pattern starter HealthMapping |
-| `database-provider.instructions.md` | EF Core, DbContext, provider |
+| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/` per ogni task con ≥ 2 operazioni |
+| `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI, Service layer, Filter `ToExpression()` + DTO `Projection`, ottimizzazione EF |
+| `database-provider.instructions.md` | EF Core: DbContext, provider CRUD con selector, Filter/Projection, tracking |
+| `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
+| `logging.instructions.md` | Logging strutturato con Serilog |
 | `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
 | `windows-service.instructions.md` | Windows Service con .NET |
 | `sensitive-data.instructions.md` | Gestione credenziali e dati sensibili |
+| `doc-versioning.instructions.md` | Footer di revisione obbligatorio nei documenti in `docs/` |
 | `mcp-tool-readme.instructions.md` | Creazione README per MCP server |
 | `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione MCP server |
-| `code-organization.instructions.md` | Struttura classi e file (tutti i linguaggi) |
+| `code-organization.instructions.md` | Struttura classi e file, commenti obbligatori (tutti i linguaggi) |
 | `frontend-organization.instructions.md` | Struttura componenti Vue e WPF/MVVM |
 
 ---
@@ -293,4 +297,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Maggio 2026 — Revisione v1.5 — 2026-05-28 23:30 — claude-sonnet-4-6*
+*Documento aggiornato: Giugno 2026 — Revisione v1.6 — 2026-06-10 — claude-fable-5*

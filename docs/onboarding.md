@@ -84,6 +84,10 @@ Ricavate da `.github/instructions/`:
 | Footer obbligatorio nei file `docs/`: `*Revisione vN — YYYY-MM-DD HH:MM — modello*` | `doc-versioning.instructions.md` |
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
 | Ogni nuovo progetto include `HealthMapping.cs`: `/health` (infrastruttura) + `GET /api/v1/status` (consumer, in Scalar) | `minimal-api-architecture.instructions.md` |
+| CRUD di entità: Service layer obbligatorio — gli handler iniettano solo `Services/<Entity>Service.cs`, mai il provider | `minimal-api-architecture.instructions.md` (regola 12) |
+| GET list: Filter con `ToExpression()` (WHERE solo sui filtri valorizzati) + DTO record con `static Projection` EF-traducibile (SELECT solo colonne del DTO); almeno `<Entity>Dto` + `<Entity>SummaryDto` | `minimal-api-architecture.instructions.md` (regola 9) · `database-provider.instructions.md` |
+| Ogni endpoint con body valida con `IValidator<T>` prima della logica | `input-validation.instructions.md` |
+| `///` su provider/service/handler/validator + commento inline su ogni operazione DB | `minimal-api-architecture.instructions.md` (regola 13) · `code-organization.instructions.md` (Regola 6) |
 
 ---
 
@@ -129,10 +133,10 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 | `.github/instructions/dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI |
 | `.github/instructions/code-organization.instructions.md` | Organizzazione classi e file (tutti i linguaggi) |
 | `.github/instructions/frontend-organization.instructions.md` | Struttura componenti Vue e WPF |
-| `.github/instructions/minimal-api-architecture.instructions.md` | Regole endpoint, versioning, OpenAPI; pattern starter HealthMapping |
+| `.github/instructions/minimal-api-architecture.instructions.md` | Regole endpoint, versioning, OpenAPI; Service layer, Filter `ToExpression()` + DTO `Projection`; pattern starter HealthMapping |
 | `docs/card-davraf-guidelines.md` | Scheda riassuntiva del progetto |
 | `README.md` | Guida completa all'uso come submodule |
 
 ---
 
-*Revisione v1.1 — 2026-05-28 23:30 — claude-sonnet-4-6*
+*Revisione v1.2 — 2026-06-10 21:45 — claude-fable-5*
