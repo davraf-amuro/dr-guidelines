@@ -21,15 +21,12 @@ Per operazione singola: dichiarazione inline dev-cycle Fase 1 è sufficiente —
 ### Struttura cartella
 
 ```
-.ai/plans/<YYYY-MM-DD>-<slug-task>/
-├── plan.md
-└── sections/            ← solo per task con ≥ 3 fasi distinte
-    ├── 01-<fase>.md
-    └── 02-<fase>.md
+TODO/Plans/
+└── <N>.md     ← numero progressivo zero-padded 3 cifre (es. 001.md, 002.md)
 ```
 
-- Slug task: lowercase, trattini, max 30 caratteri (es. `add-auth-endpoint`)
-- Cartella `.ai/` è esente da EnterPlanMode — scrivi senza blocchi
+- N: numero progressivo incrementale per progetto (001, 002, ...)
+- Cartella `TODO/` è esente da EnterPlanMode — scrivi senza blocchi
 
 ### Template obbligatorio `plan.md`
 
@@ -104,7 +101,6 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 ## Regole di perimetro
 
 - Piano su disco obbligatorio per ogni task con ≥ 2 operazioni
-- Sezioni separate (`sections/`) solo per task con ≥ 3 fasi distinte
 - Non eliminare piani completati — sono traccia storica
 - Non aprire nuovo piano se esiste piano `IN CORSO` non completato
 

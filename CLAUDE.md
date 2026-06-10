@@ -68,13 +68,13 @@ Anche una risposta NO → fermati, completa passo prima di procedere.
 ⛔ OGNI task con ≥ 2 operazioni richiede piano persistito su disco **prima** di EnterPlanMode.
 
 Segui `plan-tracking.instructions.md`:
-1. Crea `.ai/plans/<YYYY-MM-DD>-<slug>/plan.md` con obiettivo, scope, fasi, criteri di verifica
+1. Crea `TODO/Plans/<N>.md` con obiettivo, scope, fasi, criteri di verifica
 2. Entra in EnterPlanMode e proponi piano all'utente
-3. Durante esecuzione, marca `[x]` ogni fase completata in `plan.md`
+3. Durante esecuzione, marca `[x]` ogni fase completata nel piano
 4. A task completato, verifica ogni criterio → aggiorna `Stato: COMPLETATO`
-5. Dichiara: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
+5. Dichiara: `"Piano [N] verificato. Tutti i criteri soddisfatti."`
 
-Piano `IN CORSO` in `.ai/plans/` all'avvio sessione → riprendi da ultima fase incompleta.
+Piano `IN CORSO` in `TODO/Plans/` all'avvio sessione → riprendi da ultima fase incompleta.
 
 ## Citazione fonti e modello
 
