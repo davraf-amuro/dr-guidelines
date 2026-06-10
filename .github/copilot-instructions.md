@@ -16,6 +16,18 @@ Leggi sempre l'istruzione modulare corretta prima di generare o modificare codic
 - Logging strutturato con placeholder (no string interpolation nei log)
 - Naming: namespace snake_case, classi PascalCase, variabili camelCase
 - Validazione input: ogni endpoint con body usa ``IValidator<T>``; segui ``input-validation.instructions.md``
+- Dati sensibili: segui sempre ``sensitive-data.instructions.md``; credenziali **mai** in file committati
+
+## Checklist Pre-Task (obbligatoria)
+
+Prima di qualsiasi azione:
+- [ ] Ho letto `.github/copilot-instructions.md`? (cita sezione rilevante)
+- [ ] Ho identificato e letto il file istruzione modulare pertinente? (indica quale)
+- [ ] Ho dichiarato scope, file da modificare e perimetro negativo?
+- [ ] So esattamente quali file creerò/modificherò? (elencali)
+- [ ] Ho verificato che la struttura richiesta non esista già nel progetto?
+
+Anche una sola risposta NO → fermati e completa il passo prima di procedere.
 
 ## Checklist Post-Generazione
 - [ ] Tipo rilevato correttamente, istruzione modulare letta

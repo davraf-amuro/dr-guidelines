@@ -64,7 +64,7 @@ internal sealed class TaskIdEnricher : ILogEventEnricher
 }
 ```
 
-Posizionare in `Infrastructure/` o nella root del progetto. Non esporre come `public`.
+Posizionare in `Infrastructure/Logging/TaskIdEnricher.cs` (`internal sealed` — non modificare la visibilità).
 
 ## Errori comuni (rapidi)
 
@@ -77,7 +77,7 @@ Posizionare in `Infrastructure/` o nella root del progetto. Non esporre come `pu
 
 - [ ] `Serilog.Enrichers.Thread` aggiunto al `.csproj`
 - [ ] `.Enrich.WithThreadId()` presente nella configurazione Serilog
-- [ ] `TaskIdEnricher.cs` creato in `Infrastructure/` o root progetto
+- [ ] `TaskIdEnricher.cs` creato in `Infrastructure/Logging/` come `internal sealed`
 - [ ] `.Enrich.With<TaskIdEnricher>()` presente nella configurazione Serilog
 - [ ] Template Console include `T:{ThreadId} A:{TaskId}`
 - [ ] Template File include `T:{ThreadId} A:{TaskId}`

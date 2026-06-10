@@ -295,6 +295,9 @@ Poi riavvia Claude Code per caricare il server.
 ### Q: GitHub Copilot non segue le istruzioni
 **A:** Verifica che `.github/copilot-instructions.md` sia presente e committato. Riavvia VS/VS Code.
 
+### Q: `setup.ps1` fallisce a metà — come ripristino?
+**A:** Esegui `git checkout -- .` per rollback dei file modificati dallo script, poi ripeti `setup.ps1` senza parametri.
+
 ---
 
 *Documento aggiornato: Giugno 2026 — Revisione v1.6 — 2026-06-10 — claude-fable-5*
