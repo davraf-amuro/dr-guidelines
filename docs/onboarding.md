@@ -47,7 +47,6 @@ git submodule update --remote davraf-guidelines
 davraf-guidelines/
   .claude/
     skills/           ← Skill Claude Code (warroom, professor, tattico, tech, audit-*, promote-to, get-latest)
-    hooks/            ← Hook pre/post tool use (es. pre_tool_use.py per blocco Edit senza plan)
   .github/
     instructions/     ← Istruzioni modulari per Copilot e Claude Code (.instructions.md)
     prompts/          ← Template prompt per generazione documentazione
@@ -139,4 +138,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 
 ---
 
-*Revisione v1.2 — 2026-06-10 21:45 — claude-fable-5*
+*Revisione v1.3 — 2026-06-10 22:00 — claude-fable-5*
