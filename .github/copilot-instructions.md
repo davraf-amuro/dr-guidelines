@@ -38,4 +38,4 @@ Ogni task segue il ciclo definito in ``dev-cycle.instructions.md``:
 Task con >= 2 operazioni: crea piano su disco in ``TODO/Plans/`` prima di procedere.
 Segui ``plan-tracking.instructions.md`` per struttura e verifica finale.
 
-*Template v1.5 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-04 - claude-sonnet-4-6
+*Template v1.5 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-10 - claude-sonnet-4-6

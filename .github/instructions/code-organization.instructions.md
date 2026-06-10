@@ -141,6 +141,8 @@ Ogni funzione o metodo deve avere un commento breve (una riga) che descriva **a 
 **Scope obbligatorio**: tutte le funzioni e metodi, pubblici e privati con logica non banale.  
 **Esclusi**: getter/setter banali, wrapper di una riga, override con comportamento ovvio.
 
+> Per progetti con istruzioni modulari (es. `minimal-api-architecture`), la regola 13 di quell'istruzione definisce lo scope specifico dei commenti obbligatori.
+
 ```csharp
 // ✅ C# — XML doc comment visibile in IntelliSense
 /// <summary>Invia un'email usando il template specificato.</summary>

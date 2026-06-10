@@ -60,7 +60,7 @@ Stato: IN CORSO
 
 Segui `dev-cycle.instructions.md` (Dichiara → Esegui → Verifica).
 
-Aggiorna `plan.md` durante l'esecuzione:
+Aggiorna il piano (`<N>.md`) durante l'esecuzione:
 - Marca `[x]` ogni fase completata dopo la verifica dev-cycle Fase 3
 - Se il lavoro viene interrotto, aggiorna `Stato: INTERROTTO` e salva prima di chiudere la sessione
 
@@ -75,7 +75,7 @@ Prima di dichiarare il task completato:
 3. Verifica ogni file in "Scope" — riletto e confermato
 4. Se tutti i criteri soddisfatti:
    - Aggiorna `Stato: COMPLETATO`
-   - Dichiara esplicitamente: `"Piano [slug-task] verificato. Tutti i criteri soddisfatti."`
+   - Dichiara esplicitamente: `"Piano [N] verificato. Tutti i criteri soddisfatti."`
 
 Se un criterio non è soddisfatto:
 - Non dichiarare completato
@@ -89,7 +89,7 @@ Se un criterio non è soddisfatto:
 ## Gestione interruzioni
 
 Piano `IN CORSO` esistente all'avvio sessione:
-1. Leggi `plan.md` per ricostruire il contesto
+1. Leggi `<N>.md` per ricostruire il contesto
 2. Identifica ultima fase con `[x]` completata
 3. Riprendi dalla prima fase ancora `[ ]`
 4. Non aprire nuovo piano — continua quello esistente
