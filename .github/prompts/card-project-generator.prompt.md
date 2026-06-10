@@ -47,7 +47,7 @@ Usato solo se il tipo non corrisponde a nessun template dedicato.
 - **Pattern Architetturale:**
 - **Versione Corrente:**
 - **Owner/Team:**
-- **Contatto Supporto:** dev-support@unidata.it
+- **Contatto Supporto:** [Da compilare]
 
 ## Stack Tecnologico
 - **Linguaggio Principale:**

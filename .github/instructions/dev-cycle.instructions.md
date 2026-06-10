@@ -104,4 +104,8 @@ Se dopo la verifica (Fase 3) il file non corrisponde a quanto atteso:
 
 In caso di modifiche a più file: se un file è errato, correggilo **prima** di procedere al successivo.
 
-*Template v1.0 - Token-optimized for AI agents* - Last Update 2026-03-25 — claude-sonnet-4-6
+Se ti accorgi di aver proceduto senza verificare il file precedente:
+→ Fermati. Dichiara: "Ho saltato la verifica di [file]. Torno indietro."
+→ Rileggi il file saltato → verifica → poi riprendi da dove eri.
+
+*Template v1.1 - Token-optimized for AI agents* - Last Update 2026-06-10 — claude-sonnet-4-6

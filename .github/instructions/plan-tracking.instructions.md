@@ -21,12 +21,14 @@ Per operazione singola: dichiarazione inline dev-cycle Fase 1 è sufficiente —
 ### Struttura cartella
 
 ```
-TODO/Plans/
-└── <N>.md     ← numero progressivo zero-padded 3 cifre (es. 001.md, 002.md)
+.ai/plans/
+└── <YYYY-MM-DD>-<slug>/
+    └── plan.md
 ```
 
-- N: numero progressivo incrementale per progetto (001, 002, ...)
-- Cartella `TODO/` è esente da EnterPlanMode — scrivi senza blocchi
+- slug: breve descrizione kebab-case del task (es. `add-auth-endpoint`, `fix-ef-projection`)
+- Data: data di inizio in formato `YYYY-MM-DD`
+- Cartella `.ai/` è esente da EnterPlanMode — scrivi senza blocchi
 
 ### Template obbligatorio `plan.md`
 
@@ -60,7 +62,7 @@ Stato: IN CORSO
 
 Segui `dev-cycle.instructions.md` (Dichiara → Esegui → Verifica).
 
-Aggiorna il piano (`<N>.md`) durante l'esecuzione:
+Aggiorna `plan.md` durante l'esecuzione:
 - Marca `[x]` ogni fase completata dopo la verifica dev-cycle Fase 3
 - Se il lavoro viene interrotto, aggiorna `Stato: INTERROTTO` e salva prima di chiudere la sessione
 
@@ -75,7 +77,7 @@ Prima di dichiarare il task completato:
 3. Verifica ogni file in "Scope" — riletto e confermato
 4. Se tutti i criteri soddisfatti:
    - Aggiorna `Stato: COMPLETATO`
-   - Dichiara esplicitamente: `"Piano [N] verificato. Tutti i criteri soddisfatti."`
+   - Dichiara esplicitamente: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
 
 Se un criterio non è soddisfatto:
 - Non dichiarare completato
@@ -89,7 +91,7 @@ Se un criterio non è soddisfatto:
 ## Gestione interruzioni
 
 Piano `IN CORSO` esistente all'avvio sessione:
-1. Leggi `<N>.md` per ricostruire il contesto
+1. Leggi `plan.md` per ricostruire il contesto
 2. Identifica ultima fase con `[x]` completata
 3. Riprendi dalla prima fase ancora `[ ]`
 4. Non aprire nuovo piano — continua quello esistente
@@ -106,4 +108,4 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 
 ---
 
-*Istruzione v1.0 - Plan Tracking - 2026-04-17 — claude-sonnet-4-6*
+*Istruzione v1.1 - Plan Tracking - 2026-06-10 — claude-sonnet-4-6*

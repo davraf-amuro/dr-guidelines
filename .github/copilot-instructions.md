@@ -1,5 +1,7 @@
 ﻿# Copilot Instructions (AI Agent)
 
+Language: Italian — Rispondi sempre in italiano.
+
 Progetto .NET 10. Rileva il tipo dal codice prima di procedere.
 
 ## Tipo di progetto
@@ -8,6 +10,7 @@ Progetto .NET 10. Rileva il tipo dal codice prima di procedere.
 |--------------------|------|---------------------|
 | ``Workers/*.cs`` presente | Windows Service | ``windows-service.instructions.md`` |
 | ``Endpoints/*.cs`` presente | Minimal API | ``minimal-api-architecture.instructions.md`` |
+| Nessun segnale riconoscibile | Tipo non rilevato | Fermati. Chiedi: "Questo è un Minimal API o un Windows Service?" |
 
 Leggi sempre l'istruzione modulare corretta prima di generare o modificare codice.
 
@@ -47,7 +50,7 @@ Ogni task segue il ciclo definito in ``dev-cycle.instructions.md``:
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza - non assumere silenziosamente
 
-Task con >= 2 operazioni: crea piano su disco in ``TODO/Plans/`` prima di procedere.
+Task con >= 2 operazioni: crea piano su disco in ``.ai/plans/<YYYY-MM-DD>-<slug>/`` prima di procedere.
 Segui ``plan-tracking.instructions.md`` per struttura e verifica finale.
 
-*Template v1.5 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-10 - claude-sonnet-4-6
+*Template v1.6 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-10 - claude-sonnet-4-6
