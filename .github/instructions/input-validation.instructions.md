@@ -15,9 +15,13 @@ Scopo: regole obbligatorie per la validazione di ogni dato in ingresso da fonti 
 - Se il developer autorizza di non validare nulla, il validatore ritorna sempre `ValidationResult.Success()`.
 - **Solo il developer può concedere esenzioni**, dichiarandole esplicitamente campo per campo con motivazione.
 
-Prima di scrivere il validator, **chiedi al developer come validare ogni singolo campo in input**. Non assumere regole di validazione in autonomia.
+Prima di scrivere il validator di un **body** (POST/PUT/PATCH), **chiedi al developer come validare ogni singolo campo in input**. Non assumere regole di validazione in autonomia.
 
 > **Eccezione — schema disponibile via MCP `db-schema`**: non chiedere nulla. Vedi sezione dedicata sotto.
+
+> **Eccezione — filtri di entità (query string GET)**: non chiedere nulla — le regole si ereditano dai metadati dell'entità. Vedi sezione «Validazione filtri di entità».
+
+**Fallback — nessuna specifica disponibile:** crea comunque il validator, che ritorna sempre `ValidationResult.Success()`, con commento `// TODO: validazione` sui campi senza regola. Il programmatore fisserà i parametri corretti in seguito. Il validator sempre-valido tiene il punto di aggancio nel flusso.
 
 ---
 
@@ -138,6 +142,23 @@ Il validator deve essere **sempre presente** anche nei casi di esenzione totale.
 
 ---
 
+## Validazione filtri di entità — regole ereditate
+
+I filtri GET (`<Entity>Filter`) ricevono dati esterni → validator obbligatorio (`<Entity>FilterValidator : IValidator<<Entity>Filter>`). Le regole **non si chiedono al developer**: si ereditano dai metadati dell'entità/colonna.
+
+| Metadato entità/colonna | Regola filtro |
+|---|---|
+| `varchar(N)` / `nvarchar(N)` | `maxLength = N` sul campo filtro corrispondente |
+| Campo filtro (qualsiasi) | Sempre opzionale → mai `required` |
+| Numerici, date, bool | Tipo garantito dal model binding → nessuna regola |
+| Regola non inferibile dai metadati | Nessun errore per quel campo + commento `// TODO: validazione` |
+
+- Handler GET: valida il filtro **prima** della query → `TypedResults.ValidationProblem(errors)`; endpoint con `Produces(StatusCodes.Status400BadRequest)`
+- Entità senza vincoli inferibili → validator sempre-valido (fallback in «Obbligo fondamentale»)
+- Genera subito, codice compilabile — il programmatore raffina le regole in seguito
+
+---
+
 ## ✅ Checklist Post-Generazione
 
 - [ ] `Validators/IValidator.cs` creato (se non esiste già nel progetto)
@@ -146,6 +167,8 @@ Il validator deve essere **sempre presente** anche nei casi di esenzione totale.
 - [ ] Validator iniettato e chiamato nel handler prima della logica di business
 - [ ] Handler ritorna `TypedResults.ValidationProblem(errors)` in caso di fallimento
 - [ ] Endpoint ha `Produces(StatusCodes.Status400BadRequest)` nel metadata
+- [ ] GET con filtro: `<Entity>FilterValidator` creato con regole ereditate dall'entità, chiamato prima della query
+- [ ] Nessuna specifica disponibile → validator sempre-valido con `// TODO: validazione`
 - [ ] Se campi esenti: developer li ha dichiarati esplicitamente con motivazione
 
 ---
@@ -157,4 +180,4 @@ Il validator deve essere **sempre presente** anche nei casi di esenzione totale.
 - Non chiamare il validator in un endpoint filter globale: ogni endpoint ha il proprio validator specifico
 - Non riutilizzare lo stesso validator per DTO diversi anche se i campi si sovrappongono
 
-*Istruzione v1.0 - Input Validation - 2026-05-28 — claude-sonnet-4-6*
+*Istruzione v1.1 - Input Validation - 2026-06-10 — claude-fable-5*
