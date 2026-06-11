@@ -53,4 +53,26 @@ Ogni task segue il ciclo definito in ``dev-cycle.instructions.md``:
 Task con >= 2 operazioni: crea piano su disco in ``.ai/plans/<YYYY-MM-DD>-<slug>/`` prima di procedere.
 Segui ``plan-tracking.instructions.md`` per struttura e verifica finale.
 
+## Gate di Push — Lint obbligatorio
+
+⛔ Prima di qualsiasi `git push`, eseguire sempre la verifica lint in base al tipo di progetto:
+
+| Tipo | Comando |
+|------|---------|
+| .NET | `dotnet format <percorso>.csproj --verify-no-changes` |
+| Node.js | `npm run lint` (se lo script `lint` è definito in `package.json`) |
+| Python | `ruff check .` oppure `flake8` |
+
+| Exit code | Azione |
+|-----------|--------|
+| `0` | Lint clean — push consentita |
+| Non-zero | **BLOCCA la push** — segnala le violazioni |
+
+In caso di blocco:
+1. Elenca i file con violazioni (dall'output del comando lint)
+2. Chiedi conferma prima di applicare correzioni automatiche
+3. Riesegui il check, poi procedi con la push
+
+> Regola assoluta: nessun `git push` senza lint clean confermato.
+
 *Template v1.6 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-10 - claude-sonnet-4-6
