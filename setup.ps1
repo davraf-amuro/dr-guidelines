@@ -88,6 +88,28 @@ foreach ($file in @(".editorconfig", "Directory.Build.props", "global.json", ".g
     Copy-GuidelineFile -FileName $file
 }
 
+# --- .mcp.json (server MCP consigliati) ---
+Write-Host ""
+Write-Host ".mcp.json:" -ForegroundColor White
+
+$mcpSrc  = Join-Path $guidelinesDir ".mcp.json"
+$mcpDest = Join-Path $projectRoot   ".mcp.json"
+
+if (Test-Path $mcpSrc) {
+    if (-not (Test-Path $mcpDest)) {
+        Copy-Item -Path $mcpSrc -Destination $mcpDest
+        Write-Host "  [OK]   .mcp.json" -ForegroundColor Green
+    } elseif ((Get-FileHash $mcpSrc).Hash -ne (Get-FileHash $mcpDest).Hash) {
+        # Mai sovrascritto, nemmeno con -Update: il file host può contenere
+        # server MCP aggiunti dal progetto.
+        Write-Host "  [WARN] .mcp.json esiste con contenuto diverso - non sovrascritto, confronta manualmente" -ForegroundColor Yellow
+    } else {
+        Write-Host "  [SKIP] .mcp.json identico" -ForegroundColor DarkGray
+    }
+} else {
+    Write-Host "  [WARN] Non trovato: .mcp.json" -ForegroundColor Yellow
+}
+
 # --- Cartella .github ---
 Write-Host ""
 Write-Host "Cartella .github:" -ForegroundColor White
@@ -206,13 +228,19 @@ if (Test-Path $claudeSkillsSrc) {
         }
     }
     # Copia sottocartelle (ogni skill è una cartella con SKILL.md)
+    # Nota: copiare il contenuto (\*) e non la cartella — Copy-Item su directory
+    # esistente anniderebbe la sorgente dentro la destinazione.
     foreach ($dir in Get-ChildItem $claudeSkillsSrc -Directory) {
         $destDir = Join-Path $claudeSkillsDest $dir.Name
         if ((Test-Path $destDir) -and -not $Update) {
             Write-Host "  [SKIP] $($dir.Name)/" -ForegroundColor DarkGray
         } else {
-            Copy-Item -Path $dir.FullName -Destination $destDir -Recurse -Force
-            $tag = if ($Update -and (Test-Path $destDir)) { "[UPD]" } else { "[OK] " }
+            $isUpdate = $Update -and (Test-Path $destDir)
+            if (-not (Test-Path $destDir)) {
+                New-Item -ItemType Directory -Path $destDir | Out-Null
+            }
+            Copy-Item -Path (Join-Path $dir.FullName "*") -Destination $destDir -Recurse -Force
+            $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
             Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
         }
     }
