@@ -145,7 +145,8 @@ if (-not (Test-Path $setupScript)) {
     exit 1
 }
 
-& PowerShell.exe -ExecutionPolicy Bypass -File $setupScript
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+& $setupScript
 
 # ---------------------------------------------------------------------------
 # Fine

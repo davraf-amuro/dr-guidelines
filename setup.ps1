@@ -67,20 +67,6 @@ function Copy-GuidelineFile {
     Write-Host "  $tag $FileName" -ForegroundColor Green
 }
 
-function New-Junction {
-    param([string]$Link, [string]$Target)
-
-    if (-not (Test-Path $Target)) {
-        Write-Host "  [WARN] Target non trovato: $Target" -ForegroundColor Yellow
-        return
-    }
-    if (Test-Path $Link) {
-        Write-Host "  [SKIP] Esiste già: $(Split-Path -Leaf $Link)" -ForegroundColor DarkGray
-        return
-    }
-    New-Item -ItemType Junction -Path $Link -Target $Target -Force | Out-Null
-    Write-Host "  [OK]   $(Split-Path -Leaf $Link) (junction)" -ForegroundColor Green
-}
 
 # --- File di configurazione (copia) ---
 Write-Host "File di configurazione:" -ForegroundColor White
@@ -117,33 +103,34 @@ Write-Host "Cartella .github:" -ForegroundColor White
 $githubSrc  = Join-Path $guidelinesDir ".github"
 $githubDest = Join-Path $projectRoot   ".github"
 
-if (-not (Test-Path $githubDest)) {
-    New-Junction -Link $githubDest -Target $githubSrc
+if (-not (Test-Path $githubSrc)) {
+    Write-Host "  [WARN] .github non trovato nelle guidelines" -ForegroundColor Yellow
 } else {
-    $junctionTarget = (Get-Item $githubDest -Force).Target
-    if ($junctionTarget -and ((Resolve-Path $junctionTarget).Path -eq (Resolve-Path $githubSrc).Path)) {
-        Write-Host "  [SKIP] .github è una junction verso la stessa sorgente, nessuna copia necessaria." -ForegroundColor DarkGray
-    } else {
+    if (-not (Test-Path $githubDest)) {
+        New-Item -ItemType Directory -Path $githubDest -Force | Out-Null
+    }
 
-    $mode = if ($Update) { "aggiornamento" } else { "copia nuovi file" }
-    Write-Host "  [INFO] .github esiste, $mode..." -ForegroundColor Cyan
-
-    $srcFolders = @($githubSrc) + (
-        Get-ChildItem $githubSrc -Directory |
-        Where-Object { $_.Name -ne "workflows" -or $IncludeWorkflows } |
-        ForEach-Object { $_.FullName }
-    )
-
-    foreach ($srcFolder in $srcFolders) {
-        $rel        = if ($srcFolder -eq $githubSrc) { "" } else { Split-Path -Leaf $srcFolder }
-        $destFolder = if ($rel) { Join-Path $githubDest $rel } else { $githubDest }
-
-        if (-not (Test-Path $destFolder)) {
-            New-Item -ItemType Directory -Path $destFolder | Out-Null
+    # File in root .github/
+    foreach ($f in Get-ChildItem $githubSrc -File) {
+        $destFile = Join-Path $githubDest $f.Name
+        if ((Test-Path $destFile) -and -not $Update) {
+            Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
+        } else {
+            $isUpdate = $Update -and (Test-Path $destFile)
+            Copy-Item -Path $f.FullName -Destination $destFile -Force
+            $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
+            Write-Host "  $tag  $($f.Name)" -ForegroundColor Green
         }
+    }
 
-        foreach ($f in Get-ChildItem $srcFolder -File) {
-            $destFile = Join-Path $destFolder $f.Name
+    # Sottocartelle (esclude workflows a meno di -IncludeWorkflows)
+    foreach ($dir in Get-ChildItem $githubSrc -Directory | Where-Object { $_.Name -ne "workflows" -or $IncludeWorkflows }) {
+        $destDir = Join-Path $githubDest $dir.Name
+        if (-not (Test-Path $destDir)) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        }
+        foreach ($f in Get-ChildItem $dir.FullName -File) {
+            $destFile = Join-Path $destDir $f.Name
             if ((Test-Path $destFile) -and -not $Update) {
                 Write-Host "  [SKIP] $($f.Name)" -ForegroundColor DarkGray
             } else {
@@ -154,7 +141,6 @@ if (-not (Test-Path $githubDest)) {
             }
         }
     }
-    } # end else (not junction)
 }
 
 # --- CLAUDE.md --- (merge automatico della sezione Davraf Guidelines)
