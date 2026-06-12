@@ -101,9 +101,12 @@ if ($gitAvailable) {
 
         Write-Host ""
         Write-Host "[3/4] Aggiunta davraf-guidelines come submodule..." -ForegroundColor White
+        $ErrorActionPreference = "Continue"
         git submodule add $guidelinesRepo davraf-guidelines 2>&1 | ForEach-Object {
             Write-Host "  $_" -ForegroundColor DarkGray
         }
+        $ErrorActionPreference = "Stop"
+        if ($LASTEXITCODE -ne 0) { throw "git submodule add fallito (exit code $LASTEXITCODE)" }
         Write-Host "  [OK] submodule aggiunto" -ForegroundColor Green
     } finally {
         Pop-Location
