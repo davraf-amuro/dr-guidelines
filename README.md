@@ -1,6 +1,6 @@
 # davraf-guidelines
 
-Linee guida personali e configurazioni per progetti .NET 10 Minimal API, integrate con GitHub Copilot e Claude Code.
+Linee guida personali e configurazioni per progetti .NET 10, integrate con GitHub Copilot e Claude Code.
 
 ## 🚀 Avvio Rapido — Nuovo Progetto
 
@@ -46,10 +46,11 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 | `global.json` | copia | Versione .NET SDK |
 | `.gitignore` | copia | File ignorati da Git |
 | `.gitattributes` | copia | Normalizzazione line endings |
-| `.github/` | junction | Istruzioni Copilot e prompt modulari |
+| `.mcp.json` | copia (non sovrascritto) | Server MCP consigliati — non sovrascritto se già presente con contenuto diverso |
+| `.github/` | copia file per file | Istruzioni Copilot e prompt modulari |
 | `.claude/skills/` | copia | Skill Claude Code (warroom, professor, tattico, tech, ecc.) |
 | `docs/` | creato vuoto | Cartella destinazione documentazione generata (professor, card, onboarding) |
-| `CLAUDE.md` | generato | Istruzioni per Claude Code |
+| `CLAUDE.md` | generato / merge | Istruzioni per Claude Code — sezione Davraf Guidelines iniettata automaticamente |
 
 ---
 
@@ -65,8 +66,7 @@ git submodule update --remote davraf-guidelines
 .\davraf-guidelines\setup.ps1 -Update
 ```
 
-Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, ecc.) con la versione aggiornata delle guidelines. `CLAUDE.md` non viene mai sovrascritto.
-La cartella `.github/` è collegata via junction e si aggiorna automaticamente al passo 1.
+Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, `.github/`, ecc.) con la versione aggiornata delle guidelines. `CLAUDE.md` non viene mai sovrascritto automaticamente — la sezione `## Davraf Guidelines` viene aggiornata, le sezioni specifiche del progetto sono preservate.
 
 ---
 
@@ -132,7 +132,7 @@ Copy-Item -Recurse .claude\skills\professor "$env:USERPROFILE\.claude\skills\pro
 
 **Uso:**
 ```
-/professor aggiorna il README con la nuova skill appena aggiunta
+/professor aggiorna la documentazione del progetto
 ```
 
 ### `/tattico` — Progettazione Prompt AI
@@ -278,6 +278,20 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
+## 📄 Documentazione
+
+Documentazione generata nella cartella `docs/`:
+
+| File | Contenuto |
+|------|-----------|
+| [`docs/card-davraf-guidelines.md`](docs/card-davraf-guidelines.md) | Scheda riassuntiva del progetto (stack, dipendenze, ambienti) |
+| [`docs/onboarding.md`](docs/onboarding.md) | Guida di onboarding per developer senior |
+| [`docs/scaffolding-minimal-api.md`](docs/scaffolding-minimal-api.md) | Struttura generata da "crea una minimal api" — gate, file, convenzioni |
+| [`docs/scaffolding-windows-service.md`](docs/scaffolding-windows-service.md) | Struttura generata da "crea un windows service" — gate, file, convenzioni |
+| [`docs/scaffolding-crud.md`](docs/scaffolding-crud.md) | Struttura generata da "crea gli endpoint crud per la tabella X" — gate, file, regole tipi |
+
+---
+
 ## ❓ FAQ
 
 ### Q: Posso usare le guidelines su un progetto già esistente?
@@ -300,4 +314,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Giugno 2026 — Revisione v1.6 — 2026-06-10 — claude-fable-5*
+*Documento aggiornato: Giugno 2026 — Revisione v1.9 — 2026-06-13 — claude-sonnet-4-6*

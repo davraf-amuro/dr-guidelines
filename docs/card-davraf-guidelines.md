@@ -3,14 +3,15 @@
 ## Identificazione
 
 - **Progetto:** davraf-guidelines
-- **Solution:**
-- **Workspace:**
+- **Solution:** —
+- **Workspace:** —
 - **Repository:** https://github.com/davraf-amuro/davraf-guidelines
 - **Tipo Applicazione:** Repository di linee guida e configurazioni — usato come git submodule
 - **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code
 - **Versione Corrente:** Da verificare con il team
 - **Owner/Team:** davide 'davraf' raffagli
-- **Contatto Supporto:** dev-support@unidata.it
+- **Referente:** davide 'davraf' raffagli
+- **Contatto Supporto:** d.raffagli@gmail.com
 
 ## Stack Tecnologico
 
@@ -35,7 +36,6 @@
 
 | Connection String Key | Nome Database | Tipo | Server/Host | Username | Provider/ORM |
 |-----------------------|---------------|------|-------------|----------|--------------|
-| — | — | — | — | — | — |
 
 ## Servizi Esterni
 
@@ -47,16 +47,9 @@
 ## Configurazione e Hosting
 
 - **Entrypoint:** `setup.ps1` (copia file di configurazione nel progetto host) · `CreateNewSolution.ps1` (bootstrap nuovo progetto)
-- **Deploy:** Non applicabile — repository usato come submodule
-- **URL Produzione:** —
-
-## Documentazione API
-
-- **OpenAPI/Swagger:** Non applicabile
-- **Documentazione UI:** Non applicabile
-- **Versioning API:** Non applicabile
-- **Versioni Supportate:** —
+- **Ambiente Test:** non pubblicato
+- **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v1.0 — 2026-04-16 11:00 — claude-sonnet-4-6*
+*Revisione v2.0 — 2026-06-13 15:30 — claude-sonnet-4-6*
