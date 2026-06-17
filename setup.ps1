@@ -106,7 +106,12 @@ $githubDest = Join-Path $projectRoot   ".github"
 if (-not (Test-Path $githubSrc)) {
     Write-Host "  [WARN] .github non trovato nelle guidelines" -ForegroundColor Yellow
 } else {
-    if (-not (Test-Path $githubDest)) {
+    $githubDestItem = Get-Item $githubDest -ErrorAction SilentlyContinue
+    if ($githubDestItem -and $githubDestItem.LinkType -eq "Junction") {
+        Remove-Item $githubDest -Force
+        Write-Host "  [FIX]  .github/ era una junction - convertita in cartella reale" -ForegroundColor Yellow
+        New-Item -ItemType Directory -Path $githubDest -Force | Out-Null
+    } elseif (-not (Test-Path $githubDest)) {
         New-Item -ItemType Directory -Path $githubDest -Force | Out-Null
     }
 
