@@ -1,6 +1,14 @@
 ---
 name: warroom
-description: Simula un tavolo di lavoro multi-agente dove 5 esperti con prospettive diverse discutono un argomento tecnico o di prodotto. Include un DBA watchdog che sorveglia le proposte e interviene quando logica di database (viste, stored procedure, indici) può ridurre la complessità del codice. Invoca con /warroom [domanda] quando si vuole sentire più angolazioni su una scelta architetturale, di design, di UX o di implementazione.
+description: >
+  Tavolo multi-agente: 5 esperti (ARCH, BE, UI, UX, DBADMIN) analizzano un argomento
+  e producono posizioni, punti di tensione e raccomandazione.
+  TRIGGER when: scelta architetturale o di design, intervento complesso sul sorgente
+  che coinvolge ≥2 ruoli tra ARCH/BE/UI/UX/DBADMIN, progettazione MCP server,
+  decisione di implementazione con più opzioni valide, "sentiamo le opinioni",
+  "apri il tavolo", "consulta il warroom", "cosa ne pensano gli esperti",
+  "discutiamo questa scelta".
+  SKIP: bug fix puntuali, domande fattuali, task con soluzione univoca e perimetro chiaro.
 ---
 
 # Tavolo di Lavoro Multi-Agente
