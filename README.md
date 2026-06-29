@@ -78,7 +78,7 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni |
+| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni. Le fasi usano un **formato atomico** (un passo per file/operazione, con precondizione e criterio di verifica) e una sezione **Regole esecutore**, così che il piano sia eseguibile da un agente in autonomia |
 | `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI, Service layer, Filter `ToExpression()` + DTO `Projection`, ottimizzazione EF |
 | `database-provider.instructions.md` | EF Core: DbContext, provider CRUD con selector, Filter/Projection, tracking |
 | `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
@@ -325,4 +325,4 @@ Documentazione generata nella cartella `docs/`:
 
 ---
 
-*Documento aggiornato: Giugno 2026 — Revisione v2.0 — 2026-06-23 — claude-sonnet-4-6*
+*Documento aggiornato: Giugno 2026 — Revisione v2.1 — 2026-06-29 — claude-opus-4-8*
