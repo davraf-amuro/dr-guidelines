@@ -33,6 +33,22 @@ git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-g
 
 > `setup.ps1` è sicuro su progetti esistenti: salta i file già presenti (`[SKIP]`), copia i file `.github/` uno per uno senza sovrascrivere, e aggiunge la regola a `CLAUDE.md` solo se non è già presente.
 
+### Alternativa: Installazione Globale (Tutto il PC)
+
+Vuoi che Claude Code applichi le tue linee guida **in ogni sessione**, anche fuori da un progetto .NET o senza submodule? Puoi installare le guidelines globalmente in `~/.claude/CLAUDE.md`:
+
+```powershell
+# Clona il repository in una posizione stabile
+git clone https://github.com/davraf-amuro/davraf-guidelines.git C:\tools\davraf-guidelines
+
+# Installazione globale
+C:\tools\davraf-guidelines\setup.ps1 -GlobalInstall
+```
+
+Claude Code carica `~/.claude/CLAUDE.md` automaticamente all'avvio di ogni sessione.
+
+**Le due modalità coesistono senza conflitti:** se un progetto ha anche il submodule, le sue istruzioni specifiche hanno precedenza su quelle globali (vengono caricate dopo).
+
 ---
 
 ## 📦 Cosa viene configurato
@@ -56,7 +72,7 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 
 ## 🔄 Aggiornare le Guidelines
 
-Quando le guidelines vengono aggiornate, esegui dalla root del tuo progetto:
+**Installazione di progetto (submodule):**
 
 ```powershell
 # 1. Aggiorna il submodule all'ultima versione
@@ -67,6 +83,17 @@ git submodule update --remote davraf-guidelines
 ```
 
 Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, `.github/`, ecc.) con la versione aggiornata delle guidelines. `CLAUDE.md` non viene mai sovrascritto automaticamente — la sezione `## Davraf Guidelines` viene aggiornata, le sezioni specifiche del progetto sono preservate.
+
+**Installazione globale:**
+
+```powershell
+# Dalla cartella dove hai clonato davraf-guidelines
+cd C:\tools\davraf-guidelines
+git pull
+.\setup.ps1 -GlobalUpdate
+```
+
+`-GlobalUpdate` esegue `git pull` e riscrive automaticamente la sezione in `~/.claude/CLAUDE.md`.
 
 ---
 
@@ -294,6 +321,9 @@ Documentazione generata nella cartella `docs/`:
 
 ## ❓ FAQ
 
+### Q: Posso avere le guidelines attive su tutto il PC, senza aggiungere un submodule per ogni progetto?
+**A:** SÌ — usa `setup.ps1 -GlobalInstall` da qualsiasi clone del repository. Crea `~/.claude/CLAUDE.md` con le linee guida universali. Claude Code lo carica in ogni sessione automaticamente. Le istruzioni specifiche di progetto (se presenti via submodule) continuano ad avere precedenza.
+
 ### Q: Posso usare le guidelines su un progetto già esistente?
 **A:** SÌ — `CreateNewSolution.ps1` funziona solo per nuovi progetti (esce se la cartella esiste già). Per un progetto esistente, aggiungi manualmente il submodule ed esegui `setup.ps1` come descritto nella sezione [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines).
 
@@ -314,4 +344,4 @@ Documentazione generata nella cartella `docs/`:
 
 ---
 
-*Documento aggiornato: Giugno 2026 — Revisione v1.9 — 2026-06-13 — claude-sonnet-4-6*
+*Documento aggiornato: Giugno 2026 — Revisione v2.0 — 2026-06-17 — claude-sonnet-4-6*
