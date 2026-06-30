@@ -105,7 +105,7 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 |------|---------------|
 | `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni |
+| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni. Le fasi usano un **formato atomico** (un passo per file/operazione, con precondizione e criterio di verifica) e una sezione **Regole esecutore**, così che il piano sia eseguibile da un agente in autonomia |
 | `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI, Service layer, Filter `ToExpression()` + DTO `Projection`, ottimizzazione EF |
 | `database-provider.instructions.md` | EF Core: DbContext, provider CRUD con selector, Filter/Projection, tracking |
 | `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
@@ -192,12 +192,22 @@ Copy-Item -Recurse .claude\skills\tech "$env:USERPROFILE\.claude\skills\tech"
 
 ### `/audit-api` — Audit Backend .NET
 
-Esegue un audit completo del backend .NET 10 / Minimal APIs / C# 14 in tre fasi:
-1. **Dead code** — classi, DTO, middleware, registrazioni DI non usate
-2. **Pattern compliance** — endpoint come extension methods, versioning, ProblemDetails, logging strutturato, async/await
-3. **Performance** — N+1, CancellationToken mancante, operazioni sincrone su I/O
+Esegue un audit completo di qualsiasi backend C# .NET 10 — **Minimal API**, **Windows Service**, o soluzioni multi-progetto. Rileva automaticamente il tipo di progetto e carica le istruzioni modulari pertinenti prima di procedere.
 
-Produce un report strutturato per severità (`[ERROR]` / `[WARNING]` / `[INFO]`). Non modifica file: propone un plan mode al termine.
+**Fasi di audit** (in ordine di gravità del danno potenziale):
+
+| Fase | Area | Cosa trova |
+|------|------|------------|
+| 0 | Orientamento | Rileva tipo progetto, carica istruzioni modulari pertinenti |
+| 1 | Sicurezza | Credenziali hardcoded, logging di dati sensibili, input non validati |
+| 2 | EF Core / Accesso dati | Full table scan silente, projection non EF-traducibile, N+1, tracking errato |
+| 3 | Architettura | Handler → provider diretto (violazione service layer), pattern vietati (AutoMapper, MediatR) |
+| 4 | Dead code | Classi, DTO, registrazioni DI non usate |
+| 5 | Pattern tipo-specifici | Conformità a `minimal-api-architecture` o `windows-service` instructions |
+| 6 | Qualità codice | Commenti XML mancanti, SRP violato, struttura file errata |
+| 7 | Performance | `.Result`/`.Wait()`, CancellationToken mancante, paginazione assente |
+
+Ogni finding riporta severità (`[ERROR]` / `[WARNING]` / `[INFO]`), file:riga, descrizione e riferimento all'istruzione modulare violata. Non modifica file: propone un plan mode al termine.
 
 **Setup globale** (una volta sola):
 ```powershell
@@ -207,7 +217,8 @@ Copy-Item -Recurse .claude\skills\audit-api "$env:USERPROFILE\.claude\skills\aud
 **Uso:**
 ```
 /audit-api
-/audit-api -- focus solo sulla fase 2 pattern compliance
+/audit-api sicurezza
+/audit-api Fase 2
 ```
 
 ### `/audit-fe` — Audit Frontend
@@ -344,4 +355,4 @@ Documentazione generata nella cartella `docs/`:
 
 ---
 
-*Documento aggiornato: Giugno 2026 — Revisione v2.0 — 2026-06-17 — claude-sonnet-4-6*
+*Documento aggiornato: Giugno 2026 — Revisione v2.1 — 2026-06-29 — claude-opus-4-8*
