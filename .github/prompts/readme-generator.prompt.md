@@ -22,7 +22,7 @@ Crea o aggiorna README.md usando solo dati presenti nel repository. Non inventar
 5) Nessuna sezione extra
 
 ## Footer
-Usa data e ora correnti (Get-Date -Format "yyyy-MM-dd HH:mm"):
+Usa data e ora correnti nel formato `YYYY-MM-DD HH:MM` (fuso locale):
 ```markdown
 ---
 *Revisione v{N} — {YYYY-MM-DD HH:MM} — {modello-llm}*

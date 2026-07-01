@@ -15,6 +15,8 @@
 - Verifica compatibilità prima di proporre o applicare regola
 - Compatibilità non garantita → **fermati, chiedi all'utente** — no assunzioni, no azione autonoma
 
+> **Esenzione — Claude Code Skills.** I file in `.claude/skills/` sono artefatti specifici di Claude Code *by design* (usano `$ARGUMENTS`, sub-agenti, `AskUserQuestion`, `EnterPlanMode`) e non sono portabili su GitHub Copilot: sono **esenti** da questa regola. La compatibilità duale resta obbligatoria per `.github/instructions/*.md`, `.github/prompts/*.prompt.md` e ogni altra regola/documento condiviso.
+
 ## Standard di progetto .NET
 @.github/copilot-instructions.md
 
@@ -98,5 +100,6 @@ Intento utente corrisponde a skill disponibile → **invoca direttamente** senza
 | "aggiorna il submodule", "aggiorna davraf-guidelines", "aggiorna le linee guida", "get-latest" | `/get-latest` |
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/professor [richiesta]` |
 | "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/snapshot` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/CreateLaunchProfiles [profili]` |
 
 Invoca skill → passa tutto contesto utile già in conversazione (codice aperto, domanda originale, file citati) — no chiedere all'utente di ripetere.

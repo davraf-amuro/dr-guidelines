@@ -13,6 +13,15 @@ Il comando non accetta argomenti. Esegui sempre entrambi i passi in sequenza.
 
 ## Passi obbligatori in ordine
 
+### 0. Guard — sei nel repo sorgente?
+
+Prima di tutto verifica se la cartella corrente **è il repo sorgente** `davraf-guidelines` invece di un progetto host che lo usa come submodule. Segnali del repo sorgente: presenza contemporanea di `setup.ps1`, `templates/` e `.claude/skills/get-latest/` nella root corrente.
+
+Se è il repo sorgente, rispondi esattamente e **fermati**:
+"Sei nel repo sorgente davraf-guidelines: qui non esiste un submodule da aggiornare. Usa `git pull` per allinearti al remoto."
+
+Solo se NON è il repo sorgente (è un progetto host con il submodule), procedi al passo 1.
+
 ### 1. Aggiorna il submodule
 
 Esegui dalla root del progetto host:

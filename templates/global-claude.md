@@ -25,6 +25,8 @@ deve essere compatibile sia con **Claude Code** che con **GitHub Copilot**.
 - Verifica compatibilità prima di proporre o applicare regola
 - Compatibilità non garantita → **fermati, chiedi all'utente** — no assunzioni, no azione autonoma
 
+> **Esenzione — Claude Code Skills.** I file in `.claude/skills/` sono artefatti specifici di Claude Code *by design* e non portabili su GitHub Copilot: sono **esenti** da questa regola. La compatibilità duale resta obbligatoria per `.github/instructions/*.md`, `.github/prompts/*.prompt.md` e ogni altra regola/documento condiviso.
+
 ## Convenzioni essenziali
 
 - Primary constructors, `async`/`await` per ogni I/O
@@ -91,6 +93,8 @@ Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/warroom`
 | "audit backend", "analizza le API", "cerca dead code", "controlla il codice backend" | `/audit-api` |
 | "audit frontend", "analizza i componenti", "controlla il frontend" | `/audit-fe` |
 | "aggiorna le linee guida", "aggiorna davraf-guidelines", "get-latest" | `/get-latest` |
+| "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/snapshot` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/CreateLaunchProfiles` |
 
 ## Citazione fonti e modello
 

@@ -50,7 +50,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 
 ### 5 — Aggiornare le Guidelines
 - Comando `git submodule update --remote davraf-guidelines`
-- Nota su quali file si aggiornano automaticamente (junction `.github/`) e quali no (file copiati)
+- Nota che `setup.ps1` **copia** i file nel progetto host (`.github/` è una cartella reale copiata, non più una junction): dopo l'update del submodule ri-esegui `setup.ps1 -Update` per propagare le modifiche
 
 ### 6 — Istruzioni Modulari
 - Tabella con colonne: `File | Quando usarlo`
