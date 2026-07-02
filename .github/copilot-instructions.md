@@ -10,7 +10,11 @@ Progetto .NET 10. Rileva il tipo dal codice prima di procedere.
 |--------------------|------|---------------------|
 | ``Workers/*.cs`` presente | Windows Service | ``windows-service.instructions.md`` |
 | ``Endpoints/*.cs`` presente | Minimal API | ``minimal-api-architecture.instructions.md`` |
+| Entrambi presenti (``Workers/`` e ``Endpoints/``) | Soluzione multi-progetto | Leggi entrambe le istruzioni modulari |
+| ``package.json`` presente, nessun ``.csproj`` | Frontend | ``frontend-organization.instructions.md`` |
 | Nessun segnale riconoscibile | Tipo non rilevato | Fermati. Chiedi: "Questo è un Minimal API o un Windows Service?" |
+
+Il rilevamento tipo vale per i task che generano o modificano **codice applicativo**. Per task di sola documentazione o configurazione (docs, markdown, file di config), non porre la domanda: prosegui con l'istruzione modulare pertinente al file (es. ``doc-versioning``, ``readme-structure``).
 
 Leggi sempre l'istruzione modulare corretta prima di generare o modificare codice.
 
@@ -23,14 +27,7 @@ Leggi sempre l'istruzione modulare corretta prima di generare o modificare codic
 
 ## Checklist Pre-Task (obbligatoria)
 
-Prima di qualsiasi azione:
-- [ ] Ho letto `.github/copilot-instructions.md`? (cita sezione rilevante)
-- [ ] Ho identificato e letto il file istruzione modulare pertinente? (indica quale)
-- [ ] Ho dichiarato scope, file da modificare e perimetro negativo?
-- [ ] So esattamente quali file creerò/modificherò? (elencali)
-- [ ] Ho verificato che la struttura richiesta non esista già nel progetto?
-
-Anche una sola risposta NO → fermati e completa il passo prima di procedere.
+Fonte unica: ``dev-cycle.instructions.md`` — Fase 0. Compila quella checklist nell'output prima di qualsiasi azione. Anche una sola risposta NO → fermati e completa il passo prima di procedere.
 
 ## Checklist Post-Generazione
 - [ ] Tipo rilevato correttamente, istruzione modulare letta
@@ -75,4 +72,4 @@ In caso di blocco:
 
 > Regola assoluta: nessun `git push` senza lint clean confermato.
 
-*Template v1.6 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-10 - claude-sonnet-4-6
+*Template v1.7 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-07-02 00:03 - claude-fable-5

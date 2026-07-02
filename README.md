@@ -7,7 +7,11 @@ Linee guida personali e configurazioni per progetti .NET 10, integrate con GitHu
 Apri **PowerShell** (utente normale, senza admin) ed esegui:
 
 ```powershell
-irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 | iex
+# 1. Scarica lo script
+irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 -OutFile CreateNewSolution.ps1
+# 2. Ispeziona il contenuto (mai eseguire script remoti alla cieca)
+# 3. Esegui
+.\CreateNewSolution.ps1
 ```
 
 Lo script:
@@ -62,7 +66,7 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 | `global.json` | copia | Versione .NET SDK |
 | `.gitignore` | copia | File ignorati da Git |
 | `.gitattributes` | copia | Normalizzazione line endings |
-| `.mcp.json` | copia (non sovrascritto) | Server MCP consigliati — non sovrascritto se già presente con contenuto diverso |
+| `.mcp.json` | copia (non sovrascritto) | Server MCP consigliati — non sovrascritto se già presente con contenuto diverso. Da verificare: `setup.ps1` cerca `.mcp.json` nel submodule, ma il repository committa `.mcp.example.json` (il file reale è in `.gitignore`) |
 | `.github/` | copia file per file | Istruzioni Copilot e prompt modulari |
 | `.claude/skills/` | copia | Skill Claude Code (warroom, professor, tattico, tech, ecc.) |
 | `docs/` | creato vuoto | Cartella destinazione documentazione generata (professor, card, onboarding) |
@@ -108,6 +112,7 @@ Le istruzioni sono organizzate per contesto in `.github/instructions/`:
 | `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni. Le fasi usano un **formato atomico** (un passo per file/operazione, con precondizione e criterio di verifica) e una sezione **Regole esecutore**, così che il piano sia eseguibile da un agente in autonomia |
 | `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI, Service layer, Filter `ToExpression()` + DTO `Projection`, ottimizzazione EF |
 | `database-provider.instructions.md` | EF Core: DbContext, provider CRUD con selector, Filter/Projection, tracking |
+| `database-startup-resilience.instructions.md` | API avviabile anche con database irraggiungibile: stato degradato, retry senza riavvio |
 | `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
 | `logging.instructions.md` | Logging strutturato con Serilog |
 | `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
@@ -285,11 +290,40 @@ Copy-Item -Recurse .claude\skills\get-latest "$env:USERPROFILE\.claude\skills\ge
 /get-latest
 ```
 
+### `/snapshot` — Contesto Progetto per Claude
+
+Genera o aggiorna `.ai/context/snapshot.md`: un riassunto denso del progetto leggibile da Claude in una sola Read, senza riscansionare il codice a ogni sessione. Funziona su qualsiasi stack (rilevamento automatico).
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\snapshot "$env:USERPROFILE\.claude\skills\snapshot"
+```
+
+**Uso:**
+```
+/snapshot
+```
+
+### `/CreateLaunchProfiles` — Profili di Avvio VS Code
+
+Genera o aggiorna `.vscode/launch.json` e `.vscode/tasks.json`: rileva lo stack, chiede quali profili creare (Vue, API .NET, Full Stack, React, Next.js, Python, Chrome) e applica solo quelli scelti senza sovrascrivere l'esistente.
+
+**Setup globale** (una volta sola):
+```powershell
+Copy-Item -Recurse .claude\skills\CreateLaunchProfiles "$env:USERPROFILE\.claude\skills\CreateLaunchProfiles"
+```
+
+**Uso:**
+```
+/CreateLaunchProfiles
+/CreateLaunchProfiles vue + api
+```
+
 ---
 
 ## 🔌 MCP Servers
 
-Questo repository include un `.mcp.json` di riferimento con i MCP server consigliati.
+Questo repository include un `.mcp.example.json` di riferimento con i MCP server consigliati. La configurazione reale va in `.mcp.json`, che è in `.gitignore` (può contenere credenziali).
 
 ### `pdf-reader` — Lettura di file PDF
 
@@ -300,7 +334,7 @@ Permette a Claude Code di leggere e interrogare file PDF direttamente nel proget
 npm install -g @fabriqa.ai/pdf-reader-mcp
 ```
 
-**Setup nel progetto** — aggiungi al `.mcp.json` della root del tuo progetto:
+**Setup nel progetto** — copia `.mcp.example.json` in `.mcp.json` nella root del tuo progetto, o aggiungi al `.mcp.json` esistente:
 ```json
 {
   "mcpServers": {
@@ -355,4 +389,4 @@ Documentazione generata nella cartella `docs/`:
 
 ---
 
-*Documento aggiornato: Giugno 2026 — Revisione v2.1 — 2026-06-29 — claude-opus-4-8*
+*Documento aggiornato: Luglio 2026 — Revisione v2.2 — 2026-07-02 — claude-fable-5*

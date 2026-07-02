@@ -36,7 +36,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 - Una sola riga di descrizione, concreta e diretta
 
 ### 2 — Avvio Rapido (nuovo progetto)
-- Mostra il comando PowerShell `irm ... | iex` per eseguire `CreateNewSolution.ps1`
+- Mostra i comandi PowerShell per scaricare (`irm ... -OutFile`), ispezionare ed eseguire `CreateNewSolution.ps1` — mai `irm ... | iex` diretto (esecuzione cieca di script remoti)
 - Elenca i passi che lo script esegue (lista numerata, breve)
 - **Non modificare il comando PowerShell** senza verificare che l'URL sia ancora valido
 
@@ -96,4 +96,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v1.1 - davraf-guidelines - Last Update 2026-06-10 — claude-fable-5*
+*Template v1.2 - davraf-guidelines - Last Update 2026-07-02 00:03 — claude-fable-5*

@@ -7,7 +7,9 @@
     esegue setup.ps1 per collegare i file di configurazione.
     Non richiede privilegi amministrativi.
 .EXAMPLE
-    irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 | iex
+    # Scarica, ispeziona, poi esegui
+    irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 -OutFile CreateNewSolution.ps1
+    .\CreateNewSolution.ps1
 #>
 
 $ErrorActionPreference = "Stop"

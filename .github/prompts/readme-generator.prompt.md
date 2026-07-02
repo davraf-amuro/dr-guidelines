@@ -12,13 +12,13 @@ Crea o aggiorna README.md usando solo dati presenti nel repository. Non inventar
 - Titolo progetto
 - Panoramica breve
 - Sezione Documentazione (docs/) con elenco file .md
-- Sezione Quick Links invariata
+- Sezione Quick Links: preservata se già presente nel README corrente
 
 ## Istruzioni operative
 1) Panoramica breve e concreta
 2) Elenca tutti i .md in docs/ (escludi readme.md se autoreferenziale)
 3) Una descrizione breve per ogni file
-4) Quick Links identici a quelli del README di riferimento
+4) Quick Links: se il README esistente contiene già la sezione, mantienila invariata; se il README è nuovo o non ha Quick Links, ometti la sezione (non inventarla)
 5) Nessuna sezione extra
 
 ## Footer
@@ -37,8 +37,8 @@ La versione template e in fondo a questo file.
 ## ✅ Checklist Post-Generazione
 - [ ] README.md aggiornato con titolo e panoramica
 - [ ] Documentazione: tutti i .md in docs/ elencati
-- [ ] Quick Links invariati
+- [ ] Quick Links preservati se esistenti (omessi se assenti)
 - [ ] Nessuna sezione extra
 - [ ] Footer con data e LLM
 
-*Template v1.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-03-17 21:28
+*Template v1.3 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-07-02 00:03 - claude-fable-5

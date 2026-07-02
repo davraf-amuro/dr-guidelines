@@ -49,7 +49,18 @@ git diff --submodule davraf-guidelines
 - Se ci sono aggiornamenti: procedi al passo 3.
 - Se l'output contiene errori o testo imprevisto (es. `fatal:`, `error:`, contenuto non riconducibile a un diff di submodule): fermati, mostra l'output all'utente e chiedi come procedere. Non eseguire `setup.ps1`.
 
-### 3. Propaga le modifiche con setup.ps1
+### 3. Ispeziona setup.ps1 prima di eseguirlo (guard supply-chain)
+
+Il passo 4 esegue codice appena scaricato dal remoto: prima verifica se `setup.ps1` è cambiato tra il commit precedente e quello nuovo del submodule:
+
+```bash
+git -C davraf-guidelines diff <commit-precedente>..<commit-nuovo> -- setup.ps1
+```
+
+- Diff **vuoto**: setup.ps1 non è cambiato → procedi al passo 4.
+- Diff **non vuoto**: mostra il diff all'utente e chiedi conferma esplicita prima di procedere. Senza conferma, fermati.
+
+### 4. Propaga le modifiche con setup.ps1
 
 Esegui lo script di setup in modalità aggiornamento:
 
@@ -59,7 +70,7 @@ Esegui lo script di setup in modalità aggiornamento:
 
 Cattura e mostra l'output completo dello script.
 
-### 4. Riporta il riepilogo
+### 5. Riporta il riepilogo
 
 Al termine, mostra all'utente:
 

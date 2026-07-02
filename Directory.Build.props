@@ -17,9 +17,9 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
     <!-- Assembly Info -->
-    <Authors>Voisoft per Unidata spa</Authors>
-    <Company>TWT</Company>
-    <Copyright>© 2025 Voisoft per Unidata spa. All rights reserved.</Copyright>
+    <Authors>YourCompany</Authors>
+    <Company>YourCompany</Company>
+    <Copyright>© YourCompany. All rights reserved.</Copyright>
     <Product>Minimal API Template</Product>
 
     <!-- Versioning -->

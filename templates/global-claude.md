@@ -58,6 +58,8 @@ Formato obbligatorio:
 
 Piano `IN CORSO` in `.ai/plans/` all'avvio sessione → riprendi da ultima fase incompleta.
 
+Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente dall'utente — l'invocazione è l'approvazione.
+
 ## Gate di Push — Lint obbligatorio
 
 ⛔ Prima di ogni `git push`:
@@ -93,6 +95,7 @@ Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/warroom`
 | "audit backend", "analizza le API", "cerca dead code", "controlla il codice backend" | `/audit-api` |
 | "audit frontend", "analizza i componenti", "controlla il frontend" | `/audit-fe` |
 | "aggiorna le linee guida", "aggiorna davraf-guidelines", "get-latest" | `/get-latest` |
+| "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione" | `/professor` |
 | "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/snapshot` |
 | "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/CreateLaunchProfiles` |
 

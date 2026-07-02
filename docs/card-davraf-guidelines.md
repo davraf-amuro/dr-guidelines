@@ -30,7 +30,7 @@
 
 | Pacchetto | Versione | Scopo |
 |-----------|----------|-------|
-| `@fabriqa.ai/pdf-reader-mcp` | latest | MCP server per lettura PDF in Claude Code |
+| `@fabriqa.ai/pdf-reader-mcp` | latest | MCP server per lettura PDF in Claude Code (riferimento committato in `.mcp.example.json`; la config reale va in `.mcp.json`, in `.gitignore`) |
 
 ## Database
 
@@ -46,10 +46,10 @@
 
 ## Configurazione e Hosting
 
-- **Entrypoint:** `setup.ps1` (copia file di configurazione nel progetto host) · `CreateNewSolution.ps1` (bootstrap nuovo progetto)
+- **Entrypoint:** `setup.ps1` (copia file nel progetto host) · `setup.ps1 -GlobalInstall` (installa in `~/.claude/CLAUDE.md`) · `setup.ps1 -GlobalUpdate` (aggiorna installazione globale) · `CreateNewSolution.ps1` (bootstrap nuovo progetto)
 - **Ambiente Test:** non pubblicato
 - **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v2.0 — 2026-06-13 15:30 — claude-sonnet-4-6*
+*Revisione v2.2 — 2026-07-02 08:55 — claude-fable-5*

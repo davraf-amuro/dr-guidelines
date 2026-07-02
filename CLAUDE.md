@@ -46,24 +46,24 @@ File non letto che andava letto → dichiara `✗ non letto` e leggilo prima di 
 
 ---
 
-### Checklist pre-task (obbligatoria, da compilare ad ogni task)
+### Checklist pre-task (obbligatoria)
 
-- [ ] Ho letto `.github/copilot-instructions.md`? (cita sezione rilevante)
-- [ ] Ho identificato e letto file istruzioni modulare pertinente? (indica quale)
-- [ ] Ho dichiarato scope, file da modificare e perimetro negativo?
-- [ ] So esattamente quali file creerò/modificherò? (elencali)
-- [ ] Ho verificato che struttura richiesta non esista già nel progetto?
-
-Anche una risposta NO → fermati, completa passo prima di procedere.
+Fonte unica: `dev-cycle.instructions.md` — Fase 0. Compila quella checklist nell'output prima di ogni task. Anche una sola risposta NO → fermati e completa il passo mancante prima di procedere.
 
 ---
 
-⛔ OGNI MODIFICA — a qualsiasi file (codice, docs, config, test) — richiede piano approvato.
+⛔ Task con ≥ 2 operazioni (stessa soglia di `plan-tracking.instructions.md`) richiede piano approvato:
 
 1. Usa `EnterPlanMode` per proporre piano
 2. Dichiara: scope, file da modificare, motivazione, perimetro negativo
 3. Attendi approvazione esplicita utente
 4. Usa `ExitPlanMode` per procedere
+
+Operazione singola → dichiarazione inline (dev-cycle Fase 1), nessun piano richiesto.
+
+**Esenzioni** (nessun `EnterPlanMode` richiesto):
+- Cartella `.ai/` — piani e file di contesto si scrivono senza blocchi
+- Skill invocate esplicitamente dall'utente (es. `/promote-to`, `/professor`) — l'invocazione è l'approvazione; la skill segue i propri passi e le proprie conferme interne
 
 ## Piano obbligatorio su disco
 

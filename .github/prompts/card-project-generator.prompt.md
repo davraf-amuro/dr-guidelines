@@ -10,7 +10,7 @@ Genera schede riassuntive per ogni progetto. Non inventare dati. Lascia vuoto se
 
 ## Dati obbligatori (raccogli prima di generare)
 
-Se uno dei seguenti dati non è presente nella conversazione, **chiedi all'utente prima di generare qualsiasi card**. Non procedere finché non hai tutti e tre.
+Se uno dei seguenti dati non è presente nella conversazione, **chiedilo all'utente una sola volta prima di generare le card**.
 
 | Dato | Descrizione | Formato accettato |
 |------|-------------|-------------------|
@@ -18,7 +18,7 @@ Se uno dei seguenti dati non è presente nella conversazione, **chiedi all'utent
 | **Ambiente Test** | Dove è pubblicato il software in test | Percorso fisico, nome server, stack Portainer/Swarm (es. `srv-test01`, `Stack "myapp-test" su Portainer SRVDOCKER`, `C:\inetpub\test\myapp`) |
 | **Ambiente Produzione** | Dove è pubblicato il software in produzione | Stesso formato — se non pubblicato, dichiarare esplicitamente `non pubblicato` |
 
-⛔ **Regola non negoziabile:** `Ambiente Test` e `Ambiente Produzione` non possono essere vuoti. Se l'utente non fornisce il dato, deve dichiarare esplicitamente `non pubblicato`. Non generare le card con questi campi vuoti.
+⛔ **Regola non negoziabile:** `Ambiente Test` e `Ambiente Produzione` non possono restare vuoti. Chiedi i dati **una sola volta**; se l'utente non li fornisce, compila con `non pubblicato` (stesso fallback dei template dedicati). `Referente` non fornito → `da definire`. Non generare card con questi campi vuoti e non ripetere la domanda in loop.
 
 ## Output
 
@@ -129,8 +129,8 @@ Per ogni nuovo tipo di progetto:
 - [ ] Wiki card: valori reali compilati, header sensibile presente
 - [ ] ``docs/*-wiki.md`` è in ``.gitignore``
 - [ ] Footer con data e LLM presente in entrambe le card
-- [ ] Referente compilato in entrambe le card
+- [ ] Referente compilato in entrambe le card (o `da definire`)
 - [ ] Ambiente Test compilato (o dichiarato `non pubblicato`)
 - [ ] Ambiente Produzione compilato (o dichiarato `non pubblicato`)
 
-*Template v2.2 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-06-12 - claude-sonnet-4-6
+*Template v2.3 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-07-02 00:03 - claude-fable-5
