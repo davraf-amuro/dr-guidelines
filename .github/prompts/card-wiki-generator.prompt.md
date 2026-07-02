@@ -39,7 +39,7 @@ Se un campo contiene placeholder (`CHISSADDOVE`, `CHISSACHI`, `PLACEHOLDER`): in
 ## Contatti Operativi
 
 - **Owner/Team:**
-- **Contatto Supporto:** dev-support@unidata.it
+- **Contatto Supporto:** [email-supporto]
 - **Escalation:**
 - **Repository:** [URL senza branch]
 
@@ -133,7 +133,7 @@ curl -u [username]:[password] [BaseUrl]/[health-endpoint]
 - **Docker Swarm (Portainer):** Stack → Servizio → Forza re-deploy
 
 ### Portainer
-- URL: https://portainer.unidata.it
+- URL: https://[host-portainer]
 - Stack: [nome stack]
 - Servizi coinvolti: [lista]
 

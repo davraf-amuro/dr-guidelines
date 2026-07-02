@@ -20,23 +20,38 @@
 
 ## 3. Come avviare il progetto
 
-Questo repository non ha un entrypoint applicativo. Si usa in due modi:
+Questo repository non ha un entrypoint applicativo. Si usa in tre modi:
 
 **Nuovo progetto:**
 ```powershell
-irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 | iex
+# Scarica, ispeziona, poi esegui (mai script remoti alla cieca)
+irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 -OutFile CreateNewSolution.ps1
+.\CreateNewSolution.ps1
 ```
 
-**Progetto esistente:**
+**Progetto esistente (submodule):**
 ```powershell
 git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
 .\davraf-guidelines\setup.ps1
 ```
 
-**Aggiornare le guidelines in un progetto host:**
+**Installazione globale su PC (senza submodule):**
+```powershell
+# Clona in posizione stabile, poi esegui
+.\davraf-guidelines\setup.ps1 -GlobalInstall
+```
+Scrive in `~/.claude/CLAUDE.md` — Claude Code lo carica in ogni sessione, indipendentemente dal progetto aperto. Le istruzioni specifiche di progetto (via submodule) hanno precedenza quando presenti.
+
+**Aggiornare le guidelines — installazione di progetto:**
 ```powershell
 git submodule update --remote davraf-guidelines
 .\davraf-guidelines\setup.ps1 -Update
+```
+
+**Aggiornare le guidelines — installazione globale:**
+```powershell
+cd C:\tools\davraf-guidelines   # o dove hai clonato il repo
+.\setup.ps1 -GlobalUpdate       # git pull + riscrittura ~/.claude/CLAUDE.md
 ```
 
 ---
@@ -46,19 +61,21 @@ git submodule update --remote davraf-guidelines
 ```
 davraf-guidelines/
   .claude/
-    skills/           ← Skill Claude Code (warroom, professor, tattico, tech, audit-api, audit-fe, promote-to, get-latest)
+    skills/           ← Skill Claude Code (warroom, professor, tattico, tech, audit-api, audit-fe, promote-to, get-latest, snapshot, CreateLaunchProfiles)
   .github/
     instructions/     ← Istruzioni modulari per Copilot e Claude Code (.instructions.md)
     prompts/          ← Template per generazione documentazione (card, onboarding, README, endpoints)
     copilot-instructions.md   ← Entry point istruzioni Copilot (letto automaticamente dall'IDE)
   docs/               ← Documentazione generata (card progetto, wiki card, onboarding)
-  setup.ps1           ← Copia file di configurazione nel progetto host
+  templates/
+    global-claude.md  ← Template CLAUDE.md per installazione globale (usato da -GlobalInstall/-GlobalUpdate)
+  setup.ps1           ← Copia file di configurazione nel progetto host; -GlobalInstall/-GlobalUpdate per installazione globale PC
   CreateNewSolution.ps1  ← Bootstrap nuovo progetto da zero
   CLAUDE.md           ← Istruzioni Claude Code per questo repository
   .editorconfig       ← Naming conventions e stile codice
   Directory.Build.props  ← Configurazione MSBuild centralizzata (.NET 10, Nullable)
   global.json         ← Versione .NET SDK fissata
-  .mcp.json           ← Server MCP consigliati (pdf-reader)
+  .mcp.example.json   ← Server MCP consigliati (pdf-reader) — la config reale va in `.mcp.json`, in `.gitignore`
 ```
 
 **Dove vivono le cose che tocchi più spesso:**
@@ -68,6 +85,7 @@ davraf-guidelines/
 | Nuova istruzione AI | `.github/instructions/<nome>.instructions.md` |
 | Nuova skill Claude Code | `.claude/skills/<nome>/SKILL.md` |
 | Nuovo template documentazione | `.github/prompts/<nome>.prompt.md` |
+| Template CLAUDE.md globale | `templates/global-claude.md` (poi `setup.ps1 -GlobalUpdate` per propagare) |
 | File distribuiti da setup.ps1 | Root del repository (poi `setup.ps1 -Update` nei progetti host) |
 
 ---
@@ -92,7 +110,7 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 
 ## 6. Flusso di lavoro
 
-**Branch:** Solo `main`. Nessuna branch strategy definita.
+**Branch:** `main` come branch principale; branch di lavoro temporanei (es. `fix/<slug>`) promossi verso `main` con la skill `/promote-to`.
 
 **Aggiungere un'istruzione modulare:**
 1. Crea `.github/instructions/<nome>.instructions.md` con frontmatter `applyTo: "**"`
@@ -111,6 +129,14 @@ git submodule update --remote davraf-guidelines
 ```
 
 Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, `.github/`, ecc.) con la versione aggiornata. `CLAUDE.md` non viene mai sovrascritto automaticamente (la sezione `## Davraf Guidelines` viene aggiornata, le sezioni specifiche del progetto sono preservate).
+
+**Modificare il template globale e propagarlo:**
+1. Modifica `templates/global-claude.md`
+2. Da qualsiasi clone del repository, esegui:
+```powershell
+.\setup.ps1 -GlobalUpdate
+```
+`-GlobalUpdate` fa `git pull` e riscrive la sezione in `~/.claude/CLAUDE.md`.
 
 ---
 
@@ -139,4 +165,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 
 ---
 
-*Revisione v2.0 — 2026-06-13 15:30 — claude-sonnet-4-6*
+*Revisione v2.3 — 2026-07-02 08:55 — claude-fable-5*

@@ -24,7 +24,7 @@ Esempi:
 |-------|--------|
 | `v{N}` | Incrementa di 0.1 ad ogni modifica, di 1.0 se la struttura cambia radicalmente |
 | `{YYYY-MM-DD HH:MM}` | Data e ora locale al momento della modifica |
-| `{modello-llm}` | ID del modello usato (es. `claude-sonnet-4-6`, `claude-opus-4-6`) |
+| `{modello-llm}` | ID del modello usato (es. `claude-sonnet-4-6`, `claude-opus-4-8`) |
 
 ## Quando aggiornare
 

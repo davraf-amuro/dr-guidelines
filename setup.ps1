@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    Collega le linee guida Davraf alla root del progetto tramite copia/junction.
+    Collega le linee guida Davraf alla root del progetto tramite copia/junction,
+    oppure le installa globalmente in ~/.claude/CLAUDE.md.
 .DESCRIPTION
     Da eseguire dalla root del progetto host OPPURE direttamente:
         .\davraf-guidelines\setup.ps1
@@ -10,34 +11,137 @@
 
     Usa -Update per sovrascrivere i file già presenti con la versione aggiornata
     delle guidelines (utile dopo `git submodule update --remote davraf-guidelines`).
+
+    Usa -GlobalInstall per installare le linee guida in ~/.claude/CLAUDE.md in modo
+    che Claude Code le carichi automaticamente in ogni sessione, indipendentemente dal
+    progetto corrente. Non tocca il progetto host.
+
+    Usa -GlobalUpdate per aggiornare l'installazione globale: esegue git pull sul
+    repo delle guidelines e riscrive la sezione in ~/.claude/CLAUDE.md.
+
+    Le due modalità (progetto e globale) sono indipendenti e coesistono senza conflitti.
+    Se entrambe sono attive, Claude carica prima il globale poi il progetto;
+    le istruzioni di progetto hanno precedenza sui conflitti.
 .PARAMETER Update
-    Se specificato, sovrascrive i file di configurazione già presenti nel progetto
-    con la versione corrente delle guidelines. Non sovrascrive CLAUDE.md.
+    Sovrascrive i file di configurazione già presenti nel progetto con la versione
+    corrente delle guidelines. Non sovrascrive CLAUDE.md. Non tocca ~/.claude/.
 .PARAMETER IncludeWorkflows
-    Se specificato, copia anche .github/workflows/ nel progetto host.
+    Copia anche .github/workflows/ nel progetto host.
     Per default la cartella è esclusa perché le pipeline CI/CD dipendono dall'ambiente.
+.PARAMETER GlobalInstall
+    Installa le linee guida in ~/.claude/CLAUDE.md (globale PC).
+    Idempotente. Non tocca il progetto corrente.
+.PARAMETER GlobalUpdate
+    Esegue git pull sul repo delle guidelines, poi aggiorna ~/.claude/CLAUDE.md.
+    Non tocca il progetto corrente.
 .EXAMPLE
-    # Prima installazione
+    # Prima installazione in un progetto
     cd C:\MioProgetto
     git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
     .\davraf-guidelines\setup.ps1
 
 .EXAMPLE
-    # Aggiornamento dopo submodule update
+    # Aggiornamento progetto dopo submodule update
     git submodule update --remote davraf-guidelines
     .\davraf-guidelines\setup.ps1 -Update
+
+.EXAMPLE
+    # Installazione globale (una tantum, da qualsiasi clone del repo)
+    .\davraf-guidelines\setup.ps1 -GlobalInstall
+
+.EXAMPLE
+    # Aggiornamento globale
+    .\davraf-guidelines\setup.ps1 -GlobalUpdate
 #>
 
 [CmdletBinding()]
 param(
     [switch]$Update,
-    [switch]$IncludeWorkflows
+    [switch]$IncludeWorkflows,
+    [switch]$GlobalInstall,
+    [switch]$GlobalUpdate
 )
 
 $ErrorActionPreference = "Stop"
 
 $guidelinesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot   = (Get-Item $guidelinesDir).Parent.FullName
+
+# --- Modalità Globale (GlobalInstall / GlobalUpdate) ---
+# Scrive in ~/.claude/CLAUDE.md. Non tocca il progetto corrente.
+if ($GlobalInstall -or $GlobalUpdate) {
+    $globalClaudePath   = Join-Path $HOME ".claude\CLAUDE.md"
+    $globalTemplatePath = Join-Path $guidelinesDir "templates\global-claude.md"
+
+    if (-not (Test-Path $globalTemplatePath)) {
+        Write-Error "  [ERR] Template non trovato: $globalTemplatePath"
+        exit 1
+    }
+
+    Write-Host ""
+    Write-Host "Davraf Guidelines — Installazione Globale" -ForegroundColor Cyan
+    $modeLabel = if ($GlobalUpdate) { "GLOBAL UPDATE" } else { "GLOBAL INSTALL" }
+    Write-Host "  Modalità   : $modeLabel" -ForegroundColor Yellow
+    Write-Host "  Guidelines : $guidelinesDir"
+    Write-Host "  Target     : $globalClaudePath"
+    Write-Host ""
+
+    if ($GlobalUpdate) {
+        Write-Host "Aggiornamento repository..." -ForegroundColor White
+        git -C $guidelinesDir pull
+        Write-Host ""
+    }
+
+    Write-Host "~/.claude/CLAUDE.md:" -ForegroundColor White
+
+    $templateRaw  = Get-Content $globalTemplatePath -Raw -Encoding UTF8
+    $templateBody = ($templateRaw -replace "^#[^\n]*\n+", "").TrimStart()
+    $davrafBlock  = "## Davraf Guidelines (Globale)`n`n$templateBody`n<!-- /davraf-guidelines -->`n"
+    $claudeDir    = Split-Path $globalClaudePath
+
+    if (-not (Test-Path $claudeDir)) {
+        New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    }
+
+    if (-not (Test-Path $globalClaudePath)) {
+        Set-Content -Path $globalClaudePath -Value $davrafBlock -Encoding UTF8
+        Write-Host "  [OK]  Creato ~/.claude/CLAUDE.md con sezione Davraf Guidelines" -ForegroundColor Green
+    } else {
+        $existing     = Get-Content $globalClaudePath -Raw -Encoding UTF8
+        $sectionTitle = "## Davraf Guidelines (Globale)"
+        if ($existing -notmatch [regex]::Escape($sectionTitle)) {
+            $newContent = $existing.TrimEnd() + "`n`n" + $davrafBlock
+            Set-Content -Path $globalClaudePath -Value $newContent -Encoding UTF8 -NoNewline
+            Write-Host "  [OK]  Sezione Davraf Guidelines inserita in ~/.claude/CLAUDE.md" -ForegroundColor Green
+        } else {
+            $pattern     = "(?s)(## Davraf Guidelines \(Globale\)\r?\n).*?(<!-- /davraf-guidelines -->)"
+            $replacement = "## Davraf Guidelines (Globale)`n`n$templateBody`n<!-- /davraf-guidelines -->"
+            if ($existing -match $pattern) {
+                $newContent = [regex]::Replace($existing, $pattern, $replacement)
+                Set-Content -Path $globalClaudePath -Value $newContent -Encoding UTF8 -NoNewline
+                $tag = if ($GlobalUpdate) { "[UPD]" } else { "[OK] " }
+                Write-Host "  $tag ~/.claude/CLAUDE.md — sezione Davraf Guidelines aggiornata" -ForegroundColor Green
+            } else {
+                Write-Host "  [WARN] Trovata intestazione '$sectionTitle' ma sentinel '<!-- /davraf-guidelines -->' mancante — verifica manualmente" -ForegroundColor Yellow
+            }
+        }
+    }
+
+    Write-Host ""
+    Write-Host "Installazione globale completata." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Per aggiornare in futuro:" -ForegroundColor White
+    Write-Host "  cd $guidelinesDir" -ForegroundColor DarkCyan
+    Write-Host "  git pull" -ForegroundColor DarkCyan
+    Write-Host "  .\setup.ps1 -GlobalUpdate" -ForegroundColor DarkCyan
+    Write-Host ""
+    Write-Host "Nota:" -ForegroundColor White
+    Write-Host "  Claude carica ~/.claude/CLAUDE.md in ogni sessione." -ForegroundColor DarkGray
+    Write-Host "  Se un progetto ha un proprio CLAUDE.md (via submodule), le sue" -ForegroundColor DarkGray
+    Write-Host "  istruzioni hanno precedenza sulle linee guida globali." -ForegroundColor DarkGray
+    Write-Host ""
+    exit 0
+}
 
 Write-Host ""
 Write-Host "Davraf Guidelines Setup" -ForegroundColor Cyan

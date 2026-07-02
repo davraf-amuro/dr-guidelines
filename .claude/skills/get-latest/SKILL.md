@@ -13,6 +13,15 @@ Il comando non accetta argomenti. Esegui sempre entrambi i passi in sequenza.
 
 ## Passi obbligatori in ordine
 
+### 0. Guard — sei nel repo sorgente?
+
+Prima di tutto verifica se la cartella corrente **è il repo sorgente** `davraf-guidelines` invece di un progetto host che lo usa come submodule. Segnali del repo sorgente: presenza contemporanea di `setup.ps1`, `templates/` e `.claude/skills/get-latest/` nella root corrente.
+
+Se è il repo sorgente, rispondi esattamente e **fermati**:
+"Sei nel repo sorgente davraf-guidelines: qui non esiste un submodule da aggiornare. Usa `git pull` per allinearti al remoto."
+
+Solo se NON è il repo sorgente (è un progetto host con il submodule), procedi al passo 1.
+
 ### 1. Aggiorna il submodule
 
 Esegui dalla root del progetto host:
@@ -40,7 +49,18 @@ git diff --submodule davraf-guidelines
 - Se ci sono aggiornamenti: procedi al passo 3.
 - Se l'output contiene errori o testo imprevisto (es. `fatal:`, `error:`, contenuto non riconducibile a un diff di submodule): fermati, mostra l'output all'utente e chiedi come procedere. Non eseguire `setup.ps1`.
 
-### 3. Propaga le modifiche con setup.ps1
+### 3. Ispeziona setup.ps1 prima di eseguirlo (guard supply-chain)
+
+Il passo 4 esegue codice appena scaricato dal remoto: prima verifica se `setup.ps1` è cambiato tra il commit precedente e quello nuovo del submodule:
+
+```bash
+git -C davraf-guidelines diff <commit-precedente>..<commit-nuovo> -- setup.ps1
+```
+
+- Diff **vuoto**: setup.ps1 non è cambiato → procedi al passo 4.
+- Diff **non vuoto**: mostra il diff all'utente e chiedi conferma esplicita prima di procedere. Senza conferma, fermati.
+
+### 4. Propaga le modifiche con setup.ps1
 
 Esegui lo script di setup in modalità aggiornamento:
 
@@ -50,7 +70,7 @@ Esegui lo script di setup in modalità aggiornamento:
 
 Cattura e mostra l'output completo dello script.
 
-### 4. Riporta il riepilogo
+### 5. Riporta il riepilogo
 
 Al termine, mostra all'utente:
 

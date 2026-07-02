@@ -1,6 +1,11 @@
 # Claude Code local settings
 .claude/settings.local.json
 my-minimalapi.md
+CLAUDE.original.md
+
+# MCP e config locali (valori reali — non committare; usa .mcp.example.json)
+.mcp.json
+appsettings.local.json
 
 # Wiki card operative (contengono valori reali — non committare)
 docs/*-wiki.md
