@@ -10,9 +10,10 @@ Regole trasversali per organizzare il codice in modo leggibile, manutenibile e r
 
 ## Regola 1 — Una classe = un file
 
-- Ogni classe, interfaccia, enum o tipo composto ha il suo file dedicato.
+- Ogni classe, interfaccia, enum, **record** o tipo composto ha il suo file dedicato.
 - Il nome del file corrisponde al nome della classe (case convention del linguaggio).
 - Non raggruppare classi non correlate nello stesso file.
+- Vale anche per record correlati (es. DTO completo + DTO riassuntivo della stessa entità): correlazione non è motivo per condividere il file.
 
 ```
 // ✅
@@ -23,6 +24,19 @@ order_mapper.py
 // ❌
 Models.cs         // contiene UserDto, OrderDto, ProductDto insieme
 helpers.ts        // logica email, parsing, validazione mescolati
+```
+
+```csharp
+// ✅ C# — un record per file, anche se correlati
+// UserDto.cs
+public record UserDto(int Id, string Nome, string Email);
+// UserSummaryDto.cs
+public record UserSummaryDto(int Id, string Nome);
+
+// ❌ C# — due record nello stesso file
+// UserDto.cs
+public record UserDto(int Id, string Nome, string Email);
+public record UserSummaryDto(int Id, string Nome);   // va spostato in UserSummaryDto.cs
 ```
 
 ---
@@ -219,4 +233,4 @@ const products = await productRepo.findActive();
 
 ---
 
-*Istruzione v1.2 - Code Organization - 2026-05-29 — claude-sonnet-4-6*
+*Istruzione v1.3 - Code Organization - 2026-07-22 — claude-opus-4-8*
