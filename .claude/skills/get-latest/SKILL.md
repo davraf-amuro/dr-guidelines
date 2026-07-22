@@ -1,90 +1,63 @@
 ---
 name: get-latest
-description: Aggiorna il submodule davraf-guidelines all'ultima versione remota e propaga le modifiche ai file copiati nel progetto host tramite setup.ps1 -Update.
+description: Aggiorna tutti i pacchetti dr-* installati nel progetto corrente (letti da .ai/dr-guidelines-packages.json) rieseguendo il rispettivo install.ps1 con -Update.
 ---
 
-Sei un agente di manutenzione specializzato nell'aggiornamento del submodule `davraf-guidelines`.
+Sei un agente di manutenzione specializzato nell'aggiornamento dei pacchetti `dr-*` (dr-guidelines e domini) installati in un progetto host.
 
 ## Comportamento
 
-Il comando non accetta argomenti. Esegui sempre entrambi i passi in sequenza.
+Il comando non accetta argomenti. Esegui sempre tutti i passi in sequenza.
 
 ---
 
 ## Passi obbligatori in ordine
 
-### 0. Guard — sei nel repo sorgente?
+### 0. Guard — sei in un repo sorgente `dr-*`?
 
-Prima di tutto verifica se la cartella corrente **è il repo sorgente** `davraf-guidelines` invece di un progetto host che lo usa come submodule. Segnali del repo sorgente: presenza contemporanea di `setup.ps1`, `templates/` e `.claude/skills/get-latest/` nella root corrente.
+Verifica se la cartella corrente **è uno dei repo sorgente** (`dr-guidelines` o uno dei pacchetti dominio) invece di un progetto host che li consuma. Segnale: presenza di `install.ps1` **e** `install-lib.ps1` (o, per i pacchetti dominio, presenza di `install.ps1` insieme a `.github/instructions/` o `.claude/skills/` senza un `.ai/dr-guidelines-packages.json` proprio) nella root corrente.
 
-Se è il repo sorgente, rispondi esattamente e **fermati**:
-"Sei nel repo sorgente davraf-guidelines: qui non esiste un submodule da aggiornare. Usa `git pull` per allinearti al remoto."
+Se è un repo sorgente, rispondi esattamente e **fermati**:
+"Sei in un repo sorgente dr-*: qui non esiste un manifest pacchetti da aggiornare. Usa `git pull` per allinearti al remoto."
 
-Solo se NON è il repo sorgente (è un progetto host con il submodule), procedi al passo 1.
+Solo se NON è un repo sorgente, procedi al passo 1.
 
-### 1. Aggiorna il submodule
+### 1. Leggi il manifest
 
-Esegui dalla root del progetto host:
+Leggi `.ai/dr-guidelines-packages.json` dalla root del progetto host.
 
-```bash
-git submodule update --remote davraf-guidelines
+- File assente o `installed` vuoto/mancante: comunica "Nessun pacchetto dr-* risulta installato in questo progetto. Esegui prima l'`install.ps1` del pacchetto desiderato (vedi README del pacchetto)." e **fermati**.
+- File presente ma JSON non valido: mostra l'errore di parsing e chiedi come procedere. Non continuare con un manifest corrotto.
+
+### 2. Aggiorna ogni pacchetto tracciato
+
+Per ciascuna voce `{ package, installedAt }` nel manifest, esegui:
+
+```powershell
+& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://raw.githubusercontent.com/davraf-amuro/<package>/main/install.ps1"))) -Update
 ```
 
-Cattura l'output. Se il comando fallisce (es. rete non raggiungibile, submodule non inizializzato), fermati e segnala l'errore all'utente con la causa e il suggerimento:
+sostituendo `<package>` con il nome del pacchetto. Questo rieseguirà il file-copy con `-Update` (sovrascrive i file già presenti con la versione corrente) e, per `dr-guidelines`, ri-mergia la sezione marcata in `CLAUDE.md`.
 
-```
-git submodule init
-git submodule update --remote davraf-guidelines
-```
+Se un pacchetto ha dipendenze (es. `dr-minimalapi` → `dr-dotnet-backend`) e la dipendenza è già nel manifest, non viene reinstallata a parte — l'esecuzione con `-Update` riguarda solo il pacchetto esplicitamente elencato nel manifest; se vuoi aggiornare anche la dipendenza, deve avere una propria voce nel manifest (normale, dato che viene registrata automaticamente alla prima installazione).
 
-### 2. Verifica se ci sono aggiornamenti
+Se un comando fallisce (rete non raggiungibile, repo non trovato — es. repo ancora Private e non raggiungibile senza autenticazione): segnala l'errore per quel pacchetto specifico e **continua** con i successivi, non interrompere l'intero ciclo per un singolo fallimento.
 
-Dopo `git submodule update --remote`, controlla se il commit del submodule è cambiato:
-
-```bash
-git diff --submodule davraf-guidelines
-```
-
-- Se l'output è **vuoto**: comunica "Il submodule è già all'ultima versione. Nessuna propagazione necessaria." e termina.
-- Se ci sono aggiornamenti: procedi al passo 3.
-- Se l'output contiene errori o testo imprevisto (es. `fatal:`, `error:`, contenuto non riconducibile a un diff di submodule): fermati, mostra l'output all'utente e chiedi come procedere. Non eseguire `setup.ps1`.
-
-### 3. Ispeziona setup.ps1 prima di eseguirlo (guard supply-chain)
-
-Il passo 4 esegue codice appena scaricato dal remoto: prima verifica se `setup.ps1` è cambiato tra il commit precedente e quello nuovo del submodule:
-
-```bash
-git -C davraf-guidelines diff <commit-precedente>..<commit-nuovo> -- setup.ps1
-```
-
-- Diff **vuoto**: setup.ps1 non è cambiato → procedi al passo 4.
-- Diff **non vuoto**: mostra il diff all'utente e chiedi conferma esplicita prima di procedere. Senza conferma, fermati.
-
-### 4. Propaga le modifiche con setup.ps1
-
-Esegui lo script di setup in modalità aggiornamento:
-
-```bash
-.\davraf-guidelines\setup.ps1 -Update
-```
-
-Cattura e mostra l'output completo dello script.
-
-### 5. Riporta il riepilogo
+### 3. Riporta il riepilogo
 
 Al termine, mostra all'utente:
 
-- Il commit precedente e quello nuovo del submodule (da `git diff --submodule`)
-- I file aggiornati/saltati riportati da `setup.ps1`
-- Un promemoria: "Se hai modificato CLAUDE.md manualmente, verifica che la sezione Davraf Guidelines sia ancora allineata."
+- Elenco pacchetti aggiornati con successo
+- Elenco pacchetti falliti con il motivo (se presenti)
+- Un promemoria: "Se hai modificato CLAUDE.md manualmente fuori dalle sezioni marcate `<!-- dr-<pacchetto> --> ... <!-- /dr-<pacchetto> -->`, verifica che siano ancora coerenti."
 
 ---
 
 ## Regole
 
-- Non eseguire `git add` o `git commit` automaticamente dopo l'aggiornamento — lascia all'utente la scelta di committare il bump del submodule.
-- Non modificare mai `CLAUDE.md` del progetto host (setup.ps1 già non lo sovrascrive).
-- Se `setup.ps1` non è trovato, suggerisci di eseguire prima `git submodule init`.
+- Non eseguire `git add` o `git commit` automaticamente dopo l'aggiornamento — lascia all'utente la scelta di committare le modifiche.
+- Non modificare mai contenuto di `CLAUDE.md` fuori dalle sezioni marcate `<!-- dr-<pacchetto> --> ... <!-- /dr-<pacchetto> -->` — quelle sono gestite esclusivamente dal merge automatico di `install.ps1`.
+- Nessun versionamento/semver: ogni aggiornamento porta sempre alla versione più recente del branch `main` del pacchetto (default già approvato, nessun pin di versione).
 
 ## Perimetro non negoziabile
 
