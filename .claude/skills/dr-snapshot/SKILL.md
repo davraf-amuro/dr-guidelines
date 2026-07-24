@@ -1,5 +1,5 @@
 ---
-name: snapshot
+name: dr-snapshot
 description: Genera o aggiorna `.ai/context/snapshot.md` — riassunto denso del progetto leggibile da Claude in una sola Read, senza riscansionare il codice ogni volta. Funziona su qualsiasi stack (rilevamento automatico).
 ---
 

@@ -1,6 +1,26 @@
-# davraf-guidelines
+# dr-guidelines
 
-Linee guida personali e configurazioni per progetti .NET 10, integrate con GitHub Copilot e Claude Code.
+Pacchetto core della suite `dr-*`: linee guida trasversali, skill Claude Code e meccanismo di installazione per progetti .NET 10 integrati con GitHub Copilot e Claude Code.
+
+## 🧩 Pacchetti dr-* disponibili
+
+`dr-guidelines` (questo repo) è il core della suite. I contenuti specifici di dominio vivono in 6 pacchetti separati, installabili singolarmente in base allo stack del progetto:
+
+| Pacchetto | Repo | Scope |
+|---|---|---|
+| **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Istruzioni/skill trasversali, meccanismo di installazione (`install.ps1`) |
+| dr-minimalapi | [davraf-amuro/dr-minimalapi](https://github.com/davraf-amuro/dr-minimalapi) | Architettura Minimal API .NET, prompt endpoint/scaffolding. Dipende da `dr-dotnet-backend` |
+| dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service .NET. Dipende da `dr-dotnet-backend` |
+| dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza avvio |
+| dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione frontend + audit |
+| dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
+| dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Skill di audit backend .NET (Minimal API + Windows Service) |
+
+Le dipendenze dichiarate (`dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`) vengono installate automaticamente da `install.ps1` se assenti.
+
+> **Nota:** i 7 repo sono attualmente **Private**. `install.ps1` funziona comunque via `git clone` autenticato (credential manager); il bootstrap pubblico `irm ... | iex` richiede repo Public — passaggio pianificato dopo un test su un progetto host reale.
+
+---
 
 ## 🚀 Avvio Rapido — Nuovo Progetto
 
@@ -21,43 +41,33 @@ Lo script:
 4. Aggiunge `davraf-guidelines` come **git submodule** (o scarica ZIP se git non è disponibile)
 5. Esegue `setup.ps1` che copia i file di configurazione nel progetto
 
+> `CreateNewSolution.ps1` non è ancora stato migrato al nuovo modello a pacchetti (`install.ps1`): resta legato al repo legacy `davraf-guidelines`, tuttora attivo e non archiviato. Per un progetto nuovo con i pacchetti `dr-*`, crea la solution manualmente e segui la sezione successiva.
+
 ---
 
 ## 🔧 Progetto Esistente — Aggiungere le Guidelines
 
-Se hai già un progetto .NET con repository git, esegui dalla **root del progetto**:
+Se hai già un progetto con repository git, esegui dalla **root del progetto**:
 
 ```powershell
-# 1. Aggiungi davraf-guidelines come submodule
-git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
-
-# 2. Esegui il setup
-.\davraf-guidelines\setup.ps1
+irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
 ```
 
-> `setup.ps1` è sicuro su progetti esistenti: salta i file già presenti (`[SKIP]`), copia i file `.github/` uno per uno senza sovrascrivere, e aggiunge la regola a `CLAUDE.md` solo se non è già presente.
+Installa il pacchetto core: file di configurazione, istruzioni/skill trasversali, sezione `<!-- dr-guidelines -->` in `CLAUDE.md`. Sicuro su progetti esistenti: salta i file già presenti (`[SKIP]`), non sovrascrive nulla senza `-Update` esplicito.
 
-### Alternativa: Installazione Globale (Tutto il PC)
-
-Vuoi che Claude Code applichi le tue linee guida **in ogni sessione**, anche fuori da un progetto .NET o senza submodule? Puoi installare le guidelines globalmente in `~/.claude/CLAUDE.md`:
+Per aggiungere anche un pacchetto dominio (es. Minimal API), esegui il suo `install.ps1` allo stesso modo — vedi la tabella nella sezione [Pacchetti dr-* disponibili](#-pacchetti-dr--disponibili):
 
 ```powershell
-# Clona il repository in una posizione stabile
-git clone https://github.com/davraf-amuro/davraf-guidelines.git C:\tools\davraf-guidelines
-
-# Installazione globale
-C:\tools\davraf-guidelines\setup.ps1 -GlobalInstall
+irm https://raw.githubusercontent.com/davraf-amuro/dr-minimalapi/main/install.ps1 | iex
 ```
 
-Claude Code carica `~/.claude/CLAUDE.md` automaticamente all'avvio di ogni sessione.
-
-**Le due modalità coesistono senza conflitti:** se un progetto ha anche il submodule, le sue istruzioni specifiche hanno precedenza su quelle globali (vengono caricate dopo).
+Ogni installazione viene tracciata in `.ai/dr-guidelines-packages.json` nel progetto host.
 
 ---
 
 ## 📦 Cosa viene configurato
 
-Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
+Dopo l'esecuzione di `install.ps1` (pacchetto core), il progetto host avrà:
 
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
@@ -66,264 +76,167 @@ Dopo l'esecuzione di `setup.ps1`, il tuo progetto avrà:
 | `global.json` | copia | Versione .NET SDK |
 | `.gitignore` | copia | File ignorati da Git |
 | `.gitattributes` | copia | Normalizzazione line endings |
-| `.mcp.json` | copia (non sovrascritto) | Server MCP consigliati — non sovrascritto se già presente con contenuto diverso. Da verificare: `setup.ps1` cerca `.mcp.json` nel submodule, ma il repository committa `.mcp.example.json` (il file reale è in `.gitignore`) |
-| `.github/` | copia file per file | Istruzioni Copilot e prompt modulari |
-| `.claude/skills/` | copia | Skill Claude Code (warroom, professor, tattico, tech, ecc.) |
-| `docs/` | creato vuoto | Cartella destinazione documentazione generata (professor, card, onboarding) |
-| `CLAUDE.md` | generato / merge | Istruzioni per Claude Code — sezione Davraf Guidelines iniettata automaticamente |
+| `.mcp.json` | copia da `.mcp.example.json` (solo se assente, mai sovrascritto) | Server MCP consigliati |
+| `.github/instructions/`, `.github/prompts/` | copia file per file | Istruzioni Copilot/Claude e prompt modulari (contenuto core) |
+| `.claude/skills/` | copia cartella per cartella | Skill Claude Code core (dr-warroom, dr-professor, dr-tattico, dr-tech, dr-get-latest, dr-segnala-miglioria, ecc.) |
+| `CLAUDE.md` | generato / merge | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->` iniettata/aggiornata automaticamente, resto del file preservato |
+| `.ai/dr-guidelines-packages.json` | generato / upsert | Manifest dei pacchetti `dr-*` installati nel progetto |
+
+I pacchetti dominio installano solo `.github/instructions/`, `.github/prompts/` e/o `.claude/skills/` propri — nessun file di configurazione radice, nessuna sezione `CLAUDE.md` (esclusiva del core).
 
 ---
 
 ## 🔄 Aggiornare le Guidelines
 
-**Installazione di progetto (submodule):**
+**Un singolo pacchetto:**
 
 ```powershell
-# 1. Aggiorna il submodule all'ultima versione
-git submodule update --remote davraf-guidelines
-
-# 2. Propaga le modifiche ai file copiati nel progetto
-.\davraf-guidelines\setup.ps1 -Update
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Update
 ```
 
-Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, `.github/`, ecc.) con la versione aggiornata delle guidelines. `CLAUDE.md` non viene mai sovrascritto automaticamente — la sezione `## Davraf Guidelines` viene aggiornata, le sezioni specifiche del progetto sono preservate.
+Il flag `-Update` sovrascrive i file già presenti con la versione corrente del pacchetto e ri-mergia la sezione `CLAUDE.md` (per il core). Sostituisci l'URL con quello del pacchetto dominio da aggiornare.
 
-**Installazione globale:**
+**Tutti i pacchetti tracciati nel progetto:**
+
+```
+/dr-get-latest
+```
+
+Legge `.ai/dr-guidelines-packages.json` e ri-esegue `install.ps1 -Update` per ciascun pacchetto elencato.
+
+**Installazione globale (legacy, non ancora migrata):**
 
 ```powershell
-# Dalla cartella dove hai clonato davraf-guidelines
-cd C:\tools\davraf-guidelines
+cd C:\tools\davraf-guidelines   # clone stabile del repo legacy
 git pull
 .\setup.ps1 -GlobalUpdate
 ```
 
-`-GlobalUpdate` esegue `git pull` e riscrive automaticamente la sezione in `~/.claude/CLAUDE.md`.
+`setup.ps1 -GlobalInstall`/`-GlobalUpdate` (scrittura di `~/.claude/CLAUDE.md`, indipendente dal progetto) resta disponibile ma non è ancora stata portata nel nuovo `install.ps1` — TODO aperto.
 
 ---
 
 ## 🤖 Istruzioni Modulari (Copilot / Claude)
 
-Le istruzioni sono organizzate per contesto in `.github/instructions/`:
+Contenuto **core**, trasversale a qualsiasi stack. Le istruzioni specifiche di dominio (Minimal API, Windows Service, EF Core, frontend, DevOps) vivono nei rispettivi pacchetti — vedi la tabella in [Pacchetti dr-* disponibili](#-pacchetti-dr--disponibili).
 
 | File | Quando usarlo |
 |------|---------------|
-| `copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
+| `.github/copilot-instructions.md` | Istruzioni principali — letto automaticamente da Copilot |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni. Le fasi usano un **formato atomico** (un passo per file/operazione, con precondizione e criterio di verifica) e una sezione **Regole esecutore**, così che il piano sia eseguibile da un agente in autonomia |
-| `minimal-api-architecture.instructions.md` | Endpoint, versioning, OpenAPI, Service layer, Filter `ToExpression()` + DTO `Projection`, ottimizzazione EF |
-| `database-provider.instructions.md` | EF Core: DbContext, provider CRUD con selector, Filter/Projection, tracking |
-| `database-startup-resilience.instructions.md` | API avviabile anche con database irraggiungibile: stato degradato, retry senza riavvio |
+| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni, formato atomico |
+| `code-organization.instructions.md` | Struttura classi e file, commenti obbligatori (tutti i linguaggi) |
 | `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
-| `logging.instructions.md` | Logging strutturato con Serilog |
-| `docker-swarm-compose.instructions.md` | Deploy con Docker Swarm |
-| `windows-service.instructions.md` | Windows Service con .NET |
+| `logging.instructions.md` | Logging strutturato con placeholder (mai string interpolation) |
 | `sensitive-data.instructions.md` | Gestione credenziali e dati sensibili |
 | `doc-versioning.instructions.md` | Footer di revisione obbligatorio nei documenti in `docs/` |
-| `mcp-tool-readme.instructions.md` | Creazione README per MCP server |
 | `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
-| `mcp-server-discovery.instructions.md` | Ricerca e creazione MCP server |
-| `code-organization.instructions.md` | Struttura classi e file, commenti obbligatori (tutti i linguaggi) |
-| `frontend-organization.instructions.md` | Struttura componenti Vue e WPF/MVVM |
+| `mcp-tool-readme.instructions.md` | Creazione README per MCP server (`tools/**/README.md`) |
+| `mcp-server-discovery.instructions.md` | Ricerca e creazione MCP server (cerca prima di creare) |
 
 ---
 
 ## 🤖 Claude Code Skills
 
-Questo repository include skill per **Claude Code** in `.claude/skills/`.
+Skill **core**, disponibili dopo l'installazione di `dr-guidelines`.
 
-### `/warroom` — Tavolo di Lavoro Multi-Agente
+### `/dr-warroom` — Tavolo di Lavoro Multi-Agente
 
-Lancia 5 esperti in parallelo per analizzare una domanda tecnica o di prodotto da più angolazioni.
-
-| Agente | Ruolo |
-|--------|-------|
-| **ARCH** | Architetto software — coesione, debito tecnico, pattern |
-| **BE** | Backend senior — complessità implementativa, sicurezza, carico |
-| **UI** | Frontend senior — componenti, design system, accessibilità |
-| **UX** | UX designer — flussi reali, bisogni utente, percezione |
-| **DBADMIN** | DBA watchdog — sorveglia le proposte e interviene solo quando logica di database può ridurre la complessità del codice |
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\warroom "$env:USERPROFILE\.claude\skills\warroom"
-```
+Lancia 5 esperti in parallelo (ARCH, BE, UI, UX, DBADMIN) per analizzare una domanda tecnica o di prodotto da più angolazioni.
 
 **Uso:**
 ```
-/warroom come strutturiamo l'autenticazione in questa Minimal API?
+/dr-warroom come strutturiamo l'autenticazione in questa Minimal API?
 ```
 
-### `/professor` — Redazione Documentazione
+### `/dr-professor` — Redazione Documentazione
 
-Esperto tecnico che crea, aggiorna e revisiona documentazione con linguaggio chiaro e accessibile. Rispetta le instruction files del progetto prima di scrivere.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\professor "$env:USERPROFILE\.claude\skills\professor"
-```
+Crea, aggiorna e revisiona documentazione tecnica con linguaggio chiaro e accessibile, rispettando le instruction files del progetto.
 
 **Uso:**
 ```
-/professor aggiorna la documentazione del progetto
+/dr-professor aggiorna la documentazione del progetto
 ```
 
-### `/tattico` — Progettazione Prompt AI
+### `/dr-tattico` — Progettazione Prompt AI
 
-Esperto nella creazione e revisione di prompt per agenti e assistenti IA. Analizza pattern di fallimento, identifica ambiguità e suggerisce miglioramenti strutturali.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\tattico "$env:USERPROFILE\.claude\skills\tattico"
-```
+Crea o revisiona prompt per agenti/assistenti IA, analizza pattern di fallimento e ambiguità.
 
 **Uso:**
 ```
-/tattico rivedi il prompt di sistema dell'agente di onboarding
+/dr-tattico rivedi il prompt di sistema dell'agente di onboarding
 ```
 
-### `/tech` — Rilascio e Infrastruttura
+### `/dr-tech` — Rilascio e Infrastruttura
 
-Specialista di deployment e infrastruttura IT. Conosce Docker, IIS, Git, Swagger/OpenAPI e la preparazione di ambienti per l'esecuzione di software.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\tech "$env:USERPROFILE\.claude\skills\tech"
-```
+Specialista di deployment e infrastruttura IT: Docker, IIS, Git, Swagger/OpenAPI, preparazione ambienti.
 
 **Uso:**
 ```
-/tech pianifica il rilascio della nuova versione su Docker Swarm
+/dr-tech pianifica il rilascio della nuova versione su Docker Swarm
 ```
 
-### `/audit-api` — Audit Backend .NET
+### `/dr-promote-to` — Commit, Push e Pull Request
 
-Esegue un audit completo di qualsiasi backend C# .NET 10 — **Minimal API**, **Windows Service**, o soluzioni multi-progetto. Rileva automaticamente il tipo di progetto e carica le istruzioni modulari pertinenti prima di procedere.
-
-**Fasi di audit** (in ordine di gravità del danno potenziale):
-
-| Fase | Area | Cosa trova |
-|------|------|------------|
-| 0 | Orientamento | Rileva tipo progetto, carica istruzioni modulari pertinenti |
-| 1 | Sicurezza | Credenziali hardcoded, logging di dati sensibili, input non validati |
-| 2 | EF Core / Accesso dati | Full table scan silente, projection non EF-traducibile, N+1, tracking errato |
-| 3 | Architettura | Handler → provider diretto (violazione service layer), pattern vietati (AutoMapper, MediatR) |
-| 4 | Dead code | Classi, DTO, registrazioni DI non usate |
-| 5 | Pattern tipo-specifici | Conformità a `minimal-api-architecture` o `windows-service` instructions |
-| 6 | Qualità codice | Commenti XML mancanti, SRP violato, struttura file errata |
-| 7 | Performance | `.Result`/`.Wait()`, CancellationToken mancante, paginazione assente |
-
-Ogni finding riporta severità (`[ERROR]` / `[WARNING]` / `[INFO]`), file:riga, descrizione e riferimento all'istruzione modulare violata. Non modifica file: propone un plan mode al termine.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\audit-api "$env:USERPROFILE\.claude\skills\audit-api"
-```
+Promuove il branch corrente verso un branch target: commit delle modifiche pendenti (se presenti), push, apertura PR. Chiede sempre conferma prima del merge a meno di `--merge` esplicito.
 
 **Uso:**
 ```
-/audit-api
-/audit-api sicurezza
-/audit-api Fase 2
+/dr-promote-to main
+/dr-promote-to staging --merge --delete
 ```
 
-### `/audit-fe` — Audit Frontend
+### `/dr-get-latest` — Aggiornamento Pacchetti
 
-Rileva automaticamente lo stack frontend usato nel progetto (React, Vue, Angular, Blazor…), poi esegue un audit in tre fasi:
-1. **Dead code** — componenti, hook, import, route non usati
-2. **Pattern compliance** — convenzioni del framework rilevato, struttura cartelle, naming
-3. **Performance** — re-render inutili, chiamate API ridondanti, lazy loading mancante
-
-Produce un report strutturato per severità. Non modifica file: propone un plan mode al termine.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\audit-fe "$env:USERPROFILE\.claude\skills\audit-fe"
-```
+Aggiorna tutti i pacchetti `dr-*` tracciati in `.ai/dr-guidelines-packages.json`, ri-eseguendo il rispettivo `install.ps1 -Update`.
 
 **Uso:**
 ```
-/audit-fe
+/dr-get-latest
 ```
 
-### `/promote-to` — Commit, Push e Pull Request
+### `/dr-segnala-miglioria` — Apri una Issue nel Pacchetto Corretto
 
-Promuove il branch corrente verso un branch target: fa commit delle modifiche pendenti (se presenti), push e apre una Pull Request su GitHub. Chiede sempre conferma prima del merge, a meno che non sia passato `--merge`.
-
-**Sintassi:**
-```
-/promote-to <target-branch> [--merge] [--delete]
-```
-
-| Flag | Comportamento |
-|------|---------------|
-| *(nessuno)* | commit → push → PR → chiede "eseguo il merge?" |
-| `--merge` | commit → push → PR → merge automatico senza chiedere |
-| `--delete` | dopo il merge, elimina il branch sorgente |
-| `--merge --delete` | tutto automatico: PR + merge + eliminazione branch |
-
-> Il branch sorgente non viene **mai** eliminato senza `--delete` esplicito.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\promote-to "$env:USERPROFILE\.claude\skills\promote-to"
-```
+Determina il pacchetto `dr-*` pertinente (dal manifest o dal file citato), compone titolo/corpo, chiede conferma esplicita, poi apre la issue con `gh issue create` (o genera un URL precompilato se `gh` non è disponibile).
 
 **Uso:**
 ```
-/promote-to master
-/promote-to staging --merge
-/promote-to main --delete
-/promote-to staging --merge --delete
+/dr-segnala-miglioria la soglia batch size in database-provider.instructions.md non è chiara
 ```
 
-### `/get-latest` — Aggiornamento Submodule
+### `/dr-snapshot` — Contesto Progetto per Claude
 
-Aggiorna il submodule `davraf-guidelines` all'ultima versione remota e propaga le modifiche ai file copiati nel progetto host tramite `setup.ps1 -Update`.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\get-latest "$env:USERPROFILE\.claude\skills\get-latest"
-```
+Genera o aggiorna `.ai/context/dr-snapshot.md`: riassunto denso del progetto leggibile in una sola Read, senza riscansionare il codice a ogni sessione.
 
 **Uso:**
 ```
-/get-latest
+/dr-snapshot
 ```
 
-### `/snapshot` — Contesto Progetto per Claude
+### `/dr-CreateLaunchProfiles` — Profili di Avvio VS Code
 
-Genera o aggiorna `.ai/context/snapshot.md`: un riassunto denso del progetto leggibile da Claude in una sola Read, senza riscansionare il codice a ogni sessione. Funziona su qualsiasi stack (rilevamento automatico).
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\snapshot "$env:USERPROFILE\.claude\skills\snapshot"
-```
+Genera o aggiorna `.vscode/launch.json` e `.vscode/tasks.json`: rileva lo stack, chiede quali profili creare e applica solo quelli scelti senza sovrascrivere l'esistente.
 
 **Uso:**
 ```
-/snapshot
+/dr-CreateLaunchProfiles
+/dr-CreateLaunchProfiles vue + api
 ```
 
-### `/CreateLaunchProfiles` — Profili di Avvio VS Code
+### `/dr-handoff` — Documentazione di Passaggio
 
-Genera o aggiorna `.vscode/launch.json` e `.vscode/tasks.json`: rileva lo stack, chiede quali profili creare (Vue, API .NET, Full Stack, React, Next.js, Python, Chrome) e applica solo quelli scelti senza sovrascrivere l'esistente.
-
-**Setup globale** (una volta sola):
-```powershell
-Copy-Item -Recurse .claude\skills\CreateLaunchProfiles "$env:USERPROFILE\.claude\skills\CreateLaunchProfiles"
-```
+Genera una documentazione completa di handoff per permettere a un altro sviluppatore o a un altro LLM di continuare il lavoro senza perdita di contesto.
 
 **Uso:**
 ```
-/CreateLaunchProfiles
-/CreateLaunchProfiles vue + api
+/dr-handoff
 ```
 
 ---
 
 ## 🔌 MCP Servers
 
-Questo repository include un `.mcp.example.json` di riferimento con i MCP server consigliati. La configurazione reale va in `.mcp.json`, che è in `.gitignore` (può contenere credenziali).
+Questo repository include un `.mcp.example.json` di riferimento. La configurazione reale va in `.mcp.json` (in `.gitignore`, può contenere credenziali) — `install.ps1` lo genera al primo utilizzo, senza mai sovrascriverlo dopo.
 
 ### `pdf-reader` — Lettura di file PDF
 
@@ -334,7 +247,7 @@ Permette a Claude Code di leggere e interrogare file PDF direttamente nel proget
 npm install -g @fabriqa.ai/pdf-reader-mcp
 ```
 
-**Setup nel progetto** — copia `.mcp.example.json` in `.mcp.json` nella root del tuo progetto, o aggiungi al `.mcp.json` esistente:
+**Setup nel progetto** — copia `.mcp.example.json` in `.mcp.json` nella root del tuo progetto (o lascia fare a `install.ps1`), oppure aggiungi al `.mcp.json` esistente:
 ```json
 {
   "mcpServers": {
@@ -356,37 +269,42 @@ Documentazione generata nella cartella `docs/`:
 
 | File | Contenuto |
 |------|-----------|
-| [`docs/card-davraf-guidelines.md`](docs/card-davraf-guidelines.md) | Scheda riassuntiva del progetto (stack, dipendenze, ambienti) |
+| [`docs/card-davraf-guidelines.md`](docs/card-davraf-guidelines.md) | Scheda riassuntiva del progetto (stack, dipendenze, ambienti) — nome file da allineare al rename repo |
 | [`docs/onboarding.md`](docs/onboarding.md) | Guida di onboarding per developer senior |
 | [`docs/scaffolding-minimal-api.md`](docs/scaffolding-minimal-api.md) | Struttura generata da "crea una minimal api" — gate, file, convenzioni |
 | [`docs/scaffolding-windows-service.md`](docs/scaffolding-windows-service.md) | Struttura generata da "crea un windows service" — gate, file, convenzioni |
 | [`docs/scaffolding-crud.md`](docs/scaffolding-crud.md) | Struttura generata da "crea gli endpoint crud per la tabella X" — gate, file, regole tipi |
 
+> Questi documenti sono ereditati dal repo `davraf-guidelines` pre-split e non ancora rivisti per il nuovo modello a pacchetti — contenuto ancora valido, riferimenti al nome repo da aggiornare in un passaggio successivo.
+
 ---
 
 ## ❓ FAQ
 
-### Q: Posso avere le guidelines attive su tutto il PC, senza aggiungere un submodule per ogni progetto?
-**A:** SÌ — usa `setup.ps1 -GlobalInstall` da qualsiasi clone del repository. Crea `~/.claude/CLAUDE.md` con le linee guida universali. Claude Code lo carica in ogni sessione automaticamente. Le istruzioni specifiche di progetto (se presenti via submodule) continuano ad avere precedenza.
-
 ### Q: Posso usare le guidelines su un progetto già esistente?
-**A:** SÌ — `CreateNewSolution.ps1` funziona solo per nuovi progetti (esce se la cartella esiste già). Per un progetto esistente, aggiungi manualmente il submodule ed esegui `setup.ps1` come descritto nella sezione [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines).
+**A:** SÌ — esegui `irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex` dalla root del progetto (vedi [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines)). Aggiungi poi i pacchetti dominio pertinenti allo stesso modo.
+
+### Q: `install.ps1` richiede git installato?
+**A:** SÌ — usa `git clone --depth 1` per scaricare il pacchetto in una cartella temporanea. `CreateNewSolution.ps1` (legacy) ha invece un fallback ZIP se git non è disponibile.
+
+### Q: I repo sono Private — `irm ... | iex` funziona lo stesso?
+**A:** No, non senza autenticazione: il bootstrap pubblico richiede repo Public. Finché restano Private, esegui `install.ps1` per path locale da un clone autenticato (`git clone`), oppure attendi il passaggio a Public (pianificato dopo un test su un progetto host reale).
 
 ### Q: Devo committare i file `.github/`?
-**A:** SÌ se hai `.github/` come cartella normale. Se usi junction, il contenuto è nel submodule.
+**A:** SÌ — `install.ps1` li copia come cartelle reali, non junction/submodule.
 
-### Q: Funziona senza git installato?
-**A:** SÌ — `CreateNewSolution.ps1` scarica automaticamente uno ZIP delle guidelines come fallback.
+### Q: Posso avere le guidelines attive su tutto il PC, senza installarle in ogni progetto?
+**A:** Solo tramite il meccanismo legacy `setup.ps1 -GlobalInstall` (scrive `~/.claude/CLAUDE.md`), non ancora migrato al nuovo `install.ps1` — vedi nota in [Aggiornare le Guidelines](#-aggiornare-le-guidelines).
 
 ### Q: Posso usare .NET 8 invece di .NET 10?
-**A:** SÌ — modifica `Directory.Build.props` e `global.json` nel tuo progetto dopo il setup.
+**A:** SÌ — modifica `Directory.Build.props` e `global.json` nel tuo progetto dopo l'installazione.
 
 ### Q: GitHub Copilot non segue le istruzioni
 **A:** Verifica che `.github/copilot-instructions.md` sia presente e committato. Riavvia VS/VS Code.
 
-### Q: `setup.ps1` fallisce a metà — come ripristino?
-**A:** Esegui `git checkout -- .` per rollback dei file modificati dallo script, poi ripeti `setup.ps1` senza parametri.
+### Q: `install.ps1` fallisce a metà — come ripristino?
+**A:** Esegui `git checkout -- .` per rollback dei file modificati, poi ripeti `install.ps1` — è idempotente, salta i file già a posto.
 
 ---
 
-*Documento aggiornato: Luglio 2026 — Revisione v2.2 — 2026-07-02 — claude-fable-5*
+*Documento aggiornato: Luglio 2026 — Revisione v3.0 — 2026-07-23 — claude-sonnet-5*

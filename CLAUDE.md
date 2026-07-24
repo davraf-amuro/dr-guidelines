@@ -63,7 +63,7 @@ Operazione singola → dichiarazione inline (dev-cycle Fase 1), nessun piano ric
 
 **Esenzioni** (nessun `EnterPlanMode` richiesto):
 - Cartella `.ai/` — piani e file di contesto si scrivono senza blocchi
-- Skill invocate esplicitamente dall'utente (es. `/promote-to`, `/professor`) — l'invocazione è l'approvazione; la skill segue i propri passi e le proprie conferme interne
+- Skill invocate esplicitamente dall'utente (es. `/dr-promote-to`, `/dr-professor`) — l'invocazione è l'approvazione; la skill segue i propri passi e le proprie conferme interne
 
 ## Piano obbligatorio su disco
 
@@ -90,16 +90,16 @@ Intento utente corrisponde a skill disponibile → **invoca direttamente** senza
 
 | Se l'utente dice qualcosa come... | Invoca |
 |-----------------------------------|--------|
-| "vai professor", "scrivi la doc", "aggiorna il README", "genera la scheda del progetto", "documenta gli endpoint", "prepara l'onboarding" | `/professor [richiesta]` |
-| "consulta il warroom", "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/warroom [domanda o contesto]` |
-| "chiedi al tattico", "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/tattico [prompt o descrizione]` |
-| "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker", "procedura di deploy" | `/tech [task]` |
-| "promote", "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/promote-to [target-branch] [--merge] [--delete]` |
-| "audit api", "fai l'audit del backend", "analizza le api", "cerca dead code", "controlla il codice backend" | `/audit-api [focus opzionale]` |
-| "audit frontend", "fai l'audit del fe", "analizza il frontend", "controlla i componenti" | `/audit-fe [focus opzionale]` |
-| "aggiorna il submodule", "aggiorna davraf-guidelines", "aggiorna le linee guida", "get-latest" | `/get-latest` |
-| "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/professor [richiesta]` |
-| "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/snapshot` |
-| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/CreateLaunchProfiles [profili]` |
+| "vai professor", "scrivi la doc", "aggiorna il README", "genera la scheda del progetto", "documenta gli endpoint", "prepara l'onboarding" | `/dr-professor [richiesta]` |
+| "consulta il warroom", "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/dr-warroom [domanda o contesto]` |
+| "chiedi al tattico", "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-tattico [prompt o descrizione]` |
+| "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker", "procedura di deploy" | `/dr-tech [task]` |
+| "promote", "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/dr-promote-to [target-branch] [--merge] [--delete]` |
+| "audit api", "fai l'audit del backend", "analizza le api", "cerca dead code", "controlla il codice backend" | `/dr-audit-api [focus opzionale]` |
+| "audit frontend", "fai l'audit del fe", "analizza il frontend", "controlla i componenti" | `/dr-audit-fe [focus opzionale]` |
+| "aggiorna il submodule", "aggiorna davraf-guidelines", "aggiorna le linee guida", "get-latest" | `/dr-get-latest` |
+| "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/dr-professor [richiesta]` |
+| "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/dr-snapshot` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles [profili]` |
 
 Invoca skill → passa tutto contesto utile già in conversazione (codice aperto, domanda originale, file citati) — no chiedere all'utente di ripetere.

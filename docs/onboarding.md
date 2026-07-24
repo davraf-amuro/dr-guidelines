@@ -61,7 +61,7 @@ cd C:\tools\davraf-guidelines   # o dove hai clonato il repo
 ```
 davraf-guidelines/
   .claude/
-    skills/           ← Skill Claude Code (warroom, professor, tattico, tech, audit-api, audit-fe, promote-to, get-latest, snapshot, CreateLaunchProfiles)
+    skills/           ← Skill Claude Code (dr-warroom, dr-professor, dr-tattico, dr-tech, dr-audit-api, dr-audit-fe, dr-promote-to, dr-get-latest, dr-snapshot, dr-CreateLaunchProfiles)
   .github/
     instructions/     ← Istruzioni modulari per Copilot e Claude Code (.instructions.md)
     prompts/          ← Template per generazione documentazione (card, onboarding, README, endpoints)
@@ -110,7 +110,7 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 
 ## 6. Flusso di lavoro
 
-**Branch:** `main` come branch principale; branch di lavoro temporanei (es. `fix/<slug>`) promossi verso `main` con la skill `/promote-to`.
+**Branch:** `main` come branch principale; branch di lavoro temporanei (es. `fix/<slug>`) promossi verso `main` con la skill `/dr-promote-to`.
 
 **Aggiungere un'istruzione modulare:**
 1. Crea `.github/instructions/<nome>.instructions.md` con frontmatter `applyTo: "**"`

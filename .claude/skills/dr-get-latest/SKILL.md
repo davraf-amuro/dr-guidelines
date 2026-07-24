@@ -1,5 +1,5 @@
 ---
-name: get-latest
+name: dr-get-latest
 description: Aggiorna tutti i pacchetti dr-* installati nel progetto corrente (letti da .ai/dr-guidelines-packages.json) rieseguendo il rispettivo install.ps1 con -Update.
 ---
 

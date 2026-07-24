@@ -40,12 +40,12 @@ Se la ricerca non produce risultati:
 
 ---
 
-### 3. Ingaggia `/warroom` prima di progettare
+### 3. Ingaggia `/dr-warroom` prima di progettare
 
-Se l'utente approva la creazione, **è obbligatorio invocare la skill `/warroom`** con la domanda:
+Se l'utente approva la creazione, **è obbligatorio invocare la skill `/dr-warroom`** con la domanda:
 
 ```
-/warroom Come dovremmo progettare il server MCP "<nome>" per <obiettivo>?
+/dr-warroom Come dovremmo progettare il server MCP "<nome>" per <obiettivo>?
   Considerare: strumenti esposti, autenticazione, trasporto (stdio/SSE/HTTP),
   naming conventions, struttura del repository.
 ```

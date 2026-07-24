@@ -81,23 +81,23 @@ Prima di proporre un nuovo MCP server, cerca nell'ordine:
 3. Altri workspace aperti nell'ambiente corrente
 4. MCP server già registrati nell'IDE
 
-Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/warroom`.
+Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/dr-warroom`.
 
 ## Invocazione automatica skill
 
 | Se l'utente dice qualcosa come... | Invoca |
 |-----------------------------------|--------|
-| "scrivi la doc", "aggiorna README", "documenta gli endpoint", "genera scheda progetto" | `/professor` |
-| "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/warroom` |
-| "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/tattico` |
-| "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker" | `/tech` |
-| "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/promote-to` |
-| "audit backend", "analizza le API", "cerca dead code", "controlla il codice backend" | `/audit-api` |
-| "audit frontend", "analizza i componenti", "controlla il frontend" | `/audit-fe` |
-| "aggiorna le linee guida", "aggiorna davraf-guidelines", "get-latest" | `/get-latest` |
-| "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione" | `/professor` |
-| "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/snapshot` |
-| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/CreateLaunchProfiles` |
+| "scrivi la doc", "aggiorna README", "documenta gli endpoint", "genera scheda progetto" | `/dr-professor` |
+| "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/dr-warroom` |
+| "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-tattico` |
+| "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker" | `/dr-tech` |
+| "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/dr-promote-to` |
+| "audit backend", "analizza le API", "cerca dead code", "controlla il codice backend" | `/dr-audit-api` |
+| "audit frontend", "analizza i componenti", "controlla il frontend" | `/dr-audit-fe` |
+| "aggiorna le linee guida", "aggiorna davraf-guidelines", "get-latest" | `/dr-get-latest` |
+| "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione" | `/dr-professor` |
+| "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/dr-snapshot` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles` |
 
 ## Citazione fonti e modello
 

@@ -1,6 +1,6 @@
 ---
-name: promote-to
-description: "Esegue commit, push e crea una Pull Request dal branch corrente verso il branch target indicato. Uso: /promote-to <target-branch> [--delete] [--merge]. Il branch sorgente non viene mai eliminato a meno che non sia esplicitamente passato --delete."
+name: dr-promote-to
+description: "Esegue commit, push e crea una Pull Request dal branch corrente verso il branch target indicato. Uso: /dr-promote-to <target-branch> [--delete] [--merge]. Il branch sorgente non viene mai eliminato a meno che non sia esplicitamente passato --delete."
 ---
 
 Sei un agente Git specializzato nel promuovere un branch verso un altro attraverso commit, push e Pull Request su GitHub.
@@ -10,14 +10,14 @@ Sei un agente Git specializzato nel promuovere un branch verso un altro attraver
 Il comando ha questa sintassi:
 
 ```
-/promote-to <target-branch> [--delete] [--merge]
+/dr-promote-to <target-branch> [--delete] [--merge]
 ```
 
 Esempi:
-- `/promote-to main` → commit + push + PR verso main, poi chiede "eseguo il merge?"
-- `/promote-to main --merge` → commit + push + PR verso main + merge automatico senza chiedere
-- `/promote-to staging --delete` → commit + push + PR verso staging, poi chiede "eseguo il merge?"; se sì, elimina il branch sorgente dopo il merge
-- `/promote-to staging --merge --delete` → tutto automatico: PR + merge + eliminazione branch sorgente
+- `/dr-promote-to main` → commit + push + PR verso main, poi chiede "eseguo il merge?"
+- `/dr-promote-to main --merge` → commit + push + PR verso main + merge automatico senza chiedere
+- `/dr-promote-to staging --delete` → commit + push + PR verso staging, poi chiede "eseguo il merge?"; se sì, elimina il branch sorgente dopo il merge
+- `/dr-promote-to staging --merge --delete` → tutto automatico: PR + merge + eliminazione branch sorgente
 
 ---
 

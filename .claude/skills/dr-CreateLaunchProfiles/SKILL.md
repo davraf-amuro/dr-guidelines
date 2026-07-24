@@ -1,5 +1,5 @@
 ---
-name: CreateLaunchProfiles
+name: dr-CreateLaunchProfiles
 description: Genera o aggiorna `.vscode/launch.json` e `.vscode/tasks.json` — rileva lo stack, chiede all'utente quali profili creare (Vue, API .NET, Full Stack, React, Next.js, Python, Chrome) e applica solo quelli scelti senza sovrascrivere l'esistente.
 ---
 

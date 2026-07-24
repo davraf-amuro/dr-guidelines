@@ -1,5 +1,5 @@
 ---
-name: handoff
+name: dr-handoff
 description: Genera una documentazione completa di handoff per permettere a un altro sviluppatore o a un altro LLM di continuare il lavoro senza perdita di contesto.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: warroom
+name: dr-warroom
 description: >
   Tavolo multi-agente: 5 esperti (ARCH, BE, UI, UX, DBADMIN) analizzano un argomento
   e producono posizioni, punti di tensione e raccomandazione.

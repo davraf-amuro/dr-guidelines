@@ -2,9 +2,9 @@
 applyTo: "README.md"
 ---
 
-# Struttura README — davraf-guidelines
+# Struttura README — dr-guidelines
 
-Questo file definisce la struttura obbligatoria del `README.md` di questo repository.
+Questo file definisce la struttura obbligatoria del `README.md` di questo repository (`dr-guidelines`, pacchetto core della suite `dr-*`).
 Quando crei o aggiorni il README, rispetta esattamente questa struttura. Non aggiungere sezioni non previste. Non rimuovere sezioni esistenti.
 
 ---
@@ -16,16 +16,17 @@ Il README deve contenere queste sezioni, in questo ordine:
 | # | Sezione | Emoji | Scopo |
 |---|---------|-------|-------|
 | 1 | Titolo + tagline | — | Nome repo + una riga che spiega cos'è |
-| 2 | Avvio Rapido — Nuovo Progetto | 🚀 | Come usarlo su un progetto nuovo |
-| 3 | Progetto Esistente — Aggiungere le Guidelines | 🔧 | Come aggiungerlo a un progetto già esistente |
-| 4 | Cosa viene configurato | 📦 | Tabella dei file installati da `setup.ps1` |
-| 5 | Aggiornare le Guidelines | 🔄 | Come aggiornare il submodule e i file copiati |
-| 6 | Istruzioni Modulari (Copilot / Claude) | 🤖 | Tabella dei file `.instructions.md` presenti |
-| 7 | Claude Code Skills | 🤖 | Una voce per ogni skill in `.claude/skills/` |
-| 8 | MCP Servers | 🔌 | Una voce per ogni server in `.mcp.json` |
-| 9 | Documentazione | 📄 | Tabella di tutti i file `.md` in `docs/` con descrizione |
-| 10 | FAQ | ❓ | Domande frequenti in formato Q/A |
-| 11 | Footer | — | `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello*` |
+| 2 | Pacchetti dr-* disponibili | 🧩 | Tabella dei 7 pacchetti della suite (core + domini), repo e scope |
+| 3 | Avvio Rapido — Nuovo Progetto | 🚀 | Come usarlo su un progetto nuovo |
+| 4 | Progetto Esistente — Aggiungere le Guidelines | 🔧 | Come installare `dr-guidelines` (e opzionalmente altri pacchetti) su un progetto già esistente |
+| 5 | Cosa viene configurato | 📦 | Tabella dei file installati da `install.ps1` (pacchetto core) |
+| 6 | Aggiornare le Guidelines | 🔄 | Come aggiornare i pacchetti installati |
+| 7 | Istruzioni Modulari (Copilot / Claude) | 🤖 | Tabella dei file `.instructions.md` presenti **nel core** |
+| 8 | Claude Code Skills | 🤖 | Una voce per ogni skill in `.claude/skills/` **del core** |
+| 9 | MCP Servers | 🔌 | Una voce per ogni server in `.mcp.json` |
+| 10 | Documentazione | 📄 | Tabella di tutti i file `.md` in `docs/` con descrizione |
+| 11 | FAQ | ❓ | Domande frequenti in formato Q/A |
+| 12 | Footer | — | `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello*` |
 
 ---
 
@@ -35,50 +36,65 @@ Il README deve contenere queste sezioni, in questo ordine:
 - H1 con il nome del repository
 - Una sola riga di descrizione, concreta e diretta
 
-### 2 — Avvio Rapido (nuovo progetto)
+### 2 — Pacchetti dr-* disponibili
+- Tabella con colonne: `Pacchetto | Repo | Scope`
+- Una riga per ciascuno dei 7 pacchetti della suite (`dr-guidelines` core + i 6 pacchetti dominio), incluso quello corrente
+- Link markdown al repo GitHub per ciascun pacchetto (`[dr-nome](https://github.com/davraf-amuro/dr-nome)`)
+- Nota eventuali dipendenze tra pacchetti (es. `dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`, installata automaticamente)
+- Aggiorna la tabella se un pacchetto viene aggiunto, rinominato o rimosso dalla suite
+
+### 3 — Avvio Rapido (nuovo progetto)
 - Mostra i comandi PowerShell per scaricare (`irm ... -OutFile`), ispezionare ed eseguire `CreateNewSolution.ps1` — mai `irm ... | iex` diretto (esecuzione cieca di script remoti)
 - Elenca i passi che lo script esegue (lista numerata, breve)
 - **Non modificare il comando PowerShell** senza verificare che l'URL sia ancora valido
 
-### 3 — Progetto Esistente
-- Due comandi PowerShell: `git submodule add` + esecuzione di `setup.ps1`
-- Una nota su cosa fa `setup.ps1` sui file già presenti (comportamento non distruttivo)
+### 4 — Progetto Esistente
+- Comando PowerShell:
+  ```powershell
+  irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
+  ```
+- Una nota su cosa fa `install.ps1` sui file già presenti (comportamento non distruttivo, skip-se-esiste)
+- Un rimando alla sezione 2 per installare anche i pacchetti dominio pertinenti allo stack del progetto
 
-### 4 — Cosa viene configurato
+### 5 — Cosa viene configurato
 - Tabella con colonne: `File/Cartella | Provenienza | Scopo`
-- Aggiorna la tabella se `setup.ps1` cambia i file che installa
+- Aggiorna la tabella se `install.ps1`/`install-lib.ps1` cambia i file che installa
 
-### 5 — Aggiornare le Guidelines
-- Comando `git submodule update --remote davraf-guidelines`
-- Nota che `setup.ps1` **copia** i file nel progetto host (`.github/` è una cartella reale copiata, non più una junction): dopo l'update del submodule ri-esegui `setup.ps1 -Update` per propagare le modifiche
+### 6 — Aggiornare le Guidelines
+- Comando per aggiornare un singolo pacchetto:
+  ```powershell
+  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Update
+  ```
+- Nota sulla skill `/dr-get-latest`: aggiorna in un colpo solo tutti i pacchetti tracciati in `.ai/dr-guidelines-packages.json`
+- Nessun submodule, nessun comando `git submodule update` — il modello di distribuzione non usa più submodule
 
-### 6 — Istruzioni Modulari
+### 7 — Istruzioni Modulari
 - Tabella con colonne: `File | Quando usarlo`
-- Una riga per ogni file `.instructions.md` presente in `.github/instructions/`
+- Una riga per ogni file `.instructions.md` presente in `.github/instructions/` **di questo repo** (contenuto core, trasversale — le istruzioni specifiche di dominio vivono nei rispettivi pacchetti, vedi sezione 2)
 - Aggiorna la tabella quando aggiungi o rimuovi file instruction
 
-### 7 — Claude Code Skills
-- Una voce H3 per ogni file in `.claude/skills/`
-- Per ogni skill: descrizione breve, comando PowerShell per il setup globale (se serve), esempio d'uso
+### 8 — Claude Code Skills
+- Una voce H3 per ogni file in `.claude/skills/` **di questo repo**
+- Per ogni skill: descrizione breve, comando d'invocazione, esempio d'uso
 - Aggiorna questa sezione quando aggiungi o rimuovi skill
 
-### 8 — MCP Servers
+### 9 — MCP Servers
 - Una voce H3 per ogni server definito in `.mcp.json`
 - Per ogni server: prerequisito di installazione + snippet `.mcp.json` da copiare
 - Chiudi sempre con: `Poi riavvia Claude Code per caricare il server.`
 
-### 9 — Documentazione
+### 10 — Documentazione
 - Tabella con colonne: `File | Contenuto`
 - Una riga per ogni file `.md` in `docs/` (escludi `*-wiki.md` — non committati)
 - Link markdown clickable: `[docs/nome.md](docs/nome.md)`
 - Aggiorna la tabella quando aggiungi o rimuovi file in `docs/`
 
-### 10 — FAQ
+### 11 — FAQ
 - Formato: `### Q: domanda` / `**A:** risposta`
 - Aggiungi una voce quando emerge una domanda ricorrente
 - Non rimuovere voci esistenti senza motivo esplicito
 
-### 11 — Footer
+### 12 — Footer
 - Formato esatto: `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello-llm*`
 - Aggiorna mese/anno, numero revisione, data e modello ad ogni modifica significativa
 - Incrementa la revisione di 0.1 per modifiche normali, di 1.0 per ristrutturazioni (stessa logica di `doc-versioning.instructions.md`)
@@ -89,11 +105,12 @@ Il README deve contenere queste sezioni, in questo ordine:
 
 | Evento | Cosa aggiornare |
 |--------|-----------------|
+| Nuovo pacchetto aggiunto/rimosso dalla suite | Sezione "Pacchetti dr-* disponibili" |
 | Nuova skill aggiunta in `.claude/skills/` | Sezione "Claude Code Skills" |
 | Nuovo file instruction in `.github/instructions/` | Sezione "Istruzioni Modulari" |
 | Nuovo MCP server in `.mcp.json` | Sezione "MCP Servers" |
-| `setup.ps1` installa nuovi file | Tabella "Cosa viene configurato" |
+| `install.ps1`/`install-lib.ps1` installa nuovi file | Tabella "Cosa viene configurato" |
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v1.2 - davraf-guidelines - Last Update 2026-07-02 00:03 — claude-fable-5*
+*Template v2.0 - dr-guidelines - Last Update 2026-07-22 — claude-sonnet-5 — aggiornata per split multi-repo (install.ps1 sostituisce submodule/setup.ps1, aggiunta sezione Pacchetti dr-*)*
