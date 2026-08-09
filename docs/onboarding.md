@@ -42,7 +42,7 @@ irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guideli
 > Finché i repo `dr-*` sono **Private**, `raw.githubusercontent.com` risponde `404`. Il bootstrap funziona lo stesso passando da `gh`, che è autenticato e legge i Private:
 >
 > ```powershell
-> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 > ```
 >
 > In alternativa, se hai già il clone: `& <workspace>\dr-guidelines\dr-guidelines-install.ps1`, eseguito dalla root del repo host.

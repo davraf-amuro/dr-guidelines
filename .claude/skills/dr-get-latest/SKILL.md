@@ -42,7 +42,7 @@ sostituendo `<package>` con il nome del pacchetto. Questo rieseguirà il file-co
 **Repo Private → il comando sopra risponde `404`.** `raw.githubusercontent.com` non serve i Private. Verificalo una volta sola prima del ciclo (`gh auth status`) e, se i repo non sono pubblici, usa questa forma per **tutti** i pacchetti:
 
 ```powershell
-& ([scriptblock]::Create((gh api repos/davraf-amuro/<package>/contents/<package>-install.ps1 -H "Accept: application/vnd.github.raw"))) -Update
+& ([scriptblock]::Create((gh api repos/davraf-amuro/<package>/contents/<package>-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Update
 ```
 
 `gh` non installato o non autenticato → dillo e fermati: senza una delle due vie non si scarica nulla, e ripetere il ciclo produrrebbe solo N errori identici.

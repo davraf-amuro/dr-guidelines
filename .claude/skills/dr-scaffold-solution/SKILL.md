@@ -26,7 +26,7 @@ INPUT_UTENTE
 4. Decidi **come raggiungere gli installer**. Due vie, entrambe valide:
    - **`gh api`** — non serve nessun clone locale, funziona anche a repo Private. Richiede `gh auth status` autenticato (già verificato nel gate prerequisiti):
      ```powershell
-     & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw")))
+     & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
      ```
    - **path locale** — se il workspace contiene già i repo `dr-*` come cartelle sorelle, usa quelli. Individua la cartella che contiene `dr-guidelines`, `dr-minimalapi`, ecc.
 
@@ -179,8 +179,8 @@ Oppure via `gh`, senza clone locale (stesso ordine, core per primo):
 
 ```powershell
 Push-Location <root-repo>
-& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
-& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw")))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 Pop-Location
 ```
 

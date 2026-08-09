@@ -35,7 +35,7 @@ Procedura passo passo per creare un progetto host di prova (`test-uno`) dentro i
 - **path locale** — quella usata in questa procedura: attiva il secondo tentativo (`$PSScriptRoot`)
 - **`gh api`** — terzo tentativo, non richiede nessun clone locale:
   ```powershell
-  & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw")))
+  & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
   ```
 
 ---

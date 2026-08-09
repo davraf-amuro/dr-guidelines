@@ -59,7 +59,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 - Un rimando alla sezione 2 per installare anche i pacchetti dominio pertinenti allo stack del progetto
 - Finché i repo sono Private, la variante `gh api` — `raw.githubusercontent.com` risponde `404` e il comando sopra da solo non basta:
   ```powershell
-  & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+  & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
   ```
 - Gli installer si chiamano `<pacchetto>-install.ps1`, mai `install.ps1`: il nome porta il pacchetto
 

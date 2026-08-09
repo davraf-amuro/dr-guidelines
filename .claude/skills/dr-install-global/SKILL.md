@@ -45,7 +45,7 @@ Poi individua **il percorso locale del clone di `dr-guidelines`**, che contiene 
 > Senza clone locale funziona comunque, anche a repo Private, passando da `gh`:
 >
 > ```powershell
-> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw"))) -Global
+> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Global
 > ```
 >
 > `irm ... | iex` richiede invece repo Public: oggi risponde `404`.

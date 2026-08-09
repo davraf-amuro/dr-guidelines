@@ -68,7 +68,7 @@ Ogni installazione viene tracciata in `.ai/dr-guidelines-packages.json` nel prog
 `raw.githubusercontent.com` risponde `404` sui repo Private: il comando qui sopra non funziona. Usa `gh`, che è autenticato e li legge:
 
 ```powershell
-& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
 Stesso schema per i pacchetti dominio, sostituendo nome repo e nome file. Prerequisito: `gh auth status` autenticato con scope `repo`. È l'unica via che scarica davvero da GitHub senza un clone locale — l'installer risolve poi la libreria condivisa con la stessa catena di tentativi (raw → clone locale → `gh api`).
