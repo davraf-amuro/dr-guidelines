@@ -32,7 +32,7 @@ npm --version     # solo se l'utente vuole un frontend
 |---|---|---|
 | .NET SDK 10.x | almeno una riga `10.*` | STOP — nessun progetto .NET è creabile |
 | git | qualsiasi versione | STOP — serve per `git init` e per il clone dei pacchetti |
-| PowerShell 7+ | `7.*` | STOP — gli `install.ps1` girano su pwsh |
+| PowerShell 7+ | `7.*` | STOP — gli installer `<pacchetto>-install.ps1` girano su pwsh |
 | gh autenticato | `Logged in to github.com` | STOP — i repo `dr-*` sono Private: senza credenziali `git clone` fallisce |
 | node + npm | qualsiasi versione | Solo blocco del frontend, il resto procede |
 

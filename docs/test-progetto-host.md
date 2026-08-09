@@ -8,7 +8,7 @@ Procedura passo passo per creare un progetto host di prova (`test-uno`) dentro i
 
 | Cosa si verifica | Come |
 |---|---|
-| `install.ps1` core copia i file attesi | Ispezione albero `test-uno/` dopo l'esecuzione |
+| `dr-guidelines-install.ps1` copia i file attesi | Ispezione albero `test-uno/` dopo l'esecuzione |
 | Merge sezione `<!-- dr-guidelines -->` in `CLAUDE.md` | Confronto contenuto prima/dopo |
 | Risoluzione automatica dipendenze | `dr-minimalapi` → deve tirarsi dietro `dr-dotnet-backend` |
 | Idempotenza (`[SKIP]`) e `-Update` (`[UPD]`) | Doppia esecuzione dell'installer |
@@ -30,7 +30,13 @@ Procedura passo passo per creare un progetto host di prova (`test-uno`) dentro i
 
 **Perché conta l'autenticazione git:** i 7 repo `dr-*` sono attualmente **Private**. `Install-DrPackage` fa `git clone --depth 1 https://github.com/davraf-amuro/<pacchetto>.git` in una temp dir: senza credential manager attivo il clone fallisce con `git clone fallito per ... (repo Private? verifica autenticazione git/gh)`.
 
-**Conseguenza sul bootstrap:** il percorso pubblico `irm .../install.ps1 | iex` **non funziona** finché i repo restano Private (raw.githubusercontent risponde 404). Tutto il test usa quindi l'**invocazione da path locale**, che attiva il fallback `$PSScriptRoot` presente in ogni `install.ps1`.
+**Conseguenza sul bootstrap:** il percorso pubblico `irm .../<pacchetto>-install.ps1 | iex` **non funziona** finché i repo restano Private (raw.githubusercontent risponde 404). Restano due vie, entrambe coperte dalla catena di risoluzione dell'installer:
+
+- **path locale** — quella usata in questa procedura: attiva il secondo tentativo (`$PSScriptRoot`)
+- **`gh api`** — terzo tentativo, non richiede nessun clone locale:
+  ```powershell
+  & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw")))
+  ```
 
 ---
 
@@ -91,13 +97,13 @@ code E:\Davide\Progetti\dr-guidelines-workspace\dr-guidelines.code-workspace
 
 ```powershell
 Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
-& ..\dr-guidelines\install.ps1
+& ..\dr-guidelines\dr-guidelines-install.ps1
 ```
 
 **Cosa succede internamente:**
 
-1. `install.ps1` tenta `irm .../dr-guidelines/main/install-lib.ps1` → fallisce (repo Private)
-2. Il `catch` rileva `$PSScriptRoot` valorizzato → dot-source di `..\dr-guidelines\install-lib.ps1` locale
+1. `dr-guidelines-install.ps1` tenta `irm .../dr-guidelines/main/dr-guidelines-install-lib.ps1` → fallisce (repo Private)
+2. Secondo tentativo: `$PSScriptRoot` è valorizzato → dot-source di `..\dr-guidelines\dr-guidelines-install-lib.ps1` locale. Se anche questo mancasse, il terzo tentativo passa da `gh api`
 3. `Install-DrPackage -PackageName "dr-guidelines"` clona il repo in `%TEMP%\dr-install-<guid>`
 4. Copia file, merge `CLAUDE.md`, upsert manifest, elimina la temp dir
 
@@ -165,7 +171,7 @@ git status --short
 `dr-minimalapi` dichiara dipendenza da `dr-dotnet-backend`: se manca dal manifest, l'installer la installa **prima**, automaticamente.
 
 ```powershell
-& ..\dr-minimalapi\install.ps1
+& ..\dr-minimalapi\dr-minimalapi-install.ps1
 ```
 
 **Output atteso** — la riga chiave è:
@@ -198,7 +204,7 @@ Get-ChildItem .claude\skills -Directory | Select-Object Name # ora include dr-au
 **Seconda esecuzione senza flag** — nessun file deve essere sovrascritto:
 
 ```powershell
-& ..\dr-guidelines\install.ps1
+& ..\dr-guidelines\dr-guidelines-install.ps1
 ```
 
 Atteso: tutte righe `[SKIP]`, più `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md (usa -Update per aggiornare)`.
@@ -207,7 +213,7 @@ Atteso: tutte righe `[SKIP]`, più `[SKIP] Sezione dr-guidelines gia presente in
 
 ```powershell
 Add-Content .github\instructions\logging.instructions.md "`n<!-- modifica locale di test -->"
-& ..\dr-guidelines\install.ps1 -Update
+& ..\dr-guidelines\dr-guidelines-install.ps1 -Update
 Select-String -Path .github\instructions\logging.instructions.md -Pattern "modifica locale di test"
 ```
 
@@ -217,7 +223,7 @@ Atteso: righe `[UPD]`, `[UPD]  Sezione dr-guidelines aggiornata in CLAUDE.md`, e
 
 ```powershell
 Add-Content CLAUDE.md "`n## Sezione mia del progetto`n`nQuesta riga deve sopravvivere all'update."
-& ..\dr-guidelines\install.ps1 -Update
+& ..\dr-guidelines\dr-guidelines-install.ps1 -Update
 Select-String -Path CLAUDE.md -Pattern "deve sopravvivere"
 ```
 
@@ -253,7 +259,7 @@ Da `test-uno`:
 **Limite noto — fallirà finché i repo sono Private.** La skill esegue, per ogni pacchetto del manifest:
 
 ```powershell
-& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://raw.githubusercontent.com/davraf-amuro/<package>/main/install.ps1"))) -Update
+& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://raw.githubusercontent.com/davraf-amuro/<package>/main/<package>-install.ps1"))) -Update
 ```
 
 Con repo Private, `Invoke-RestMethod` restituisce 404 e — poiché lo script arriva da `iex`, quindi `$PSScriptRoot` è vuoto — il fallback locale non si attiva. Comportamento atteso e corretto: la skill segnala il fallimento per pacchetto e prosegue con i successivi.
@@ -262,9 +268,9 @@ Con repo Private, `Invoke-RestMethod` restituisce 404 e — poiché lo script ar
 
 ```powershell
 Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
-& ..\dr-guidelines\install.ps1     -Update
-& ..\dr-dotnet-backend\install.ps1 -Update
-& ..\dr-minimalapi\install.ps1     -Update
+& ..\dr-guidelines\dr-guidelines-install.ps1     -Update
+& ..\dr-dotnet-backend\dr-dotnet-backend-install.ps1 -Update
+& ..\dr-minimalapi\dr-minimalapi-install.ps1     -Update
 ```
 
 ---
@@ -324,8 +330,8 @@ Poi rimuovi la voce `{ "path": "test-uno" }` dal `.code-workspace`.
 
 | Limite | Workaround |
 |--------|-----------|
-| `irm .../install.ps1 \| iex` non funziona (repo Private) | Invocazione da path locale: `& ..\<pacchetto>\install.ps1` |
-| `/dr-get-latest` fallisce su tutti i pacchetti | Sequenza manuale `install.ps1 -Update` (passo 8) |
+| `irm .../<pacchetto>-install.ps1 \| iex` non funziona (repo Private) | Path locale `& ..\<pacchetto>\<pacchetto>-install.ps1`, oppure `gh api` senza clone locale |
+| `/dr-get-latest` usa `Invoke-RestMethod` come prima scelta | Su repo Private la skill passa alla forma `gh api`; se `gh` manca, sequenza manuale `<pacchetto>-install.ps1 -Update` (passo 8) |
 | Questo test non chiude il gate 2b dello split | Serve un progetto host **reale**, non sintetico |
 | `git clone` dei pacchetti richiede credenziali valide | Credential manager git o `gh auth login` |
 
@@ -337,9 +343,9 @@ Poi rimuovi la voce `{ "path": "test-uno" }` dal `.code-workspace`.
 |-----------|-----------|
 | [`README.md`](../README.md) | Panoramica pacchetti `dr-*`, installazione e aggiornamento |
 | [`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`](../.ai/plans/2026-07-22-dr-guidelines-split/plan.md) | Piano di split, gate 2b, design dell'installer |
-| [`install-lib.ps1`](../install-lib.ps1) | Registry pacchetti e orchestratore `Install-DrPackage` |
+| [`dr-guidelines-install-lib.ps1`](../dr-guidelines-install-lib.ps1) | Registry pacchetti e orchestratore `Install-DrPackage` |
 | [`docs/onboarding.md`](onboarding.md) | Onboarding developer senior |
 
 ---
 
-*Revisione v1.1 — 2026-08-08 14:35 — claude-opus-5*
+*Revisione v1.2 — 2026-08-09 11:40 — claude-opus-5*

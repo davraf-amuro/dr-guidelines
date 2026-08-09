@@ -1,8 +1,8 @@
 # Linee guida personali — davraf
 <!--
-  Generato dalla skill /dr-install-global (oppure da install.ps1 -Global).
+  Generato dalla skill /dr-install-global (oppure da dr-guidelines-install.ps1 -Global).
   Non modificare manualmente: verrà sovrascritto al prossimo aggiornamento.
-  Per aggiornare: /dr-install-global aggiorna  —  equivalente: install.ps1 -Global -Update
+  Per aggiornare: /dr-install-global aggiorna  —  equivalente: dr-guidelines-install.ps1 -Global -Update
   Solo il blocco che termina con <!- - /davraf-guidelines - -> viene riscritto:
   quello che sta fuori resta intatto.
 -->

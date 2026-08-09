@@ -2,7 +2,7 @@
 
 ## 1. Il progetto in tre righe
 
-`dr-guidelines` è il pacchetto **core** della suite `dr-*`: linee guida, istruzioni modulari, prompt e skill per Claude Code e GitHub Copilot. Non si usa come submodule e non ha un entrypoint applicativo: si **installa** in un progetto host con `install.ps1`, che clona il pacchetto e ne copia i file nella root del repository. I contenuti specifici di dominio (Minimal API, Windows Service, EF Core, frontend, DevOps) vivono in sei pacchetti separati, installabili allo stesso modo.
+`dr-guidelines` è il pacchetto **core** della suite `dr-*`: linee guida, istruzioni modulari, prompt e skill per Claude Code e GitHub Copilot. Non si usa come submodule e non ha un entrypoint applicativo: si **installa** in un progetto host con `dr-guidelines-install.ps1`, che clona il pacchetto e ne copia i file nella root del repository. I contenuti specifici di dominio (Minimal API, Windows Service, EF Core, frontend, DevOps) vivono in sei pacchetti separati, installabili allo stesso modo.
 
 ---
 
@@ -36,10 +36,16 @@ Rileva lo stato della cartella e delega al pezzo giusto: solution da zero, aggiu
 **Progetto esistente** — dalla root del repository host:
 
 ```powershell
-irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
 ```
 
-> Finché i repo `dr-*` sono **Private**, il bootstrap pubblico risponde 404. In quella fase si invoca l'installer da un clone locale autenticato: `& <workspace>\dr-guidelines\install.ps1`, eseguito dalla root del repo host.
+> Finché i repo `dr-*` sono **Private**, `raw.githubusercontent.com` risponde `404`. Il bootstrap funziona lo stesso passando da `gh`, che è autenticato e legge i Private:
+>
+> ```powershell
+> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+> ```
+>
+> In alternativa, se hai già il clone: `& <workspace>\dr-guidelines\dr-guidelines-install.ps1`, eseguito dalla root del repo host.
 
 **Linee guida su tutto il PC** — scrive la sezione in `~/.claude/CLAUDE.md`, che Claude Code carica in ogni sessione:
 
@@ -47,9 +53,9 @@ irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps
 /dr-install-global
 ```
 
-Equivalente da riga di comando: `install.ps1 -Global`. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, e in caso di conflitto ha precedenza il `CLAUDE.md` del progetto aperto.
+Equivalente da riga di comando: `dr-guidelines-install.ps1 -Global`. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, e in caso di conflitto ha precedenza il `CLAUDE.md` del progetto aperto.
 
-**Aggiornare** — un pacchetto alla volta con `install.ps1 -Update`, tutti quelli tracciati nel manifest con `/dr-get-latest`, la sezione globale con `/dr-install-global aggiorna`.
+**Aggiornare** — un pacchetto alla volta con `<pacchetto>-install.ps1 -Update`, tutti quelli tracciati nel manifest con `/dr-get-latest`, la sezione globale con `/dr-install-global aggiorna`.
 
 ---
 
@@ -67,8 +73,8 @@ dr-guidelines/
   docs/               ← Documentazione (card progetto, onboarding, scaffolding per tipologia)
   templates/
     global-claude.md  ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
-  install.ps1         ← Entrypoint: installa il core nel progetto host; -Update, -Global
-  install-lib.ps1     ← Registry pacchetti dr-*, Install-DrPackage, Install-DrGlobal
+  dr-guidelines-install.ps1      ← Entrypoint: installa il core nel progetto host; -Update, -Global
+  dr-guidelines-install-lib.ps1  ← Registry pacchetti dr-*, Install-DrPackage, Install-DrGlobal
   scaffolding-catalog.json  ← Catalogo tipologie di progetto e pacchetti, letto da skill e prompt
   CLAUDE.md           ← Istruzioni Claude Code per questo repository
   .editorconfig       ← Naming conventions e stile codice
@@ -87,8 +93,8 @@ dr-guidelines/
 | Nuova skill Claude Code | `.claude/skills/<nome>/SKILL.md` |
 | Nuovo template documentazione | `.github/prompts/<nome>.prompt.md` |
 | Contenuto delle linee guida globali | `templates/global-claude.md` (poi `/dr-install-global aggiorna` per propagare) |
-| Nuova tipologia di progetto o pacchetto | `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `install-lib.ps1` — il job CI `catalog-guard` fallisce se divergono |
-| File distribuiti ai progetti host | Root del repository (poi `install.ps1 -Update` negli host) |
+| Nuova tipologia di progetto o pacchetto | `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `dr-guidelines-install-lib.ps1` — il job CI `catalog-guard` fallisce se divergono |
+| File distribuiti ai progetti host | Root del repository (poi `<pacchetto>-install.ps1 -Update` negli host) |
 
 ---
 
@@ -129,7 +135,7 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 **Aggiornare le guidelines in un progetto host:**
 ```powershell
 Push-Location <root-repo-host>
-& <workspace>\dr-guidelines\install.ps1 -Update
+& <workspace>\dr-guidelines\dr-guidelines-install.ps1 -Update
 Pop-Location
 ```
 
@@ -145,7 +151,7 @@ Pop-Location
 ```
 Riscrive solo il blocco tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`; il resto di `~/.claude/CLAUDE.md` resta intatto.
 
-**Aggiungere una tipologia di progetto o un pacchetto:** aggiorna `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `install-lib.ps1`. Sono due copie della stessa informazione per scelta esplicita — il job CI `catalog-guard` confronta nomi, `repo`, `isCore` e dipendenze e fallisce sulla divergenza.
+**Aggiungere una tipologia di progetto o un pacchetto:** aggiorna `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `dr-guidelines-install-lib.ps1`. Sono due copie della stessa informazione per scelta esplicita — il job CI `catalog-guard` confronta nomi, `repo`, `isCore` e dipendenze e fallisce sulla divergenza.
 
 ---
 
@@ -175,4 +181,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 
 ---
 
-*Revisione v3.0 — 2026-08-09 10:30 — claude-opus-5*
+*Revisione v3.1 — 2026-08-09 11:40 — claude-opus-5*

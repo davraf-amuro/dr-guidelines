@@ -19,7 +19,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 | 2 | Pacchetti dr-* disponibili | 🧩 | Tabella dei 7 pacchetti della suite (core + domini), repo e scope |
 | 3 | Avvio Rapido — Nuovo Progetto | 🚀 | Come usarlo su un progetto nuovo |
 | 4 | Progetto Esistente — Aggiungere le Guidelines | 🔧 | Come installare `dr-guidelines` (e opzionalmente altri pacchetti) su un progetto già esistente |
-| 5 | Cosa viene configurato | 📦 | Tabella dei file installati da `install.ps1` (pacchetto core) |
+| 5 | Cosa viene configurato | 📦 | Tabella dei file installati da `dr-guidelines-install.ps1` (pacchetto core) |
 | 6 | Aggiornare le Guidelines | 🔄 | Come aggiornare i pacchetti installati |
 | 7 | Istruzioni Modulari (Copilot / Claude) | 🤖 | Tabella dei file `.instructions.md` presenti **nel core** |
 | 8 | Claude Code Skills | 🤖 | Una voce per ogni skill in `.claude/skills/` **del core** |
@@ -53,19 +53,24 @@ Il README deve contenere queste sezioni, in questo ordine:
 ### 4 — Progetto Esistente
 - Comando PowerShell:
   ```powershell
-  irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
+  irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
   ```
-- Una nota su cosa fa `install.ps1` sui file già presenti (comportamento non distruttivo, skip-se-esiste)
+- Una nota su cosa fa `dr-guidelines-install.ps1` sui file già presenti (comportamento non distruttivo, skip-se-esiste)
 - Un rimando alla sezione 2 per installare anche i pacchetti dominio pertinenti allo stack del progetto
+- Finché i repo sono Private, la variante `gh api` — `raw.githubusercontent.com` risponde `404` e il comando sopra da solo non basta:
+  ```powershell
+  & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+  ```
+- Gli installer si chiamano `<pacchetto>-install.ps1`, mai `install.ps1`: il nome porta il pacchetto
 
 ### 5 — Cosa viene configurato
 - Tabella con colonne: `File/Cartella | Provenienza | Scopo`
-- Aggiorna la tabella se `install.ps1`/`install-lib.ps1` cambia i file che installa
+- Aggiorna la tabella se `dr-guidelines-install.ps1`/`dr-guidelines-install-lib.ps1` cambia i file che installa
 
 ### 6 — Aggiornare le Guidelines
 - Comando per aggiornare un singolo pacchetto:
   ```powershell
-  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Update
+  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
   ```
 - Nota sulla skill `/dr-get-latest`: aggiorna in un colpo solo tutti i pacchetti tracciati in `.ai/dr-guidelines-packages.json`
 - Nessun submodule, nessun comando `git submodule update` — il modello di distribuzione non usa più submodule
@@ -111,8 +116,8 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuova skill aggiunta in `.claude/skills/` | Sezione "Claude Code Skills" |
 | Nuovo file instruction in `.github/instructions/` | Sezione "Istruzioni Modulari" |
 | Nuovo MCP server in `.mcp.json` | Sezione "MCP Servers" |
-| `install.ps1`/`install-lib.ps1` installa nuovi file | Tabella "Cosa viene configurato" |
+| `dr-guidelines-install.ps1`/`dr-guidelines-install-lib.ps1` installa nuovi file | Tabella "Cosa viene configurato" |
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v2.1 - dr-guidelines - Last Update 2026-08-08 14:35 — claude-opus-5 — sezione 3 riscritta sullo scaffolding guidato /dr-scaffold (script di bootstrap legacy dismesso)*
+*Template v2.2 - dr-guidelines - Last Update 2026-08-09 11:40 — claude-opus-5 — installer rinominati <pacchetto>-install.ps1, aggiunta la variante gh api per i repo Private*

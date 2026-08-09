@@ -8,7 +8,7 @@ Pacchetto core della suite `dr-*`: linee guida trasversali, skill Claude Code e 
 
 | Pacchetto | Repo | Scope |
 |---|---|---|
-| **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Istruzioni/skill trasversali, meccanismo di installazione (`install.ps1`) |
+| **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Istruzioni/skill trasversali, meccanismo di installazione (`dr-guidelines-install.ps1`) |
 | dr-minimalapi | [davraf-amuro/dr-minimalapi](https://github.com/davraf-amuro/dr-minimalapi) | Architettura Minimal API .NET, prompt endpoint/scaffolding. Dipende da `dr-dotnet-backend` |
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service .NET. Dipende da `dr-dotnet-backend` |
 | dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza avvio |
@@ -16,9 +16,9 @@ Pacchetto core della suite `dr-*`: linee guida trasversali, skill Claude Code e 
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
 | dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Skill di audit backend .NET (Minimal API + Windows Service) |
 
-Le dipendenze dichiarate (`dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`) vengono installate automaticamente da `install.ps1` se assenti.
+Le dipendenze dichiarate (`dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`) vengono installate automaticamente dall'installer se assenti.
 
-> **Nota:** i 7 repo sono attualmente **Private**. `install.ps1` funziona comunque via `git clone` autenticato (credential manager); il bootstrap pubblico `irm ... | iex` richiede repo Public — passaggio pianificato dopo un test su un progetto host reale.
+> **Nota:** i 7 repo sono attualmente **Private**. Il bootstrap pubblico `irm ... | iex` richiede repo Public; finché restano Private si usa `gh api` (vedi [Finché i repo sono Private](#finché-i-repo-sono-private)), che è autenticato e scarica ugualmente da GitHub. Il `git clone` che l'installer fa per prendere il contenuto del pacchetto funziona già oggi grazie al credential manager.
 
 ---
 
@@ -35,7 +35,7 @@ Il flusso:
 2. **Rileva lo stato della cartella** e delega al pezzo giusto: cartella vuota → solution da zero; solution esistente → aggiunta di un progetto; progetti senza pacchetti → installazione guidelines. Se chiedi una tipologia e manca il contenitore che la regge (progetto senza solution), **propone di creare anche quello** invece di fermarsi.
 3. **Raccoglie tutte le risposte** — workspace VS Code multi-repo (per frontend e backend in repo separati), nome e formato solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository.
 4. **Mostra il dry-run dell'albero** e chiede **una sola conferma**.
-5. **Esegue** nell'ordine: `.code-workspace` → `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend Vue → `git init` + commit iniziale → `install.ps1` dei pacchetti → `dotnet format`.
+5. **Esegue** nell'ordine: `.code-workspace` → `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend Vue → `git init` + commit iniziale → installer dei pacchetti → `dotnet format`.
 
 Le tipologie di progetto e i pacchetti disponibili vengono letti da [`scaffolding-catalog.json`](scaffolding-catalog.json): aggiungerne una è una voce nel catalogo, non una modifica ai prompt.
 
@@ -50,24 +50,34 @@ In GitHub Copilot lo stesso flusso è disponibile come prompt: [`.github/prompts
 Se hai già un progetto con repository git, esegui dalla **root del progetto**:
 
 ```powershell
-irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
 ```
 
 Installa il pacchetto core: file di configurazione, istruzioni/skill trasversali, sezione `<!-- dr-guidelines -->` in `CLAUDE.md`. Sicuro su progetti esistenti: salta i file già presenti (`[SKIP]`), non sovrascrive nulla senza `-Update` esplicito.
 
-Per aggiungere anche un pacchetto dominio (es. Minimal API), esegui il suo `install.ps1` allo stesso modo — vedi la tabella nella sezione [Pacchetti dr-* disponibili](#-pacchetti-dr--disponibili):
+Per aggiungere anche un pacchetto dominio (es. Minimal API), esegui il suo `<pacchetto>-install.ps1` allo stesso modo — vedi la tabella nella sezione [Pacchetti dr-* disponibili](#-pacchetti-dr--disponibili):
 
 ```powershell
-irm https://raw.githubusercontent.com/davraf-amuro/dr-minimalapi/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/davraf-amuro/dr-minimalapi/main/dr-minimalapi-install.ps1 | iex
 ```
 
 Ogni installazione viene tracciata in `.ai/dr-guidelines-packages.json` nel progetto host.
+
+### Finché i repo sono Private
+
+`raw.githubusercontent.com` risponde `404` sui repo Private: il comando qui sopra non funziona. Usa `gh`, che è autenticato e li legge:
+
+```powershell
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+```
+
+Stesso schema per i pacchetti dominio, sostituendo nome repo e nome file. Prerequisito: `gh auth status` autenticato con scope `repo`. È l'unica via che scarica davvero da GitHub senza un clone locale — l'installer risolve poi la libreria condivisa con la stessa catena di tentativi (raw → clone locale → `gh api`).
 
 ---
 
 ## 📦 Cosa viene configurato
 
-Dopo l'esecuzione di `install.ps1` (pacchetto core), il progetto host avrà:
+Dopo l'esecuzione di `dr-guidelines-install.ps1`, il progetto host avrà:
 
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
@@ -91,7 +101,7 @@ I pacchetti dominio installano solo `.github/instructions/`, `.github/prompts/` 
 **Un singolo pacchetto:**
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Update
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
 ```
 
 Il flag `-Update` sovrascrive i file già presenti con la versione corrente del pacchetto e ri-mergia la sezione `CLAUDE.md` (per il core). Sostituisci l'URL con quello del pacchetto dominio da aggiornare.
@@ -102,7 +112,7 @@ Il flag `-Update` sovrascrive i file già presenti con la versione corrente del 
 /dr-get-latest
 ```
 
-Legge `.ai/dr-guidelines-packages.json` e ri-esegue `install.ps1 -Update` per ciascun pacchetto elencato.
+Legge `.ai/dr-guidelines-packages.json` e ri-esegue `<pacchetto>-install.ps1 -Update` per ciascun pacchetto elencato.
 
 **Linee guida globali (`~/.claude/CLAUDE.md`, indipendenti dal progetto):**
 
@@ -113,7 +123,7 @@ Legge `.ai/dr-guidelines-packages.json` e ri-esegue `install.ps1 -Update` per ci
 Equivalente da riga di comando:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Global -Update
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Global -Update
 ```
 
 Viene riscritta **solo** la sezione tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`: tutto ciò che sta fuori resta intatto. Senza `-Update`, una sezione già presente viene lasciata com'è (`[SKIP]`).
@@ -192,7 +202,7 @@ Promuove il branch corrente verso un branch target: commit delle modifiche pende
 
 ### `/dr-get-latest` — Aggiornamento Pacchetti
 
-Aggiorna tutti i pacchetti `dr-*` tracciati in `.ai/dr-guidelines-packages.json`, ri-eseguendo il rispettivo `install.ps1 -Update`.
+Aggiorna tutti i pacchetti `dr-*` tracciati in `.ai/dr-guidelines-packages.json`, ri-eseguendo il rispettivo `<pacchetto>-install.ps1 -Update`.
 
 **Uso:**
 ```
@@ -274,7 +284,7 @@ Aggiunge un progetto a una solution: tipologia dal catalogo, creazione, aggancio
 
 ### `/dr-scaffold-guidelines` — Installa i Pacchetti
 
-Rileva lo stack, propone i pacchetti pertinenti marcando quelli già installati, esegue gli `install.ps1` dalla root del repository. Per **aggiornare** pacchetti già presenti usa invece `/dr-get-latest`.
+Rileva lo stack, propone i pacchetti pertinenti marcando quelli già installati, esegue gli installer `<pacchetto>-install.ps1` dalla root del repository. Per **aggiornare** pacchetti già presenti usa invece `/dr-get-latest`.
 
 **Uso:**
 ```
@@ -297,7 +307,7 @@ Installa o aggiorna la sezione linee guida in `~/.claude/CLAUDE.md`, il file che
 
 ## 🔌 MCP Servers
 
-Questo repository include un `.mcp.example.json` di riferimento. La configurazione reale va in `.mcp.json` (in `.gitignore`, può contenere credenziali) — `install.ps1` lo genera al primo utilizzo, senza mai sovrascriverlo dopo.
+Questo repository include un `.mcp.example.json` di riferimento. La configurazione reale va in `.mcp.json` (in `.gitignore`, può contenere credenziali) — L'installer lo genera al primo utilizzo, senza mai sovrascriverlo dopo.
 
 ### `pdf-reader` — Lettura di file PDF
 
@@ -308,7 +318,7 @@ Permette a Claude Code di leggere e interrogare file PDF direttamente nel proget
 npm install -g @fabriqa.ai/pdf-reader-mcp
 ```
 
-**Setup nel progetto** — copia `.mcp.example.json` in `.mcp.json` nella root del tuo progetto (o lascia fare a `install.ps1`), oppure aggiungi al `.mcp.json` esistente:
+**Setup nel progetto** — copia `.mcp.example.json` in `.mcp.json` nella root del tuo progetto (o lascia fare all'installer), oppure aggiungi al `.mcp.json` esistente:
 ```json
 {
   "mcpServers": {
@@ -344,19 +354,19 @@ Documentazione generata nella cartella `docs/`:
 ## ❓ FAQ
 
 ### Q: Posso usare le guidelines su un progetto già esistente?
-**A:** SÌ — esegui `irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex` dalla root del progetto (vedi [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines)). Aggiungi poi i pacchetti dominio pertinenti allo stesso modo.
+**A:** SÌ — esegui `irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex` dalla root del progetto (vedi [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines)). Aggiungi poi i pacchetti dominio pertinenti allo stesso modo.
 
-### Q: `install.ps1` richiede git installato?
+### Q: L'installer richiede git installato?
 **A:** SÌ — usa `git clone --depth 1` per scaricare il pacchetto in una cartella temporanea. Nessun fallback: senza git l'installazione non parte, e `/dr-scaffold` lo verifica nel gate prerequisiti prima di scrivere qualsiasi cosa.
 
 ### Q: I repo sono Private — `irm ... | iex` funziona lo stesso?
-**A:** No, non senza autenticazione: il bootstrap pubblico richiede repo Public. Finché restano Private, esegui `install.ps1` per path locale da un clone autenticato (`git clone`), oppure attendi il passaggio a Public (pianificato dopo un test su un progetto host reale).
+**A:** No — `raw.githubusercontent.com` risponde `404`. Ma non serve un clone locale: `gh api` legge i repo Private ed è già autenticato, quindi il bootstrap funziona lo stesso (vedi [Finché i repo sono Private](#finché-i-repo-sono-private)). Resta valida anche l'invocazione da path locale, se hai già il clone.
 
 ### Q: Devo committare i file `.github/`?
-**A:** SÌ — `install.ps1` li copia come cartelle reali, non junction/submodule.
+**A:** SÌ — L'installer li copia come cartelle reali, non junction/submodule.
 
 ### Q: Posso avere le guidelines attive su tutto il PC, senza installarle in ogni progetto?
-**A:** SÌ — `/dr-install-global`, oppure `install.ps1 -Global`, scrive la sezione linee guida in `~/.claude/CLAUDE.md`, che Claude Code carica in ogni sessione. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, quelle di progetto (istruzioni modulari, skill, configurazione radice) arrivano solo con l'install nel repository, e in caso di conflitto ha precedenza il `CLAUDE.md` di progetto.
+**A:** SÌ — `/dr-install-global`, oppure `dr-guidelines-install.ps1 -Global`, scrive la sezione linee guida in `~/.claude/CLAUDE.md`, che Claude Code carica in ogni sessione. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, quelle di progetto (istruzioni modulari, skill, configurazione radice) arrivano solo con l'install nel repository, e in caso di conflitto ha precedenza il `CLAUDE.md` di progetto.
 
 ### Q: Posso usare .NET 8 invece di .NET 10?
 **A:** SÌ — modifica `Directory.Build.props` e `global.json` nel tuo progetto dopo l'installazione.
@@ -364,8 +374,8 @@ Documentazione generata nella cartella `docs/`:
 ### Q: GitHub Copilot non segue le istruzioni
 **A:** Verifica che `.github/copilot-instructions.md` sia presente e committato. Riavvia VS/VS Code.
 
-### Q: `install.ps1` fallisce a metà — come ripristino?
-**A:** Esegui `git checkout -- .` per rollback dei file modificati, poi ripeti `install.ps1` — è idempotente, salta i file già a posto.
+### Q: L'installer fallisce a metà — come ripristino?
+**A:** Esegui `git checkout -- .` per rollback dei file modificati, poi ripeti l'installer — è idempotente, salta i file già a posto.
 
 ---
 

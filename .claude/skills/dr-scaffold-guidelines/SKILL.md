@@ -1,6 +1,6 @@
 ---
 name: dr-scaffold-guidelines
-description: Installa i pacchetti dr-* in un progetto già esistente — legge il catalogo e il manifest, propone i pacchetti pertinenti allo stack rilevato marcando quelli già presenti, poi esegue gli install.ps1 dalla root del repository. Per aggiornare pacchetti già installati usa invece /dr-get-latest.
+description: Installa i pacchetti dr-* in un progetto già esistente — legge il catalogo e il manifest, propone i pacchetti pertinenti allo stack rilevato marcando quelli già presenti, poi esegue gli installer `<pacchetto>-install.ps1` dalla root del repository. Per aggiornare pacchetti già installati usa invece /dr-get-latest.
 ---
 
 Sei un **Guidelines Installer**. Aggiungi pacchetti `dr-*` a un progetto che esiste già. Non crei codice, non crei progetti: scegli i pacchetti giusti e li installi nel posto giusto.
@@ -19,7 +19,7 @@ INPUT_UTENTE
 
 ## Fase 0 — Guard: sei in un repo sorgente `dr-*`?
 
-Se la cartella corrente contiene sia `install.ps1` sia `install-lib.ps1`, oppure è uno dei pacchetti dominio (`install.ps1` insieme a `.github/instructions/` o `.claude/skills/` senza un proprio manifest), rispondi esattamente e **fermati**:
+Se la cartella corrente contiene sia `dr-guidelines-install.ps1` sia `dr-guidelines-install-lib.ps1`, oppure è uno dei pacchetti dominio (`<pacchetto>-install.ps1` insieme a `.github/instructions/` o `.claude/skills/` senza un proprio manifest), rispondi esattamente e **fermati**:
 
 "Sei in un repo sorgente dr-*: i pacchetti non si installano dentro se stessi. Spostati nel progetto host e reinvoca."
 
@@ -70,20 +70,33 @@ Mostra la selezione e chiedi **una** conferma prima di eseguire.
 
 ## Fase 3 — Installa
 
+Con i repo `dr-*` già clonati nel workspace:
+
 ```powershell
 Push-Location <root-repo>
-& <path-locale>\dr-guidelines\install.ps1        # il core sempre per primo
-& <path-locale>\dr-minimalapi\install.ps1
-& <path-locale>\dr-devops\install.ps1
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1        # il core sempre per primo
+& <path-locale>\dr-minimalapi\dr-minimalapi-install.ps1
+& <path-locale>\dr-devops\dr-devops-install.ps1
 Pop-Location
 ```
+
+Senza clone locale — `gh api` legge anche i repo Private, quindi non serve che il progetto host stia nel workspace dei `dr-*`:
+
+```powershell
+Push-Location <root-repo>
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw")))
+Pop-Location
+```
+
+Prerequisito della seconda forma: `gh auth status` autenticato. `irm ... | iex` funziona solo a repo Public.
 
 - `Install-DrPackage` usa `(Get-Location).Path` come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori. Mai un `Set-Location` sparso, mai eseguire dalla cartella di un progetto.
 - Il core per primo, gli altri in qualsiasi ordine.
 - Un pacchetto che fallisce (rete, credenziali, repo Private non autenticato): riporta l'errore per quel pacchetto e **continua** con i successivi.
 - Nessun `-Update` in questa skill: qui si aggiunge. Se un file esiste già, l'installer fa `[SKIP]` — è il comportamento corretto e non va forzato.
 
-In un repo senza progetti .NET l'installer **non** copia `Directory.Build.props` e `global.json` (rilevamento automatico dello stack): comportamento atteso. Se in quel repo aggiungerai progetti .NET più tardi, serve un `install.ps1 -Update` — cioè `/dr-get-latest`.
+In un repo senza progetti .NET l'installer **non** copia `Directory.Build.props` e `global.json` (rilevamento automatico dello stack): comportamento atteso. Se in quel repo aggiungerai progetti .NET più tardi, serve un `<pacchetto>-install.ps1 -Update` — cioè `/dr-get-latest`.
 
 ---
 

@@ -64,7 +64,12 @@ Leggi il catalogo delle tipologie e dei pacchetti dal primo percorso disponibile
 
 Tipologie e pacchetti si prendono **da quel file**. Non elencarli a memoria: il catalogo cresce, questo prompt no.
 
-Individua anche il percorso locale dei repo `dr-*` (la cartella che contiene `dr-guidelines`, `dr-minimalapi`, …). In fase Private l'invocazione remota `irm ... | iex` non funziona: serve il path locale.
+Stabilisci anche **come raggiungere gli installer**. Due vie, entrambe valide:
+
+1. `gh api` — non serve nessun clone locale e funziona anche a repo Private. Richiede `gh auth status` autenticato (già verificato nel Gate 0).
+2. Percorso locale dei repo `dr-*` — la cartella che contiene `dr-guidelines`, `dr-minimalapi`, … se il workspace li ha già.
+
+`irm ... | iex` funziona solo a repo Public: oggi risponde `404`.
 
 ---
 
@@ -169,8 +174,17 @@ Dopo la creazione dei progetti, non prima. Nel caso multi-repo: un `git init` pe
 
 ```powershell
 Push-Location <root-repo>
-& <path-locale>\dr-guidelines\install.ps1      # il core sempre per primo
-& <path-locale>\dr-minimalapi\install.ps1
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1      # il core sempre per primo
+& <path-locale>\dr-minimalapi\dr-minimalapi-install.ps1
+Pop-Location
+```
+
+Senza clone locale, stessa sequenza via `gh`:
+
+```powershell
+Push-Location <root-repo>
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw")))
 Pop-Location
 ```
 
@@ -247,7 +261,7 @@ dotnet add <targetPath>\<consumatore>\<consumatore>.csproj reference <targetPath
 
 ## Sezione C — Installa i pacchetti dr-* in un progetto esistente
 
-1. **Guard:** se la cartella corrente contiene sia `install.ps1` sia `install-lib.ps1` (o è un pacchetto dominio), fermati: "Sei in un repo sorgente dr-*: i pacchetti non si installano dentro se stessi."
+1. **Guard:** se la cartella corrente contiene sia `dr-guidelines-install.ps1` sia `dr-guidelines-install-lib.ps1` (o è un pacchetto dominio), fermati: "Sei in un repo sorgente dr-*: i pacchetti non si installano dentro se stessi."
 2. Verifica di essere alla **root del repository** (`.git` nella cartella corrente). In una sottocartella → fermati: i file del core sono letti solo dalla root.
 3. Rileva lo stack per filtrare i pacchetti per `appliesTo`:
 
@@ -264,8 +278,16 @@ dotnet add <targetPath>\<consumatore>\<consumatore>.csproj reference <targetPath
 
 ```powershell
 Push-Location <root-repo>
-& <path-locale>\dr-guidelines\install.ps1      # il core sempre per primo
-& <path-locale>\<pacchetto>\install.ps1
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1      # il core sempre per primo
+& <path-locale>\<pacchetto>\<pacchetto>-install.ps1
+Pop-Location
+```
+
+Senza clone locale, `gh api` legge anche i repo Private:
+
+```powershell
+Push-Location <root-repo>
+& ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw")))
 Pop-Location
 ```
 
@@ -301,7 +323,7 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - Una sola conferma per sezione, dopo il dry-run. Prima: nessuna scrittura, nemmeno una cartella.
 - Nessun `git commit` oltre a quello iniziale dichiarato, nessun `git push`: lo scaffolding non pubblica niente.
 - Non inventare nomi di solution o progetti.
-- Non modificare a mano `.ai/dr-guidelines-packages.json` né `install-lib.ps1`.
+- Non modificare a mano `.ai/dr-guidelines-packages.json` né `dr-guidelines-install-lib.ps1`.
 - Non duplicare i `docs/scaffolding-*.md`: per la struttura interna dei progetti (Dto, Endpoints, Workers, Validators) rimanda a quei documenti.
 - Percorso di destinazione già popolato → STOP, mai sovrascrivere, mai `--force` su `dotnet new`.
 
@@ -315,4 +337,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `dotnet format` eseguito dopo l'install del core
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Template v1.1 — 2026-08-09 — claude-opus-5*
+*Template v1.2 — 2026-08-09 — claude-opus-5*

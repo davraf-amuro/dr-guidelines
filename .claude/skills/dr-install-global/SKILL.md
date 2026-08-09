@@ -1,6 +1,6 @@
 ---
 name: dr-install-global
-description: Installa o aggiorna le linee guida personali in ~/.claude/CLAUDE.md, il file che Claude Code carica in ogni sessione su qualsiasi progetto. Mostra cosa verrà scritto, chiede una conferma esplicita perché il target è fuori dal repository, poi esegue install.ps1 -Global e verifica l'esito. Invoca con /dr-install-global [installa|aggiorna].
+description: Installa o aggiorna le linee guida personali in ~/.claude/CLAUDE.md, il file che Claude Code carica in ogni sessione su qualsiasi progetto. Mostra cosa verrà scritto, chiede una conferma esplicita perché il target è fuori dal repository, poi esegue dr-guidelines-install.ps1 -Global e verifica l'esito. Invoca con /dr-install-global [installa|aggiorna].
 ---
 
 Sei un **Global Installer**. Scrivi in un solo file, `~/.claude/CLAUDE.md`, che sta **fuori da qualsiasi repository** e vale per ogni progetto sul PC. Per questo il flusso ha una conferma esplicita: non è una modifica che un `git checkout` annulla.
@@ -17,7 +17,7 @@ INPUT_UTENTE
 
 ## Cosa fa davvero
 
-`install.ps1 -Global` scrive **una sola sezione** nel `CLAUDE.md` globale:
+`dr-guidelines-install.ps1 -Global` scrive **una sola sezione** nel `CLAUDE.md` globale:
 
 - inizio: `## Davraf Guidelines (Globale)`
 - fine: `<!-- /davraf-guidelines -->`
@@ -26,8 +26,8 @@ Tutto ciò che sta fuori da quel blocco viene preservato. Il contenuto della sez
 
 | Modalità | Comando | Sezione già presente |
 |---|---|---|
-| Installa | `install.ps1 -Global` | lasciata intatta (`[SKIP]`) |
-| Aggiorna | `install.ps1 -Global -Update` | riscritta (`[UPD]`) |
+| Installa | `dr-guidelines-install.ps1 -Global` | lasciata intatta (`[SKIP]`) |
+| Aggiorna | `dr-guidelines-install.ps1 -Global -Update` | riscritta (`[UPD]`) |
 
 Il progetto corrente **non viene toccato**: nessun file del repo, nessun manifest, nessun `CLAUDE.md` di progetto. Per installare i pacchetti nel repository si usa `/dr-scaffold-guidelines`, che è un'altra cosa.
 
@@ -40,9 +40,15 @@ pwsh --version          # serve 7.*
 git --version
 ```
 
-Poi individua **il percorso locale del clone di `dr-guidelines`**, che contiene `install.ps1` e `templates/global-claude.md`. Cercalo tra le cartelle del workspace aperto. Non trovato → chiedi il percorso e fermati: senza sorgente non c'è niente da installare.
+Poi individua **il percorso locale del clone di `dr-guidelines`**, che contiene `dr-guidelines-install.ps1` e `templates/global-claude.md`. Cercalo tra le cartelle del workspace aperto. Non trovato → chiedi il percorso e fermati: senza sorgente non c'è niente da installare.
 
-> In fase Private l'invocazione remota `irm ... | iex` risponde 404. Serve il path locale. Quando i repo saranno pubblici funzionerà anche `& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Global`.
+> Senza clone locale funziona comunque, anche a repo Private, passando da `gh`:
+>
+> ```powershell
+> & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw"))) -Global
+> ```
+>
+> `irm ... | iex` richiede invece repo Public: oggi risponde `404`.
 
 ---
 
@@ -90,8 +96,8 @@ Copy-Item $target "$target.bak"     # copia di sicurezza, poi confrontabile
 ## Fase 3 — Esecuzione
 
 ```powershell
-& <path-locale>\dr-guidelines\install.ps1 -Global            # installa
-& <path-locale>\dr-guidelines\install.ps1 -Global -Update    # aggiorna
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1 -Global            # installa
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1 -Global -Update    # aggiorna
 ```
 
 Nessun `Push-Location` qui: a differenza dell'install di pacchetto, la directory corrente è irrilevante — il target è sempre `~/.claude/CLAUDE.md`.

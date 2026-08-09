@@ -2,9 +2,11 @@
 .SYNOPSIS
     Libreria condivisa per l'installazione dei pacchetti dr-* (dr-guidelines e domini).
 .DESCRIPTION
-    Non eseguire direttamente. Viene fetchata a runtime da ciascun install.ps1
-    di pacchetto (thin wrapper) e dot-sourced/eval'd per esporre Install-DrPackage
+    Non eseguire direttamente. Viene fetchata a runtime da ciascun <pacchetto>-install.ps1
+    (thin wrapper) e dot-sourced/eval'd per esporre Install-DrPackage, Install-DrGlobal
     e il registro pacchetti.
+
+    Vive solo in dr-guidelines: anche gli installer dei pacchetti dominio la prendono da qui.
 #>
 
 $Script:PackageRegistry = @{
@@ -324,6 +326,8 @@ function Install-DrGlobal {
 
     $tempDir = $null
     try {
+        # $PSScriptRoot e' valorizzato solo quando la libreria e' stata dot-sourced da un clone locale:
+        # fetchata via raw o via gh api, il template si prende dal clone temporaneo.
         $localTemplate = if ($PSScriptRoot) { Join-Path $PSScriptRoot "templates\global-claude.md" } else { $null }
 
         if ($localTemplate -and (Test-Path $localTemplate)) {

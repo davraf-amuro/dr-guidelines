@@ -23,7 +23,14 @@ INPUT_UTENTE
    1. `.ai/dr-scaffolding-catalog.json` nel progetto corrente
    2. `scaffolding-catalog.json` nella root del clone di `dr-guidelines` (cercalo tra le cartelle del workspace aperto)
    3. Nessuno dei due → chiedi all'utente il percorso del repo `dr-guidelines` e **fermati** finché non lo hai
-4. Individua il percorso locale dei repo `dr-*` (servono per gli `install.ps1`): la cartella che contiene `dr-guidelines`, `dr-minimalapi`, ecc. In fase Private l'invocazione remota `irm ... | iex` **non funziona**: serve il path locale.
+4. Decidi **come raggiungere gli installer**. Due vie, entrambe valide:
+   - **`gh api`** — non serve nessun clone locale, funziona anche a repo Private. Richiede `gh auth status` autenticato (già verificato nel gate prerequisiti):
+     ```powershell
+     & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw")))
+     ```
+   - **path locale** — se il workspace contiene già i repo `dr-*` come cartelle sorelle, usa quelli. Individua la cartella che contiene `dr-guidelines`, `dr-minimalapi`, ecc.
+
+   `irm ... | iex` funziona solo a repo Public: oggi risponde `404`.
 
 Non elencare le tipologie a memoria: le prendi da `projectTypes[]` del catalogo. Se il catalogo cresce, questa skill non va toccata.
 
@@ -158,11 +165,22 @@ Dopo la creazione dei progetti, non prima: il primo commit è il punto di ripris
 
 ### 4.7 Pacchetti dr-*
 
+Con il path locale:
+
 ```powershell
 Push-Location <root-repo>
-& <path-locale>\dr-guidelines\install.ps1      # il core sempre per primo
-& <path-locale>\dr-minimalapi\install.ps1
-& <path-locale>\dr-efdb\install.ps1
+& <path-locale>\dr-guidelines\dr-guidelines-install.ps1      # il core sempre per primo
+& <path-locale>\dr-minimalapi\dr-minimalapi-install.ps1
+& <path-locale>\dr-efdb\dr-efdb-install.ps1
+Pop-Location
+```
+
+Oppure via `gh`, senza clone locale (stesso ordine, core per primo):
+
+```powershell
+Push-Location <root-repo>
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw")))
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw")))
 Pop-Location
 ```
 
@@ -231,7 +249,7 @@ Per annullare il workspace: rimuovi la voce `{ "path": "..." }` dall'array `fold
 - Una sola conferma, alla Fase 3. Prima di quella: nessuna scrittura, nemmeno una cartella.
 - Nessun `git push`, nessun remote: lo scaffolding non pubblica niente. Il gate lint del progetto scatta al primo push vero, che non avviene qui.
 - Non inventare nomi: se il nome non è ricavabile dal contesto o dalla risposta dell'utente, fermati e chiedi. Mai `MyApi`, `WebApi`, `Progetto1`.
-- Non toccare `install-lib.ps1` né il manifest a mano: al manifest ci pensa l'installer.
+- Non toccare `dr-guidelines-install-lib.ps1` né il manifest a mano: al manifest ci pensa l'installer.
 - Non duplicare il contenuto dei `docs/scaffolding-*.md`: per la struttura interna dei file di un progetto (Dto, Endpoints, Workers, Validators) rimanda a quei documenti.
 - Cartella di destinazione già popolata → STOP, mai sovrascrivere.
 
