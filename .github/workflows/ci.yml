@@ -54,8 +54,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
-          # install-lib.ps1 al caricamento definisce solo funzioni e $Script:PackageRegistry: nessun side effect
-          . ./install-lib.ps1
+          # dr-guidelines-install-lib.ps1 al caricamento definisce solo funzioni e $Script:PackageRegistry: nessun side effect
+          . ./dr-guidelines-install-lib.ps1
           $catalog = Get-Content ./scaffolding-catalog.json -Raw | ConvertFrom-Json
 
           $problems = @()
@@ -65,8 +65,8 @@ jobs:
 
           $onlyRegistry = @($registryNames | Where-Object { $catalogNames -notcontains $_ })
           $onlyCatalog  = @($catalogNames  | Where-Object { $registryNames -notcontains $_ })
-          foreach ($n in $onlyRegistry) { $problems += "pacchetto '$n' presente in install-lib.ps1 ma assente da scaffolding-catalog.json" }
-          foreach ($n in $onlyCatalog)  { $problems += "pacchetto '$n' presente in scaffolding-catalog.json ma assente da install-lib.ps1" }
+          foreach ($n in $onlyRegistry) { $problems += "pacchetto '$n' presente in dr-guidelines-install-lib.ps1 ma assente da scaffolding-catalog.json" }
+          foreach ($n in $onlyCatalog)  { $problems += "pacchetto '$n' presente in scaffolding-catalog.json ma assente da dr-guidelines-install-lib.ps1" }
 
           foreach ($pkg in $catalog.packages) {
             $entry = $Script:PackageRegistry[$pkg.name]
