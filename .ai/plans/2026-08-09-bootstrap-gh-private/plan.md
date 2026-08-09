@@ -1,6 +1,6 @@
 # Piano — Bootstrap autoinstallante su repo Private via `gh api` + rename installer
 
-Stato: IN CORSO
+Stato: COMPLETATO (Fase A). Fase B in carico all'utente — richiede una sessione nuova aperta sulla cartella di prova.
 Data: 2026-08-09
 Slug: 2026-08-09-bootstrap-gh-private
 
@@ -66,7 +66,7 @@ Un artefatto pubblicato su claude.ai non risolve niente: è HTML-wrappato, sta d
 
 ## Fasi
 
-### [ ] Fase 1 — Terzo fallback nel core
+### [x] Fase 1 — Terzo fallback nel core
 
 `dr-guidelines/install.ps1`: la risoluzione di `install-lib.ps1` diventa una catena di tre tentativi, in quest'ordine:
 
@@ -78,25 +78,25 @@ Fallito anche il terzo: messaggio esplicito che distingue le tre cause (rete / n
 
 **Verifica:** con `$PSScriptRoot` vuoto (`iex` di uno scriptblock) la catena arriva al terzo passo e carica la libreria; `Get-Command Install-DrPackage` risponde.
 
-### [ ] Fase 2 — Propagazione ai 6 pacchetti dominio
+### [x] Fase 2 — Propagazione ai 6 pacchetti dominio
 
 Stesso blocco nei 6 `install.ps1`, che differiscono dal core solo per il nome del pacchetto passato a `Install-DrPackage`. Il repo da cui si prende `install-lib.ps1` resta sempre `davraf-amuro/dr-guidelines`: la libreria vive solo lì.
 
 **Verifica:** i 7 file hanno lo stesso blocco di risoluzione (diff limitato a nome pacchetto e docstring).
 
-### [ ] Fase 3 — Documentazione
+### [x] Fase 3 — Documentazione
 
 Il bootstrap per la fase Private va dove oggi c'è scritto "usa il path locale": `README.md`, `docs/onboarding.md`, le tre skill `dr-scaffold*` e il prompt duale.
 
 **Verifica:** `grep -rn "irm .*install.ps1"` mostra accanto a ogni occorrenza l'alternativa `gh`; nessun documento afferma più che in fase Private l'unica via è il clone locale.
 
-### [ ] Fase 4 — Commit e push dei 7 repo
+### [x] Fase 4 — Commit e push dei 7 repo
 
 Un commit per repo, messaggio Conventional Commits. Gate lint: nessuno dei 7 ha `.csproj` o `package.json` → non applicabile, dichiarato.
 
 **Verifica:** `git status --short` pulito in tutti e 7; CI verde su `dr-guidelines`.
 
-### [ ] Fase 5 — Test Fase A: installazione da zero
+### [x] Fase 5 — Test Fase A: installazione da zero
 
 In una cartella **nuova e vuota**, senza usare il clone locale:
 
@@ -115,19 +115,51 @@ In una cartella **nuova e vuota**, senza usare il clone locale:
 | `Directory.Build.props`, `global.json` | presenti (host .NET dopo l'aggiunta di un progetto) o `[SKIP]` dichiarato se la cartella è ancora vuota |
 | secondo run | tutti `[SKIP]` |
 
-### [ ] Fase 6 — Consegna della Fase B all'utente
+### [x] Fase 6 — Consegna della Fase B all'utente
 
 La Fase B non è eseguibile da questa sessione: le skill si caricano all'avvio dalla cartella aperta. Consegno il percorso della cartella di prova e il prompt da usare — l'utente la apre in una sessione nuova e invoca lo scaffolding.
 
 ---
 
+## Consuntivo
+
+Fasi 1-6 eseguite. Divergenze e scoperte:
+
+**Due bug trovati eseguendo, non leggendo.**
+
+1. **`ci.yml` era nel perimetro negativo, ma il rename lo tocca.** Il job `catalog-guard` fa dot-source di `./install-lib.ps1`: dopo il rename la CI è andata **rossa** al primo push (run `31316562249`, `catalog-guard: failure`). Corretto con un commit dedicato, riverificato in locale (exit `0`) e sul remoto.
+2. **`gh api` restituisce `Object[]`, non una stringa.** `[scriptblock]::Create()` converte l'array unendo le righe con **spazi**: il commento di intestazione `<# ... #>` ingloba l'intero script e l'esecuzione **non produce nulla, senza errori**. Il comando che avevo documentato ovunque non funzionava. Rilevato al primo bootstrap reale (output vuoto), risolto con `| Out-String`, corretto in 10 file di `dr-guidelines` più le 6 docstring dei pacchetti dominio. La catena di risoluzione *dentro* gli installer non era affetta: usava già `Out-String`.
+
+**Altre divergenze:**
+
+3. Rinominata anche la libreria (`dr-guidelines-install-lib.ps1`), come da decisione utente presa in fase di pianificazione.
+4. I 6 installer dominio sono stati **generati da uno script**, non editati a mano: garantisce che il blocco di risoluzione sia byte-identico. Verificato con `diff` fra due di essi — unica differenza il nome del pacchetto.
+
+**Verifiche eseguite:**
+
+- Bootstrap reale in `dr-guidelines-workspace\test\`, cartella vuota, senza clone locale nel percorso: core installato da GitHub via `gh api` — 10 instructions, 5 prompt, 15 skill, config, `.mcp.json`, `CLAUDE.md`
+- `[OK] dr-scaffolding-catalog.json` — **nessun `[WARN]`**: il catalogo è ora su `origin/main`, il limite noto della sessione precedente è chiuso
+- `[SKIP] Directory.Build.props, global.json (host non .NET)` — copia condizionale corretta su un host senza progetti .NET
+- Dipendenza risolta da sola: `dr-minimalapi` ha stampato `Dipendenza mancante: dr-dotnet-backend -> installazione automatica` e l'ha installata prima
+- Manifest finale a 3 voci con data odierna; `CLAUDE.md` con entrambi i marcatori; catalogo con 5 tipologie; 11 instructions, 7 prompt, 16 skill dopo il pacchetto dominio
+- `git status --short` nel progetto host: `.mcp.json` **assente**, correttamente ignorato
+- Secondo run del core: tutti `[SKIP]`, incluso `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md`
+- Parser PowerShell su tutti e 8 gli script: nessun errore di sintassi
+- `catalog-guard` in locale dopo il fix: `Catalogo allineato: 7 pacchetti, 5 tipologie.`, exit `0`
+- CI su GitHub Actions: verde su entrambi i push successivi al fix
+- Prompt duale: nessuna occorrenza di `$ARGUMENTS`, `AskUserQuestion`, `EnterPlanMode`, `subagent`
+- Nessun `install.ps1` bare residuo in `*.md`/`*.ps1` dei 7 repo
+- Gate di push lint: nessuno dei 7 repo ha `.csproj` o `package.json` → non applicabile
+
+---
+
 ## Criteri di verifica del piano
 
-- [ ] `install.ps1` carica `install-lib.ps1` su repo Private senza clone locale nel percorso
-- [ ] I 7 pacchetti si installano con lo stesso bootstrap
-- [ ] Nessun documento afferma più che in fase Private l'unica via è il path locale
-- [ ] Una cartella vuota, partendo da zero, riceve core + dipendenza + pacchetto dominio, con manifest a 3 voci e nessun `[WARN]`
-- [ ] L'utente ha percorso e prompt per eseguire la Fase B
+- [x] `install.ps1` carica `install-lib.ps1` su repo Private senza clone locale nel percorso
+- [x] I 7 pacchetti si installano con lo stesso bootstrap
+- [x] Nessun documento afferma più che in fase Private l'unica via è il path locale
+- [x] Una cartella vuota, partendo da zero, riceve core + dipendenza + pacchetto dominio, con manifest a 3 voci e nessun `[WARN]`
+- [x] L'utente ha percorso e prompt per eseguire la Fase B
 
 ## Fuori scope dichiarato
 
