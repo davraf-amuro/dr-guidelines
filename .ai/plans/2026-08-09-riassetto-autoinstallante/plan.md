@@ -117,7 +117,7 @@ Criterio dell'utente: "se chiedo un progetto ma manca una solution, chiede se cr
 - [x] Nessuna capacità del progetto vive fuori da una skill o da un'istruzione: `setup.ps1` eliminato, `install.ps1`/`install-lib.ps1` restano solo come meccanica dell'autoinstallante
 - [x] Una sola superficie di skill (`.claude/skills/`) e una sola di regole condivise (`.github/`), nessun mirror `.agents/`
 - [x] Documentazione senza riferimenti al modello a submodule e agli script eliminati
-- [ ] Lavoro committato e pushato su `origin/main`, CI verde
+- [x] Lavoro committato e pushato su `origin/main`, CI verde
 
 ## Consuntivo — divergenze rispetto al piano
 
