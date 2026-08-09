@@ -1,8 +1,8 @@
-# Onboarding — davraf-guidelines
+# Onboarding — dr-guidelines
 
 ## 1. Il progetto in tre righe
 
-`davraf-guidelines` è un repository di linee guida e configurazioni per progetti .NET 10. Si usa come **git submodule**: `setup.ps1` copia i file di configurazione nel progetto host e installa `.claude/skills/` e `.github/`. Contiene skill per Claude Code, istruzioni per GitHub Copilot e template per la generazione automatica di documentazione.
+`dr-guidelines` è il pacchetto **core** della suite `dr-*`: linee guida, istruzioni modulari, prompt e skill per Claude Code e GitHub Copilot. Non si usa come submodule e non ha un entrypoint applicativo: si **installa** in un progetto host con `install.ps1`, che clona il pacchetto e ne copia i file nella root del repository. I contenuti specifici di dominio (Minimal API, Windows Service, EF Core, frontend, DevOps) vivono in sei pacchetti separati, installabili allo stesso modo.
 
 ---
 
@@ -10,73 +10,74 @@
 
 | Tecnologia | Versione | Motivo |
 |---|---|---|
-| PowerShell | 5.1+ / 7+ | Script di setup cross-platform senza dipendenze esterne |
+| PowerShell | 7+ | Installer senza dipendenze esterne; `pwsh` è un prerequisito verificato prima di scrivere |
 | Markdown | — | Formato leggibile sia da Claude Code che da GitHub Copilot |
-| Git submodule | — | Aggiornamenti centralizzati propagabili via `git submodule update --remote` |
-| Claude Code skills | — | Standard di progetto — automazione task ripetitivi (doc, audit, promozione branch) |
-| GitHub Copilot instructions | — | Standard di progetto — guida il modello su convenzioni .NET 10 |
+| Pacchetti installabili | — | Un progetto host installa solo i pacchetti pertinenti al proprio stack, invece di importare tutto |
+| JSON (`scaffolding-catalog.json`) | schema v1 | Tipologie di progetto e pacchetti come dato, non come testo duplicato in ogni skill |
+| Claude Code skills | — | Automazione dei task ripetitivi (doc, audit, scaffolding, promozione branch) |
+| GitHub Copilot instructions | — | Stesse convenzioni sull'altro agente: la compatibilità duale è una regola di progetto |
+
+**Perché non più submodule:** il submodule imponeva l'intero contenuto a ogni progetto host e legava l'aggiornamento a un `git submodule update`. Con i pacchetti, ogni repository dichiara cosa ha installato in `.ai/dr-guidelines-packages.json` e aggiorna solo quello.
 
 ---
 
-## 3. Come avviare il progetto
+## 3. Come si usa
 
-Questo repository non ha un entrypoint applicativo. Si usa in tre modi:
+Questo repository non si avvia: si installa, oppure genera struttura in un altro progetto.
 
-**Nuovo progetto:**
-```powershell
-# Scarica, ispeziona, poi esegui (mai script remoti alla cieca)
-irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 -OutFile CreateNewSolution.ps1
-.\CreateNewSolution.ps1
+**Nuovo progetto da zero** — apri in VS Code la cartella di destinazione e invoca lo scaffolding guidato (nessuno script da scaricare a mano):
+
+```
+/dr-scaffold
 ```
 
-**Progetto esistente (submodule):**
+Rileva lo stato della cartella e delega al pezzo giusto: solution da zero, aggiunta di un progetto, o sola installazione dei pacchetti. Con GitHub Copilot lo stesso flusso è in `.github/prompts/dr-scaffold.prompt.md`. Tipologie e pacchetti si leggono da `scaffolding-catalog.json`.
+
+**Progetto esistente** — dalla root del repository host:
+
 ```powershell
-git submodule add https://github.com/davraf-amuro/davraf-guidelines.git davraf-guidelines
-.\davraf-guidelines\setup.ps1
+irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex
 ```
 
-**Installazione globale su PC (senza submodule):**
-```powershell
-# Clona in posizione stabile, poi esegui
-.\davraf-guidelines\setup.ps1 -GlobalInstall
-```
-Scrive in `~/.claude/CLAUDE.md` — Claude Code lo carica in ogni sessione, indipendentemente dal progetto aperto. Le istruzioni specifiche di progetto (via submodule) hanno precedenza quando presenti.
+> Finché i repo `dr-*` sono **Private**, il bootstrap pubblico risponde 404. In quella fase si invoca l'installer da un clone locale autenticato: `& <workspace>\dr-guidelines\install.ps1`, eseguito dalla root del repo host.
 
-**Aggiornare le guidelines — installazione di progetto:**
-```powershell
-git submodule update --remote davraf-guidelines
-.\davraf-guidelines\setup.ps1 -Update
+**Linee guida su tutto il PC** — scrive la sezione in `~/.claude/CLAUDE.md`, che Claude Code carica in ogni sessione:
+
+```
+/dr-install-global
 ```
 
-**Aggiornare le guidelines — installazione globale:**
-```powershell
-cd C:\tools\davraf-guidelines   # o dove hai clonato il repo
-.\setup.ps1 -GlobalUpdate       # git pull + riscrittura ~/.claude/CLAUDE.md
-```
+Equivalente da riga di comando: `install.ps1 -Global`. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, e in caso di conflitto ha precedenza il `CLAUDE.md` del progetto aperto.
+
+**Aggiornare** — un pacchetto alla volta con `install.ps1 -Update`, tutti quelli tracciati nel manifest con `/dr-get-latest`, la sezione globale con `/dr-install-global aggiorna`.
 
 ---
 
 ## 4. Struttura del codice
 
 ```
-davraf-guidelines/
+dr-guidelines/
   .claude/
-    skills/           ← Skill Claude Code (dr-warroom, dr-professor, dr-tattico, dr-tech, dr-audit-api, dr-audit-fe, dr-promote-to, dr-get-latest, dr-snapshot, dr-CreateLaunchProfiles)
+    skills/           ← Skill Claude Code, una cartella per skill con SKILL.md
   .github/
     instructions/     ← Istruzioni modulari per Copilot e Claude Code (.instructions.md)
-    prompts/          ← Template per generazione documentazione (card, onboarding, README, endpoints)
+    prompts/          ← Prompt duali: generazione doc e scaffolding (.prompt.md)
+    workflows/        ← CI, incluso il job catalog-guard
     copilot-instructions.md   ← Entry point istruzioni Copilot (letto automaticamente dall'IDE)
-  docs/               ← Documentazione generata (card progetto, wiki card, onboarding)
+  docs/               ← Documentazione (card progetto, onboarding, scaffolding per tipologia)
   templates/
-    global-claude.md  ← Template CLAUDE.md per installazione globale (usato da -GlobalInstall/-GlobalUpdate)
-  setup.ps1           ← Copia file di configurazione nel progetto host; -GlobalInstall/-GlobalUpdate per installazione globale PC
-  CreateNewSolution.ps1  ← Bootstrap nuovo progetto da zero
+    global-claude.md  ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
+  install.ps1         ← Entrypoint: installa il core nel progetto host; -Update, -Global
+  install-lib.ps1     ← Registry pacchetti dr-*, Install-DrPackage, Install-DrGlobal
+  scaffolding-catalog.json  ← Catalogo tipologie di progetto e pacchetti, letto da skill e prompt
   CLAUDE.md           ← Istruzioni Claude Code per questo repository
   .editorconfig       ← Naming conventions e stile codice
   Directory.Build.props  ← Configurazione MSBuild centralizzata (.NET 10, Nullable)
   global.json         ← Versione .NET SDK fissata
-  .mcp.example.json   ← Server MCP consigliati (pdf-reader) — la config reale va in `.mcp.json`, in `.gitignore`
+  .mcp.example.json   ← Server MCP consigliati — la config reale va in `.mcp.json`, in `.gitignore`
 ```
+
+`Directory.Build.props` e `global.json` vengono copiati **solo** in un host .NET: in un repo frontend sarebbero file inerti, e l'installer li salta dichiarandolo (`[SKIP] ... (host non .NET)`).
 
 **Dove vivono le cose che tocchi più spesso:**
 
@@ -85,8 +86,9 @@ davraf-guidelines/
 | Nuova istruzione AI | `.github/instructions/<nome>.instructions.md` |
 | Nuova skill Claude Code | `.claude/skills/<nome>/SKILL.md` |
 | Nuovo template documentazione | `.github/prompts/<nome>.prompt.md` |
-| Template CLAUDE.md globale | `templates/global-claude.md` (poi `setup.ps1 -GlobalUpdate` per propagare) |
-| File distribuiti da setup.ps1 | Root del repository (poi `setup.ps1 -Update` nei progetti host) |
+| Contenuto delle linee guida globali | `templates/global-claude.md` (poi `/dr-install-global aggiorna` per propagare) |
+| Nuova tipologia di progetto o pacchetto | `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `install-lib.ps1` — il job CI `catalog-guard` fallisce se divergono |
+| File distribuiti ai progetti host | Root del repository (poi `install.ps1 -Update` negli host) |
 
 ---
 
@@ -97,7 +99,7 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 | Regola | Fonte |
 |---|---|
 | Ogni modifica richiede piano approvato (`EnterPlanMode` → `ExitPlanMode`) | `CLAUDE.md` |
-| Ogni nuova regola deve essere compatibile con Claude Code **e** GitHub Copilot | `CLAUDE.md` |
+| Ogni nuova regola deve essere compatibile con Claude Code **e** GitHub Copilot; esenzione solo per `.claude/skills/` | `CLAUDE.md` |
 | Task con ≥ 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` | `plan-tracking.instructions.md` |
 | Footer obbligatorio nei file `docs/`: `*Revisione vN — YYYY-MM-DD HH:MM — modello*` | `doc-versioning.instructions.md` |
 | Dati sensibili mai in file committati — solo placeholder | `sensitive-data.instructions.md` |
@@ -105,6 +107,7 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
 | Nuova skill aggiunta: aggiorna sezione "Claude Code Skills" in `README.md` | `readme-structure.instructions.md` |
 | Nuova istruzione aggiunta: aggiorna tabella "Istruzioni Modulari" in `README.md` | `readme-structure.instructions.md` |
+| Nessun `git push` senza lint clean | `copilot-instructions.md` — Gate di Push |
 
 ---
 
@@ -114,29 +117,35 @@ Ricavate da `.github/instructions/` e `CLAUDE.md`:
 
 **Aggiungere un'istruzione modulare:**
 1. Crea `.github/instructions/<nome>.instructions.md` con frontmatter `applyTo: "**"`
-2. Aggiungi riga nella sezione "Istruzioni Modulari" del `README.md`
-3. Verifica compatibilità con entrambi gli agenti AI (Copilot + Claude Code)
+2. Aggiungi la riga nella sezione "Istruzioni Modulari" del `README.md`
+3. Verifica la compatibilità con entrambi gli agenti (Copilot + Claude Code)
 
 **Aggiungere una skill Claude Code:**
-1. Crea `.claude/skills/<nome>/SKILL.md`
-2. Aggiungi voce H3 nella sezione "Claude Code Skills" del `README.md`
-3. Aggiungi voce alla tabella di invocazione automatica in `CLAUDE.md`
+1. Crea `.claude/skills/<nome>/SKILL.md` — maiuscolo, come le altre
+2. Aggiungi la voce H3 nella sezione "Claude Code Skills" del `README.md`
+3. Aggiungi la riga alla tabella di invocazione automatica in `CLAUDE.md`
+4. Se la skill copre una capacità utile anche su Copilot, aggiungi il prompt duale in `.github/prompts/`
 
 **Aggiornare le guidelines in un progetto host:**
 ```powershell
-git submodule update --remote davraf-guidelines
-.\davraf-guidelines\setup.ps1 -Update
+Push-Location <root-repo-host>
+& <workspace>\dr-guidelines\install.ps1 -Update
+Pop-Location
 ```
 
-Il flag `-Update` sovrascrive i file di configurazione già presenti (`.editorconfig`, `Directory.Build.props`, `.github/`, ecc.) con la versione aggiornata. `CLAUDE.md` non viene mai sovrascritto automaticamente (la sezione `## Davraf Guidelines` viene aggiornata, le sezioni specifiche del progetto sono preservate).
+`-Update` sovrascrive i file di configurazione già presenti con la versione aggiornata. `CLAUDE.md` non viene mai sovrascritto per intero: viene riscritta solo la sezione tra `<!-- dr-guidelines -->` e `<!-- /dr-guidelines -->`, le sezioni specifiche del progetto restano.
 
-**Modificare il template globale e propagarlo:**
-1. Modifica `templates/global-claude.md`
-2. Da qualsiasi clone del repository, esegui:
-```powershell
-.\setup.ps1 -GlobalUpdate
+`Install-DrPackage` usa la **directory corrente** come root dell'host: `Push-Location`/`Pop-Location` non sono cerimoniali, decidono dove finiscono i file.
+
+**Modificare le linee guida globali e propagarle:**
+1. Modifica `templates/global-claude.md` e committa
+2. Da qualsiasi clone aggiornato del repository:
 ```
-`-GlobalUpdate` fa `git pull` e riscrive la sezione in `~/.claude/CLAUDE.md`.
+/dr-install-global aggiorna
+```
+Riscrive solo il blocco tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`; il resto di `~/.claude/CLAUDE.md` resta intatto.
+
+**Aggiungere una tipologia di progetto o un pacchetto:** aggiorna `scaffolding-catalog.json` **e** `$Script:PackageRegistry` in `install-lib.ps1`. Sono due copie della stessa informazione per scelta esplicita — il job CI `catalog-guard` confronta nomi, `repo`, `isCore` e dipendenze e fallisce sulla divergenza.
 
 ---
 
@@ -154,15 +163,16 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`
 
 | Risorsa | Scopo |
 |---|---|
+| `README.md` | Guida completa: pacchetti, installazione, skill, FAQ |
 | `.github/copilot-instructions.md` | Convenzioni .NET 10 — punto di partenza per qualsiasi task AI |
 | `.github/instructions/dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task: dichiara → esegui → verifica |
-| `.github/instructions/plan-tracking.instructions.md` | Struttura piani in `.ai/plans/` per task con ≥ 2 operazioni |
-| `.github/instructions/minimal-api-architecture.instructions.md` | Architettura endpoint, Service layer, Filter + Projection |
+| `.github/instructions/plan-tracking.instructions.md` | Struttura dei piani in `.ai/plans/` per task con ≥ 2 operazioni |
 | `.github/instructions/code-organization.instructions.md` | Organizzazione classi e file (tutti i linguaggi) |
 | `.github/instructions/sensitive-data.instructions.md` | Gestione credenziali e file locali |
-| `docs/card-davraf-guidelines.md` | Scheda riassuntiva del progetto |
-| `README.md` | Guida completa all'uso come submodule |
+| `docs/card-dr-guidelines.md` | Scheda riassuntiva del progetto |
+| `docs/test-progetto-host.md` | Procedura di test end-to-end dell'installer su un progetto host di prova |
+| `scaffolding-catalog.json` | Tipologie di progetto e pacchetti disponibili |
 
 ---
 
-*Revisione v2.3 — 2026-07-02 08:55 — claude-fable-5*
+*Revisione v3.0 — 2026-08-09 10:30 — claude-opus-5*

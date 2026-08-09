@@ -12,8 +12,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Detect .NET solution/project files
         id: detect_dotnet
@@ -44,3 +42,76 @@ jobs:
       - name: Skip when repository has no .NET solution/project
         if: steps.detect_dotnet.outputs.has_dotnet == 'false'
         run: echo "No .NET solution/project found in repository. Skipping .NET setup, restore, build, and test."
+
+  catalog-guard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify scaffolding-catalog.json matches the package registry
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          # install-lib.ps1 al caricamento definisce solo funzioni e $Script:PackageRegistry: nessun side effect
+          . ./install-lib.ps1
+          $catalog = Get-Content ./scaffolding-catalog.json -Raw | ConvertFrom-Json
+
+          $problems = @()
+
+          $registryNames = @($Script:PackageRegistry.Keys | Sort-Object)
+          $catalogNames  = @($catalog.packages.name | Sort-Object)
+
+          $onlyRegistry = @($registryNames | Where-Object { $catalogNames -notcontains $_ })
+          $onlyCatalog  = @($catalogNames  | Where-Object { $registryNames -notcontains $_ })
+          foreach ($n in $onlyRegistry) { $problems += "pacchetto '$n' presente in install-lib.ps1 ma assente da scaffolding-catalog.json" }
+          foreach ($n in $onlyCatalog)  { $problems += "pacchetto '$n' presente in scaffolding-catalog.json ma assente da install-lib.ps1" }
+
+          foreach ($pkg in $catalog.packages) {
+            $entry = $Script:PackageRegistry[$pkg.name]
+            if (-not $entry) { continue }
+
+            if ($entry.Repo -ne $pkg.repo) {
+              $problems += "repo divergente per '$($pkg.name)': registry='$($entry.Repo)' catalogo='$($pkg.repo)'"
+            }
+            if ([bool]$entry.IsCore -ne [bool]$pkg.isCore) {
+              $problems += "isCore divergente per '$($pkg.name)'"
+            }
+
+            $registryDeps = ($entry.Dependencies | Sort-Object) -join ','
+            $catalogDeps  = ($pkg.dependencies  | Sort-Object) -join ','
+            if ($registryDeps -ne $catalogDeps) {
+              $problems += "dipendenze divergenti per '$($pkg.name)': registry='$registryDeps' catalogo='$catalogDeps'"
+            }
+
+            foreach ($dep in $pkg.dependencies) {
+              if ($catalogNames -notcontains $dep) {
+                $problems += "dipendenza non risolvibile: '$($pkg.name)' -> '$dep'"
+              }
+            }
+          }
+
+          $typeIds = @()
+          foreach ($type in $catalog.projectTypes) {
+            if ($typeIds -contains $type.id) { $problems += "tipologia duplicata: '$($type.id)'" }
+            $typeIds += $type.id
+
+            if (-not $type.dotnetTemplate -and -not $type.nodeScaffolder) {
+              $problems += "tipologia '$($type.id)' senza dotnetTemplate ne' nodeScaffolder"
+            }
+
+            foreach ($ref in @($type.suggestedPackages) + @($type.optionalPackages)) {
+              if ($ref -and $catalogNames -notcontains $ref) {
+                $problems += "tipologia '$($type.id)' cita il pacchetto inesistente '$ref'"
+              }
+            }
+          }
+
+          if ($problems.Count -gt 0) {
+            Write-Host "Catalogo NON allineato:" -ForegroundColor Red
+            $problems | ForEach-Object { Write-Host "  - $_" }
+            exit 1
+          }
+
+          Write-Host "Catalogo allineato: $($catalogNames.Count) pacchetti, $($typeIds.Count) tipologie."

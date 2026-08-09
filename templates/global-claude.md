@@ -1,8 +1,10 @@
 # Linee guida personali — davraf
 <!--
-  Generato da setup.ps1 -GlobalInstall / -GlobalUpdate.
+  Generato dalla skill /dr-install-global (oppure da install.ps1 -Global).
   Non modificare manualmente: verrà sovrascritto al prossimo aggiornamento.
-  Per aggiornare: .\davraf-guidelines\setup.ps1 -GlobalUpdate
+  Per aggiornare: /dr-install-global aggiorna  —  equivalente: install.ps1 -Global -Update
+  Solo il blocco che termina con <!- - /davraf-guidelines - -> viene riscritto:
+  quello che sta fuori resta intatto.
 -->
 
 ## Lingua
@@ -98,6 +100,10 @@ Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/dr-warro
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione" | `/dr-professor` |
 | "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/dr-snapshot` |
 | "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles` |
+| "crea una nuova solution", "parti da zero", "scaffolding", "nuovo progetto", "crea il workspace" | `/dr-scaffold` |
+| "aggiungi un progetto", "aggiungi una minimal api", "aggiungi un worker", "aggiungi il frontend" | `/dr-scaffold-project` |
+| "installa le linee guida qui", "aggiungi i pacchetti dr-*", "quali pacchetti mi servono" | `/dr-scaffold-guidelines` |
+| "installa le linee guida globali", "aggiorna il CLAUDE.md globale", "linee guida su tutto il PC" | `/dr-install-global` |
 
 ## Citazione fonti e modello
 

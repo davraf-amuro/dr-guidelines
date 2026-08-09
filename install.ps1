@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Installa il pacchetto dr-guidelines (core) nel progetto corrente.
+    Installa il pacchetto dr-guidelines (core) nel progetto corrente, oppure le linee guida globali.
 .DESCRIPTION
     Esegui dalla root del progetto host.
 
@@ -10,14 +10,24 @@
     Aggiornamento (sovrascrive i file gia presenti, merge sezione CLAUDE.md):
         & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Update
 
+    Installazione globale (scrive ~/.claude/CLAUDE.md, non tocca il progetto corrente):
+        & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Global
+
     dr-guidelines e' il pacchetto core: instructions/skill trasversali, file di
     configurazione radice, sezione CLAUDE.md. Nessuna dipendenza.
 .PARAMETER Update
-    Sovrascrive i file gia presenti nel progetto con la versione corrente del pacchetto.
+    Sovrascrive i file gia presenti con la versione corrente del pacchetto.
+    Con -Global, sovrascrive la sezione gia presente in ~/.claude/CLAUDE.md.
+.PARAMETER Global
+    Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto
+    corrente. Il progetto corrente non viene toccato in alcun modo.
 #>
 
 [CmdletBinding()]
-param([switch]$Update)
+param(
+    [switch]$Update,
+    [switch]$Global
+)
 
 $libUrl = "https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install-lib.ps1"
 
@@ -39,4 +49,8 @@ try {
     }
 }
 
-Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
+if ($Global) {
+    Install-DrGlobal -Update:$Update
+} else {
+    Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
+}

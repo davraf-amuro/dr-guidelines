@@ -1,0 +1,318 @@
+---
+agent: 'agent'
+description: 'Scaffolding guidato: workspace VS Code, solution .NET 10, progetti e pacchetti dr-*'
+tools: ['search/codebase']
+---
+
+# Prompt: Scaffolding dr-* (AI Agent)
+
+Guida l'utente nella creazione di workspace, solution, progetti e installazione dei pacchetti `dr-*`. Raccogli tutte le risposte **prima** di scrivere, mostra l'albero completo, chiedi **una sola** conferma.
+
+Le domande si pongono come **liste numerate con default esplicito**: l'utente risponde con i numeri o accetta i default. Non porre una domanda per messaggio: raggruppa per sezione.
+
+Questo prompt è l'equivalente portabile delle skill `dr-scaffold*`. Il flusso, l'ordine dei comandi e i gate sono identici.
+
+---
+
+## Scegli la sezione
+
+| Stato della cartella corrente | Vai a |
+|---|---|
+| Vuota, o solo README/.gitignore/LICENSE | **Sezione A** — solution da zero |
+| Contiene già `*.slnx` o `*.sln` | **Sezione B** — aggiungi un progetto |
+| Contiene `*.csproj` sciolti ma **nessuna solution** | **Sezione A**, dopo aver detto quali progetti hai trovato e che verranno agganciati alla solution nuova |
+| Contiene solo `package.json` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi **Sezione A** in modalità multi-repo |
+| Contiene progetti ma manca il manifest `.ai/dr-guidelines-packages.json` (o è incompleto) | **Sezione C** — installa i pacchetti |
+| Contiene tutto | Elenca cosa c'è e chiedi cosa manca. Non procedere per inerzia |
+
+**Prerequisito mancante non è un vicolo cieco.** Se l'utente chiede una tipologia specifica ("aggiungi un worker", "crea una minimal api") e manca il contenitore che la regge — la solution, o il repository — non rispondere che serve un'altra procedura: **proponi di creare anche il contenitore**. Se accetta, prosegui nella sezione indicata portandoti dietro la tipologia già scelta, così l'utente non la ripete. Se rifiuta, allora fermati.
+
+Ambiguità vera (due file solution nella stessa cartella, una solution qui e una in una sottocartella): mostra cosa hai trovato e chiedi. Non scegliere al posto dell'utente.
+
+---
+
+## Gate 0 — Prerequisiti (obbligatorio in tutte le sezioni)
+
+Esegui questi comandi di sola lettura e riporta l'esito:
+
+```powershell
+dotnet --list-sdks
+git --version
+pwsh --version
+gh auth status
+node --version   # solo se serve il frontend
+npm --version    # solo se serve il frontend
+```
+
+| Requisito | Esito atteso | Se manca |
+|---|---|---|
+| .NET SDK 10.x | almeno una riga `10.*` | STOP |
+| git | qualsiasi versione | STOP |
+| PowerShell 7+ | `7.*` | STOP |
+| gh autenticato | `Logged in to github.com` | STOP — i repo `dr-*` sono Private |
+| node + npm | qualsiasi versione | blocca solo il frontend |
+
+L'install del core copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Con un SDK che non lo soddisfa, **ogni** comando `dotnet` in quella cartella fallisce dopo l'install: per questo il gate va prima di scrivere.
+
+## Gate 0-bis — Catalogo
+
+Leggi il catalogo delle tipologie e dei pacchetti dal primo percorso disponibile:
+
+1. `.ai/dr-scaffolding-catalog.json` nel progetto corrente
+2. `scaffolding-catalog.json` nella root del clone di `dr-guidelines`
+3. Nessuno dei due → chiedi all'utente il percorso del repo `dr-guidelines` e fermati
+
+Tipologie e pacchetti si prendono **da quel file**. Non elencarli a memoria: il catalogo cresce, questo prompt no.
+
+Individua anche il percorso locale dei repo `dr-*` (la cartella che contiene `dr-guidelines`, `dr-minimalapi`, …). In fase Private l'invocazione remota `irm ... | iex` non funziona: serve il path locale.
+
+---
+
+## Sezione A — Solution da zero
+
+### A.1 Domande (tutte insieme)
+
+Riporta prima **in quale cartella ti trovi**: tutto nascerà lì dentro.
+
+1. **Workspace multi-repo?** (serve se frontend e backend andranno in repository git separati)
+   - `1` Sì — indica il nome (default: nome della cartella corrente)
+   - `2` No *(default)*
+2. **Solution .NET?**
+   - `1` Sì — indica il nome (default: nome della cartella corrente in lowercase)
+   - `2` No — solo progetti non-.NET
+3. **Formato solution:** `1` slnx *(default, formato dell'SDK 10)* · `2` sln (compatibilità Visual Studio più vecchio)
+4. **Tipologie di progetto** (selezione multipla, numeri separati da virgola). Costruisci la lista da `projectTypes[]` del catalogo e per ognuna proponi il nome `<solution><defaultNameSuffix>`, modificabile.
+
+**Validazione nomi (obbligatoria):** ogni nome deve corrispondere a `^[A-Za-z][A-Za-z0-9._-]{0,63}$` (campo `defaults.namePattern` del catalogo). Nome non conforme → rifiuta e richiedi: finisce interpolato in percorsi e in `dotnet new`.
+
+Se un nome non è ricavabile dal contesto né dalle risposte, **fermati e chiedi**. Mai inventare `MyApi`, `WebApi`, `Progetto1`.
+
+### A.2 Pacchetti per repository
+
+L'unità di installazione è il **repository**, non il progetto: i file del core (`.github/`, `.claude/`, `CLAUDE.md`, config radice) vengono letti solo dalla root del repo, dentro `src/<progetto>/` sono invisibili.
+
+Per ogni repository che nascerà, proponi come pre-selezionati il core `dr-guidelines` più i `suggestedPackages[]` delle tipologie scelte per quel repo; mostra `optionalPackages[]` come non selezionati. **Non elencare le dipendenze**: le risolve l'installer dal proprio registry.
+
+### A.3 Dry-run e conferma unica
+
+Mostra l'albero completo, i comandi in ordine e i pacchetti per repo. Poi **una sola** domanda di conferma. Dopo la conferma non chiedere più nulla, salvo divergenze reali.
+
+Percorso di destinazione già esistente e non vuoto → STOP. Non sovrascrivere, non fondere.
+
+### A.4 Esecuzione, in questo ordine
+
+L'ordine mette prima ciò che è recuperabile con git, così il rollback resta `git clean -fd` e non `Remove-Item`.
+
+**1. File workspace** (se richiesto) — `<nome>.code-workspace` nella cartella corrente, percorsi relativi al file:
+
+```json
+{
+  "folders": [
+    { "path": "backend" },
+    { "path": "frontend" }
+  ],
+  "settings": {}
+}
+```
+
+La cartella che contiene il `.code-workspace` non è un repo git: i repo sono le folder elencate.
+
+**2. Solution:**
+
+```powershell
+Set-Location <root-repo-backend>
+dotnet new sln -n <solution>            # default: <solution>.slnx
+# dotnet new sln -n <solution> -f sln   # solo se richiesto il formato legacy
+```
+
+**3. Progetti .NET** — `dotnetTemplate` e `targetPath` dal catalogo:
+
+```powershell
+dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-restore
+```
+
+La tipologia `minimal-api` usa il template `web` (ASP.NET Core vuoto), **non** `webapi`: la struttura `Endpoints/` delle guide parte dal template vuoto.
+
+**4. Aggancio alla solution:**
+
+```powershell
+dotnet sln <solution>.slnx add src\<nome>\<nome>.csproj test\<nome>\<nome>.csproj
+```
+
+Le solution folder `/src/` e `/test/` le genera `dotnet sln add` da sé: non crearle a mano.
+
+Se nella cartella c'erano già `*.csproj` sciolti (caso di arrivo dalla Sezione B), agganciali con lo stesso comando **senza spostarli**: la posizione sul disco è già quella che la solution rispecchia, e muoverli romperebbe i `ProjectReference` esistenti.
+
+**5. Frontend — prima dell'install dei pacchetti:**
+
+```powershell
+Set-Location <root-repo-frontend>
+npm create vue@latest <nome-fe> -- --ts --router --pinia --eslint --prettier
+Set-Location <nome-fe>
+npm install
+```
+
+I flag di `create-vue` sono **booleani puri**: `--vitest=false` fa fallire il comando con `ERR_PARSE_ARGS_INVALID_OPTION_VALUE`; le opzioni non desiderate si omettono. `create-vue` scrive un proprio `.editorconfig`/`.gitignore`/`.gitattributes`, quindi va eseguito **prima** dell'install del core (che poi farà `[SKIP]` su quei file).
+
+**6. git init e commit iniziale — uno per repo:**
+
+```powershell
+Set-Location <root-repo>
+git init
+git add -A
+git commit -m "chore: scaffolding iniziale"
+```
+
+Dopo la creazione dei progetti, non prima. Nel caso multi-repo: un `git init` per ogni folder del workspace, mai nella cartella che contiene il `.code-workspace`.
+
+**7. Pacchetti dr-*:**
+
+```powershell
+Push-Location <root-repo>
+& <path-locale>\dr-guidelines\install.ps1      # il core sempre per primo
+& <path-locale>\dr-minimalapi\install.ps1
+Pop-Location
+```
+
+L'installer usa la directory corrente come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori e il target è la **root del repo**. Nel repo frontend l'installer non copia `Directory.Build.props` e `global.json` (nessun `.csproj` → file .NET-only saltati): comportamento atteso.
+
+**8. Formattazione — non è opzionale:**
+
+```powershell
+dotnet format <solution>.slnx
+```
+
+I template `dotnet new` scrivono UTF-8 **con BOM** mentre `.editorconfig` del core impone `charset = utf-8`: senza questo passo `dotnet format --verify-no-changes` esce `2` e il gate di push del progetto blocca il primo `git push`. Va eseguito **dopo** l'install del core.
+
+Per il frontend: lo script `lint` generato da `create-vue` usa `--fix` (corregge invece di verificare), quindi non vale come gate; per verificare serve `oxlint .` / `eslint .` senza `--fix`.
+
+**9. Passi finali:**
+
+- Se tra i pacchetti c'è `dr-efdb`, **proponi** di registrare il server MCP `db-schema` in `.mcp.json`: senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
+- Genera `launch.json`/`tasks.json` seguendo `dr-CreateLaunchProfiles` (o la procedura equivalente), non a mano qui.
+- Se è stato creato un `.code-workspace`, ricorda di aprirlo: le istruzioni e le skill installate vengono caricate all'apertura.
+
+### A.5 Verifica
+
+| Dopo | Comando | Atteso |
+|---|---|---|
+| 2 | `Get-ChildItem *.slnx, *.sln` | un solo file, nome corretto |
+| 4 | `dotnet sln <solution>.slnx list` | tutti i `.csproj` elencati |
+| 4 | `dotnet build <solution>.slnx --nologo` | `Avvisi: 0  Errori: 0` |
+| 5 | `npm run build` nella cartella FE | build completata |
+| 7 | `Get-Content .ai\dr-guidelines-packages.json` | una voce per pacchetto, data odierna |
+| 7 | `git status --short` | `.mcp.json` assente (ignorato dal `.gitignore` del core) |
+| 8 | `dotnet format <solution>.slnx --verify-no-changes` | exit code `0` |
+
+Verifica fallita → fermati e riportala, non proseguire.
+
+---
+
+## Sezione B — Aggiungi un progetto a una solution esistente
+
+1. Individua il file solution (`*.slnx` o `*.sln`). Più di uno → elencali e chiedi quale usare.
+
+   Nessuno → **non fermarti**: distingui cosa c'è davvero e proponi il recupero.
+
+   | Cosa trovi | Cosa proponi |
+   |---|---|
+   | Cartella vuota, o soli file di appoggio | "Non c'è nessuna solution qui. Ne creo una e ci aggiungo `<tipologia>`?" |
+   | `*.csproj` sciolti, nessun file solution | "Trovo `<N>` progetti senza solution: `<elenco>`. Creo la solution, aggancio quelli esistenti e poi aggiungo `<tipologia>`?" |
+   | Solo `package.json` e la tipologia chiesta è .NET | "Questo è un repo frontend: la solution .NET va in un repo separato. Procedo con il workspace multi-repo?" |
+   | Una sottocartella di primo livello contiene una solution | "La solution è in `<sottocartella>`, non qui. Lavoro lì dentro?" — se sì, prosegui da quel percorso |
+
+   Accettato → **Sezione A**, con tipologia e nome già raccolti qui: non richiederli. Rifiutato → fermati: senza solution non c'è niente a cui agganciare un progetto.
+
+2. Leggi `dotnet sln <solution> list` per sapere cosa c'è già.
+3. Chiedi **tipologia** (lista da `projectTypes[]`) e **nome** (default `<solution><defaultNameSuffix>`), validando il nome con il pattern del catalogo.
+4. Dry-run + una conferma. Cartella di destinazione già esistente → STOP.
+5. Esegui:
+
+```powershell
+dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-restore
+dotnet sln <solution> add <targetPath>\<nome>\<nome>.csproj
+dotnet build <solution> --nologo
+dotnet format <solution>
+```
+
+6. Se serve un riferimento tra progetti, **chiedi** quale progetto deve referenziare quale — non dedurlo:
+
+```powershell
+dotnet add <targetPath>\<consumatore>\<consumatore>.csproj reference <targetPath>\<nome>\<nome>.csproj
+```
+
+7. Confronta i `suggestedPackages[]` della nuova tipologia con il manifest: se manca qualcosa, segnalalo e proponi la Sezione C. Non installare da qui.
+
+---
+
+## Sezione C — Installa i pacchetti dr-* in un progetto esistente
+
+1. **Guard:** se la cartella corrente contiene sia `install.ps1` sia `install-lib.ps1` (o è un pacchetto dominio), fermati: "Sei in un repo sorgente dr-*: i pacchetti non si installano dentro se stessi."
+2. Verifica di essere alla **root del repository** (`.git` nella cartella corrente). In una sottocartella → fermati: i file del core sono letti solo dalla root.
+3. Rileva lo stack per filtrare i pacchetti per `appliesTo`:
+
+| Segnale | Stack |
+|---|---|
+| `*.csproj` / `*.sln` / `*.slnx` | `dotnet` |
+| `package.json` senza `.csproj` | `node` |
+| Entrambi | multi-stack |
+| `Workers/*.cs` | orientato a `dr-winsvc` |
+| `Endpoints/*.cs` | orientato a `dr-minimalapi` |
+
+4. Leggi `.ai/dr-guidelines-packages.json` (assente = nessun pacchetto installato, normale al primo giro) e marca ogni pacchetto come: già installato · consigliato · opzionale. Il core `dr-guidelines` va sempre incluso se manca.
+5. Mostra la selezione, chiedi una conferma, poi:
+
+```powershell
+Push-Location <root-repo>
+& <path-locale>\dr-guidelines\install.ps1      # il core sempre per primo
+& <path-locale>\<pacchetto>\install.ps1
+Pop-Location
+```
+
+Un pacchetto che fallisce (rete, credenziali): riporta l'errore e **continua** con i successivi. Nessun `-Update` qui: in questa sezione si **aggiunge**. Per aggiornare pacchetti già installati si usa `dr-get-latest` (install con `-Update`).
+
+6. Riepiloga: pacchetti installati, falliti con motivo, e — quando pertinente — la proposta `db-schema` in `.mcp.json` se è entrato `dr-efdb` e il promemoria di riavviare l'IDE perché le skill appena installate vengano caricate.
+
+---
+
+## Rollback (tutte le sezioni)
+
+```powershell
+# repo che ha già il commit iniziale
+Set-Location <root-repo>
+git clean -fd          # rimuove i file non tracciati aggiunti dopo il commit
+git checkout -- .      # ripristina i tracciati modificati
+
+# repo senza commit
+Set-Location <cartella-padre>
+Remove-Item <root-repo> -Recurse -Force
+```
+
+Prima di un `Remove-Item -Recurse -Force`: verifica il percorso, avvisa che l'operazione è irreversibile e cancella anche `.git`, chiedi conferma esplicita. Su un repo appena inizializzato non esiste remote: nessuna copia di sicurezza.
+
+Per annullare il workspace: rimuovi la voce `{ "path": "..." }` dall'array `folders` del `.code-workspace`.
+
+In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->` e `<!-- /dr-guidelines -->`, preservando il resto: per annullare quella, rimuovi il blocco tra i marker.
+
+---
+
+## Regole
+
+- Una sola conferma per sezione, dopo il dry-run. Prima: nessuna scrittura, nemmeno una cartella.
+- Nessun `git commit` oltre a quello iniziale dichiarato, nessun `git push`: lo scaffolding non pubblica niente.
+- Non inventare nomi di solution o progetti.
+- Non modificare a mano `.ai/dr-guidelines-packages.json` né `install-lib.ps1`.
+- Non duplicare i `docs/scaffolding-*.md`: per la struttura interna dei progetti (Dto, Endpoints, Workers, Validators) rimanda a quei documenti.
+- Percorso di destinazione già popolato → STOP, mai sovrascrivere, mai `--force` su `dotnet new`.
+
+## ✅ Checklist Post-Generazione
+
+- [ ] Gate 0 eseguito e riportato prima di qualsiasi scrittura
+- [ ] Tipologie e pacchetti presi dal catalogo, non da memoria
+- [ ] Nomi validati con il pattern del catalogo
+- [ ] Dry-run mostrato e conferma unica ottenuta
+- [ ] Install eseguiti dalla root del repository, core per primo
+- [ ] `dotnet format` eseguito dopo l'install del core
+- [ ] Verifiche della sezione eseguite, esiti riportati
+
+*Template v1.1 — 2026-08-09 — claude-opus-5*

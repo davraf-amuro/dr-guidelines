@@ -24,24 +24,24 @@ Le dipendenze dichiarate (`dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`) v
 
 ## 🚀 Avvio Rapido — Nuovo Progetto
 
-Apri **PowerShell** (utente normale, senza admin) ed esegui:
+Lo scaffolding non è più uno script: è guidato dall'agente AI. Apri in VS Code la cartella dove vuoi creare il progetto e invoca:
 
-```powershell
-# 1. Scarica lo script
-irm https://raw.githubusercontent.com/davraf-amuro/davraf-guidelines/main/CreateNewSolution.ps1 -OutFile CreateNewSolution.ps1
-# 2. Ispeziona il contenuto (mai eseguire script remoti alla cieca)
-# 3. Esegui
-.\CreateNewSolution.ps1
+```
+/dr-scaffold
 ```
 
-Lo script:
-1. Chiede il **nome del progetto** tramite finestra di dialogo
-2. Apre un **folder picker** nativo per scegliere la cartella di destinazione
-3. Crea la cartella `<destinazione>/<nome-progetto>/`
-4. Aggiunge `davraf-guidelines` come **git submodule** (o scarica ZIP se git non è disponibile)
-5. Esegue `setup.ps1` che copia i file di configurazione nel progetto
+Il flusso:
+1. **Gate prerequisiti** — verifica SDK .NET 10, git, PowerShell 7, autenticazione `gh` (e node/npm se serve un frontend). Nessuna scrittura finché il gate non passa.
+2. **Rileva lo stato della cartella** e delega al pezzo giusto: cartella vuota → solution da zero; solution esistente → aggiunta di un progetto; progetti senza pacchetti → installazione guidelines. Se chiedi una tipologia e manca il contenitore che la regge (progetto senza solution), **propone di creare anche quello** invece di fermarsi.
+3. **Raccoglie tutte le risposte** — workspace VS Code multi-repo (per frontend e backend in repo separati), nome e formato solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository.
+4. **Mostra il dry-run dell'albero** e chiede **una sola conferma**.
+5. **Esegue** nell'ordine: `.code-workspace` → `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend Vue → `git init` + commit iniziale → `install.ps1` dei pacchetti → `dotnet format`.
 
-> `CreateNewSolution.ps1` non è ancora stato migrato al nuovo modello a pacchetti (`install.ps1`): resta legato al repo legacy `davraf-guidelines`, tuttora attivo e non archiviato. Per un progetto nuovo con i pacchetti `dr-*`, crea la solution manualmente e segui la sezione successiva.
+Le tipologie di progetto e i pacchetti disponibili vengono letti da [`scaffolding-catalog.json`](scaffolding-catalog.json): aggiungerne una è una voce nel catalogo, non una modifica ai prompt.
+
+In GitHub Copilot lo stesso flusso è disponibile come prompt: [`.github/prompts/dr-scaffold.prompt.md`](.github/prompts/dr-scaffold.prompt.md).
+
+> Preferisci fare a mano? La struttura generata e le convenzioni applicate sono documentate in [`docs/scaffolding-minimal-api.md`](docs/scaffolding-minimal-api.md) e [`docs/scaffolding-windows-service.md`](docs/scaffolding-windows-service.md), poi segui la sezione successiva per i pacchetti.
 
 ---
 
@@ -104,15 +104,19 @@ Il flag `-Update` sovrascrive i file già presenti con la versione corrente del 
 
 Legge `.ai/dr-guidelines-packages.json` e ri-esegue `install.ps1 -Update` per ciascun pacchetto elencato.
 
-**Installazione globale (legacy, non ancora migrata):**
+**Linee guida globali (`~/.claude/CLAUDE.md`, indipendenti dal progetto):**
 
-```powershell
-cd C:\tools\davraf-guidelines   # clone stabile del repo legacy
-git pull
-.\setup.ps1 -GlobalUpdate
+```
+/dr-install-global aggiorna
 ```
 
-`setup.ps1 -GlobalInstall`/`-GlobalUpdate` (scrittura di `~/.claude/CLAUDE.md`, indipendente dal progetto) resta disponibile ma non è ancora stata portata nel nuovo `install.ps1` — TODO aperto.
+Equivalente da riga di comando:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1))) -Global -Update
+```
+
+Viene riscritta **solo** la sezione tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`: tutto ciò che sta fuori resta intatto. Senza `-Update`, una sezione già presente viene lasciata com'è (`[SKIP]`).
 
 ---
 
@@ -234,6 +238,63 @@ Genera una documentazione completa di handoff per permettere a un altro sviluppa
 
 ---
 
+### `/dr-scaffold` — Scaffolding Guidato (punto d'ingresso)
+
+Verifica i prerequisiti, rileva lo stato della cartella corrente e delega al pezzo giusto. È il comando da usare quando non sai quale serve.
+
+**Uso:**
+```
+/dr-scaffold
+/dr-scaffold aggiungi un worker al progetto
+```
+
+---
+
+### `/dr-scaffold-solution` — Solution da Zero
+
+Workspace VS Code multi-repo, solution .NET 10 (formato `slnx`), progetti in `src/` e `test/`, frontend Vue, `git init` e pacchetti `dr-*`. Tutte le domande prima, dry-run dell'albero, **una sola** conferma.
+
+**Uso:**
+```
+/dr-scaffold-solution
+```
+
+---
+
+### `/dr-scaffold-project` — Aggiungi un Progetto
+
+Aggiunge un progetto a una solution: tipologia dal catalogo, creazione, aggancio con `dotnet sln add`, build e `dotnet format` di verifica. Se la solution non esiste **non si ferma**: propone di crearla e passa il lavoro a `/dr-scaffold-solution` con la tipologia già scelta.
+
+**Uso:**
+```
+/dr-scaffold-project worker chiamato ordini.service
+```
+
+---
+
+### `/dr-scaffold-guidelines` — Installa i Pacchetti
+
+Rileva lo stack, propone i pacchetti pertinenti marcando quelli già installati, esegue gli `install.ps1` dalla root del repository. Per **aggiornare** pacchetti già presenti usa invece `/dr-get-latest`.
+
+**Uso:**
+```
+/dr-scaffold-guidelines
+```
+
+---
+
+### `/dr-install-global` — Linee Guida su Tutto il PC
+
+Installa o aggiorna la sezione linee guida in `~/.claude/CLAUDE.md`, il file che Claude Code carica in ogni sessione su qualsiasi progetto. Legge lo stato attuale, mostra cosa verrà scritto e cosa resta intatto, chiede **una conferma esplicita** — il target è fuori dal repository e nessun `git checkout` lo annulla.
+
+**Uso:**
+```
+/dr-install-global
+/dr-install-global aggiorna
+```
+
+---
+
 ## 🔌 MCP Servers
 
 Questo repository include un `.mcp.example.json` di riferimento. La configurazione reale va in `.mcp.json` (in `.gitignore`, può contenere credenziali) — `install.ps1` lo genera al primo utilizzo, senza mai sovrascriverlo dopo.
@@ -269,13 +330,14 @@ Documentazione generata nella cartella `docs/`:
 
 | File | Contenuto |
 |------|-----------|
-| [`docs/card-davraf-guidelines.md`](docs/card-davraf-guidelines.md) | Scheda riassuntiva del progetto (stack, dipendenze, ambienti) — nome file da allineare al rename repo |
+| [`docs/card-dr-guidelines.md`](docs/card-dr-guidelines.md) | Scheda riassuntiva del progetto (stack, dipendenze, ambienti) |
 | [`docs/onboarding.md`](docs/onboarding.md) | Guida di onboarding per developer senior |
 | [`docs/scaffolding-minimal-api.md`](docs/scaffolding-minimal-api.md) | Struttura generata da "crea una minimal api" — gate, file, convenzioni |
 | [`docs/scaffolding-windows-service.md`](docs/scaffolding-windows-service.md) | Struttura generata da "crea un windows service" — gate, file, convenzioni |
 | [`docs/scaffolding-crud.md`](docs/scaffolding-crud.md) | Struttura generata da "crea gli endpoint crud per la tabella X" — gate, file, regole tipi |
+| [`docs/test-progetto-host.md`](docs/test-progetto-host.md) | Procedura di test end-to-end dell'installer su un progetto host di prova (`test-uno`) — passi, checklist, rollback, limiti in fase Private |
 
-> Questi documenti sono ereditati dal repo `davraf-guidelines` pre-split e non ancora rivisti per il nuovo modello a pacchetti — contenuto ancora valido, riferimenti al nome repo da aggiornare in un passaggio successivo.
+> `card-dr-guidelines.md`, `onboarding.md` e `test-progetto-host.md` sono allineati al modello a pacchetti. I tre `scaffolding-*.md` sono ereditati dal repo `davraf-guidelines` pre-split: descrivono la struttura interna dei progetti generati (Dto, Endpoints, Workers, Validators), contenuto ancora valido e indipendente dal meccanismo di distribuzione.
 
 ---
 
@@ -285,7 +347,7 @@ Documentazione generata nella cartella `docs/`:
 **A:** SÌ — esegui `irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/install.ps1 | iex` dalla root del progetto (vedi [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines)). Aggiungi poi i pacchetti dominio pertinenti allo stesso modo.
 
 ### Q: `install.ps1` richiede git installato?
-**A:** SÌ — usa `git clone --depth 1` per scaricare il pacchetto in una cartella temporanea. `CreateNewSolution.ps1` (legacy) ha invece un fallback ZIP se git non è disponibile.
+**A:** SÌ — usa `git clone --depth 1` per scaricare il pacchetto in una cartella temporanea. Nessun fallback: senza git l'installazione non parte, e `/dr-scaffold` lo verifica nel gate prerequisiti prima di scrivere qualsiasi cosa.
 
 ### Q: I repo sono Private — `irm ... | iex` funziona lo stesso?
 **A:** No, non senza autenticazione: il bootstrap pubblico richiede repo Public. Finché restano Private, esegui `install.ps1` per path locale da un clone autenticato (`git clone`), oppure attendi il passaggio a Public (pianificato dopo un test su un progetto host reale).
@@ -294,7 +356,7 @@ Documentazione generata nella cartella `docs/`:
 **A:** SÌ — `install.ps1` li copia come cartelle reali, non junction/submodule.
 
 ### Q: Posso avere le guidelines attive su tutto il PC, senza installarle in ogni progetto?
-**A:** Solo tramite il meccanismo legacy `setup.ps1 -GlobalInstall` (scrive `~/.claude/CLAUDE.md`), non ancora migrato al nuovo `install.ps1` — vedi nota in [Aggiornare le Guidelines](#-aggiornare-le-guidelines).
+**A:** SÌ — `/dr-install-global`, oppure `install.ps1 -Global`, scrive la sezione linee guida in `~/.claude/CLAUDE.md`, che Claude Code carica in ogni sessione. Non sostituisce l'installazione nel progetto: le regole globali sono trasversali, quelle di progetto (istruzioni modulari, skill, configurazione radice) arrivano solo con l'install nel repository, e in caso di conflitto ha precedenza il `CLAUDE.md` di progetto.
 
 ### Q: Posso usare .NET 8 invece di .NET 10?
 **A:** SÌ — modifica `Directory.Build.props` e `global.json` nel tuo progetto dopo l'installazione.
@@ -307,4 +369,4 @@ Documentazione generata nella cartella `docs/`:
 
 ---
 
-*Documento aggiornato: Luglio 2026 — Revisione v3.0 — 2026-07-23 — claude-sonnet-5*
+*Documento aggiornato: Agosto 2026 — Revisione v3.2 — 2026-08-09 — claude-opus-5*

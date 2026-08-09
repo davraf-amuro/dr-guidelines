@@ -80,12 +80,34 @@ function Copy-Skills {
     }
 }
 
+function Test-DotnetHost {
+    param([string]$HostRoot)
+
+    # Profondita' 3: copre root, src\<progetto>\x.csproj e test\<progetto>\x.csproj senza scendere in node_modules
+    foreach ($pattern in @("*.csproj", "*.fsproj", "*.vbproj", "*.sln", "*.slnx")) {
+        $found = Get-ChildItem -Path $HostRoot -Filter $pattern -Recurse -Depth 3 -File -ErrorAction SilentlyContinue |
+                 Select-Object -First 1
+        if ($found) { return $true }
+    }
+    return $false
+}
+
 function Copy-CoreConfigFiles {
     param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
 
     Write-Host "  File di configurazione:" -ForegroundColor White
-    foreach ($file in @(".editorconfig", "Directory.Build.props", "global.json", ".gitignore", ".gitattributes")) {
+    foreach ($file in @(".editorconfig", ".gitignore", ".gitattributes")) {
         Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
+    }
+
+    # Directory.Build.props e global.json sono .NET-only: in un repo frontend resterebbero file inerti
+    if (Test-DotnetHost -HostRoot $HostRoot) {
+        foreach ($file in @("Directory.Build.props", "global.json")) {
+            Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
+        }
+    } else {
+        Write-Host "  [SKIP] Directory.Build.props, global.json (host non .NET)" -ForegroundColor DarkGray
+        Write-Host "         Se aggiungi progetti .NET, rilancia l'installer con -Update per ottenerli." -ForegroundColor DarkGray
     }
 
     # .mcp.json: mai sovrascritto se il contenuto host diverge (puo contenere server MCP aggiunti dal progetto)
@@ -101,6 +123,21 @@ function Copy-CoreConfigFiles {
             Write-Host "  [SKIP] .mcp.json identico" -ForegroundColor DarkGray
         }
     }
+}
+
+function Copy-ScaffoldingCatalog {
+    param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
+
+    # Le skill dr-scaffold* girano nel progetto host e non vedono la root del repo dr-guidelines:
+    # il catalogo va distribuito insieme al core, sotto .ai\
+    $src = Join-Path $TempRoot "scaffolding-catalog.json"
+    if (-not (Test-Path $src)) {
+        Write-Host "  [WARN] scaffolding-catalog.json non trovato nel pacchetto core" -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "  Catalogo scaffolding:" -ForegroundColor White
+    Copy-GuidelineFile -SrcFile $src -DestFile (Join-Path $HostRoot ".ai\dr-scaffolding-catalog.json") -Update:$Update
 }
 
 function Merge-ClaudeMdSection {
@@ -239,6 +276,7 @@ function Install-DrPackage {
 
         if ($pkg.IsCore) {
             Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+            Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             Write-Host "  CLAUDE.md:" -ForegroundColor White
             Merge-ClaudeMdSection -SrcClaudeMd (Join-Path $tempDir "CLAUDE.md") -DestClaudeMd (Join-Path $hostRoot "CLAUDE.md") -PackageName $PackageName -Update:$Update
         }
@@ -250,4 +288,102 @@ function Install-DrPackage {
     }
 
     Write-Host "  Completato: $PackageName" -ForegroundColor Cyan
+}
+
+function Install-DrGlobal {
+    <#
+    .SYNOPSIS
+        Installa o aggiorna la sezione linee guida globali in ~/.claude/CLAUDE.md.
+    .DESCRIPTION
+        Non tocca il progetto corrente: scrive solo nel file CLAUDE.md dell'utente,
+        che Claude Code carica in ogni sessione. La sezione e' delimitata dal titolo
+        "## Davraf Guidelines (Globale)" e dal sentinel "<!-- /davraf-guidelines -->":
+        tutto cio' che sta fuori da quel blocco viene preservato.
+
+        Il template si prende dal clone locale se disponibile ($PSScriptRoot valorizzato),
+        altrimenti da un clone temporaneo del pacchetto core.
+    .PARAMETER Update
+        Sovrascrive la sezione se gia' presente. Senza questo switch, una sezione
+        esistente viene lasciata intatta.
+    .PARAMETER ClaudeMdPath
+        Percorso del CLAUDE.md globale. Default: ~/.claude/CLAUDE.md. Serve per i test,
+        che non devono scrivere nella home reale.
+    #>
+    [CmdletBinding()]
+    param(
+        [switch]$Update,
+        [string]$ClaudeMdPath = (Join-Path $HOME ".claude\CLAUDE.md")
+    )
+
+    $sectionTitle = "## Davraf Guidelines (Globale)"
+    $endMarker    = "<!-- /davraf-guidelines -->"
+
+    Write-Host ""
+    Write-Host "=== dr-guidelines (installazione globale) ===" -ForegroundColor Cyan
+    Write-Host "  Target  : $ClaudeMdPath"
+
+    $tempDir = $null
+    try {
+        $localTemplate = if ($PSScriptRoot) { Join-Path $PSScriptRoot "templates\global-claude.md" } else { $null }
+
+        if ($localTemplate -and (Test-Path $localTemplate)) {
+            $templatePath = $localTemplate
+            Write-Host "  Sorgente: $templatePath"
+        } else {
+            $repo    = $Script:PackageRegistry["dr-guidelines"].Repo
+            $tempDir = Join-Path $env:TEMP ("dr-install-" + [guid]::NewGuid().ToString("N"))
+            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+            Write-Host "  Clonazione $repo..." -ForegroundColor White
+            git clone --quiet --depth 1 "https://github.com/$repo.git" $tempDir 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                throw "git clone fallito per $repo (repo Private? verifica autenticazione git/gh)"
+            }
+            $templatePath = Join-Path $tempDir "templates\global-claude.md"
+        }
+
+        if (-not (Test-Path $templatePath)) {
+            throw "Template non trovato: $templatePath"
+        }
+
+        $templateRaw  = Get-Content $templatePath -Raw -Encoding UTF8
+        $templateBody = ($templateRaw -replace "^#[^\n]*\n+", "").TrimStart()
+        $block        = "$sectionTitle`n`n$templateBody`n$endMarker"
+
+        $claudeDir = Split-Path $ClaudeMdPath -Parent
+        if ($claudeDir -and -not (Test-Path $claudeDir)) {
+            New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+        }
+
+        if (-not (Test-Path $ClaudeMdPath)) {
+            Set-Content -Path $ClaudeMdPath -Value ($block + "`n") -Encoding UTF8
+            Write-Host "  [OK]   CLAUDE.md globale creato con la sezione linee guida" -ForegroundColor Green
+        } else {
+            $existing = Get-Content $ClaudeMdPath -Raw -Encoding UTF8
+            $pattern  = "(?s)" + [regex]::Escape($sectionTitle) + ".*?" + [regex]::Escape($endMarker)
+
+            if ($existing -match $pattern) {
+                if ($Update) {
+                    # MatchEvaluator invece della stringa: nel blocco un eventuale '$' non va interpretato come riferimento
+                    $newContent = [regex]::Replace($existing, $pattern, { param($m) $block })
+                    Set-Content -Path $ClaudeMdPath -Value $newContent -Encoding UTF8 -NoNewline
+                    Write-Host "  [UPD]  Sezione globale aggiornata" -ForegroundColor Green
+                } else {
+                    Write-Host "  [SKIP] Sezione globale gia presente (usa -Global -Update per aggiornarla)" -ForegroundColor DarkGray
+                }
+            } elseif ($existing -match [regex]::Escape($sectionTitle)) {
+                Write-Host "  [WARN] Intestazione presente ma sentinel '$endMarker' mancante - verifica manualmente" -ForegroundColor Yellow
+            } else {
+                $newContent = $existing.TrimEnd() + "`n`n" + $block + "`n"
+                Set-Content -Path $ClaudeMdPath -Value $newContent -Encoding UTF8 -NoNewline
+                Write-Host "  [OK]   Sezione globale inserita nel CLAUDE.md esistente" -ForegroundColor Green
+            }
+        }
+    }
+    finally {
+        if ($tempDir) { Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+
+    Write-Host "  Completato: installazione globale" -ForegroundColor Cyan
+    Write-Host "  Nota: Claude Code carica questo file a ogni sessione; un CLAUDE.md di progetto ha precedenza." -ForegroundColor DarkGray
 }

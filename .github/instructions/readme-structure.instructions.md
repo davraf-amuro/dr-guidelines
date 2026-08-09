@@ -44,9 +44,11 @@ Il README deve contenere queste sezioni, in questo ordine:
 - Aggiorna la tabella se un pacchetto viene aggiunto, rinominato o rimosso dalla suite
 
 ### 3 — Avvio Rapido (nuovo progetto)
-- Mostra i comandi PowerShell per scaricare (`irm ... -OutFile`), ispezionare ed eseguire `CreateNewSolution.ps1` — mai `irm ... | iex` diretto (esecuzione cieca di script remoti)
-- Elenca i passi che lo script esegue (lista numerata, breve)
-- **Non modificare il comando PowerShell** senza verificare che l'URL sia ancora valido
+- Lo scaffolding di un progetto nuovo **non è uno script**: è guidato dall'agente AI. Indica l'invocazione `/dr-scaffold` (Claude Code) e rimanda a `.github/prompts/dr-scaffold.prompt.md` per GitHub Copilot
+- Elenca i passi del flusso (lista numerata, breve): gate prerequisiti → rilevamento stato cartella → raccolta risposte → dry-run + conferma unica → esecuzione
+- Cita `scaffolding-catalog.json` come fonte delle tipologie di progetto e dei pacchetti disponibili
+- Rimanda ai `docs/scaffolding-*.md` per la struttura generata, senza duplicarne il contenuto
+- Non descrivere script di bootstrap dismessi né il modello a submodule
 
 ### 4 — Progetto Esistente
 - Comando PowerShell:
@@ -113,4 +115,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v2.0 - dr-guidelines - Last Update 2026-07-22 — claude-sonnet-5 — aggiornata per split multi-repo (install.ps1 sostituisce submodule/setup.ps1, aggiunta sezione Pacchetti dr-*)*
+*Template v2.1 - dr-guidelines - Last Update 2026-08-08 14:35 — claude-opus-5 — sezione 3 riscritta sullo scaffolding guidato /dr-scaffold (script di bootstrap legacy dismesso)*
