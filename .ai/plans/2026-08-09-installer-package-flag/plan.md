@@ -1,6 +1,6 @@
 # Piano: flag -Package sull'installer core, poi push
 Data: 2026-08-09
-Stato: IN CORSO
+Stato: COMPLETATO
 
 ## Obiettivo
 Un solo comando bootstrap deve poter installare qualsiasi pacchetto `dr-*` con le sue dipendenze; poi allineare i remoti per rendere possibile il test in sandbox.
@@ -14,8 +14,8 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 
 ## Scope
 ### File da modificare
-- [ ] `dr-guidelines-install.ps1` — parametro `-Package`, help aggiornato, mutua esclusione con `-Global`
-- [ ] `README.md` — documenta `-Package` nella sezione di installazione dei pacchetti dominio
+- [x] `dr-guidelines-install.ps1` — parametro `-Package`, help aggiornato, mutua esclusione con `-Global`
+- [x] `README.md` — documenta `-Package` nella sezione di installazione dei pacchetti dominio
 
 ### Perimetro negativo
 - Non toccherò `dr-guidelines-install-lib.ps1` (registry e dipendenze già a posto)
@@ -26,7 +26,7 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 ## Fasi (formato atomico)
 
 ### Fase 1: parametro -Package
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: `dr-guidelines-install.ps1` ha il blocco `param(` con `$Update` e `$Global`
 - **File**: `dr-guidelines-install.ps1`
 - **Operazione**: EDIT
@@ -36,7 +36,7 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1: <cosa>` in plan.md
 
 ### Fase 2: sintassi PowerShell verificata
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1 verificata
 - **File**: nessuno (sola lettura)
 - **Operazione**: verifica
@@ -46,7 +46,7 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 - **Su divergenza**: STOP — correggi prima di proseguire
 
 ### Fase 3: README
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 2 verificata
 - **File**: `README.md`
 - **Operazione**: EDIT
@@ -56,7 +56,7 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md
 
 ### Fase 4: gate di push e commit
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1-3 verificate
 - **File**: nessuno (git)
 - **Operazione**: verifica + commit
@@ -66,7 +66,7 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 - **Su divergenza**: STOP
 
 ### Fase 5: push e pull
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 4 verificata
 - **File**: nessuno (git)
 - **Operazione**: push/pull
@@ -76,8 +76,8 @@ Gate di push: nessun `.csproj` e nessun `package.json` in nessuno dei repo `dr-*
 - **Su divergenza**: STOP — riporta l'errore senza forzare nulla
 
 ## Criteri di verifica finale
-- [ ] `dr-guidelines-install.ps1 -Package dr-minimalapi` è una chiamata valida e documentata
-- [ ] Parser PowerShell senza errori sul file modificato
-- [ ] `dr-guidelines` pushato e allineato con `origin/main`
-- [ ] Nessun push sui sei repo `dr-*` puliti né su `davraf-guidelines`, che risulta solo aggiornato via pull
-- [ ] Nessun tag creato
+- [x] `dr-guidelines-install.ps1 -Package dr-minimalapi` è una chiamata valida e documentata
+- [x] Parser PowerShell senza errori sul file modificato
+- [x] `dr-guidelines` pushato e allineato con `origin/main`
+- [x] Nessun push sui sei repo `dr-*` puliti né su `davraf-guidelines`, che risulta solo aggiornato via pull
+- [x] Nessun tag creato
