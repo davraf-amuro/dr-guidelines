@@ -40,7 +40,12 @@ Non elencare le tipologie a memoria: le prendi da `projectTypes[]` del catalogo.
 
 Raccogli **tutte** queste risposte prima di passare al gate B. In Claude Code usa domande a scelta con campo libero; una domanda per concetto, non una alla volta a raffica.
 
-Se arrivi da `/dr-scaffold` o da `/dr-scaffold-project`, parte di queste risposte sono già nel contesto che ti è stato passato (tipologia richiesta, nome proposto, progetti già presenti da agganciare): **dalle per acquisite e mostrale come tali**. Richiederle è l'errore che il router serve a evitare.
+Se arrivi da `/dr-scaffold` o da `/dr-scaffold-project`, parte di queste risposte sono già nel contesto che ti è stato passato: **dalle per acquisite e mostrale come tali**. Richiederle è l'errore che il router serve a evitare. In particolare, quando la delega nasce da una solution mancante arrivano già decisi:
+
+- **nome della solution** — l'utente lo ha appena digitato, non richiederlo (punto 2)
+- **formato `slnx`** — non richiederlo salvo che l'utente citi Visual Studio legacy (punto 3)
+- **nessun workspace multi-repo** — si lavora nella cartella corrente (punto 1); chiedilo solo se entra in gioco un frontend in repo separato
+- tipologia richiesta, nome progetto proposto, `*.csproj` già presenti da agganciare, esito del gate prerequisiti
 
 1. **Workspace multi-repo?** Serve se frontend e backend vivranno in repository git separati.
    - Sì → chiedi il nome (proposto: nome della cartella corrente). Il file `<nome>.code-workspace` nasce nella cartella corrente.

@@ -61,6 +61,14 @@ Per aggiungere anche un pacchetto dominio (es. Minimal API), esegui il suo `<pac
 irm https://raw.githubusercontent.com/davraf-amuro/dr-minimalapi/main/dr-minimalapi-install.ps1 | iex
 ```
 
+Oppure, senza scaricare un secondo installer, con il flag `-Package` sul core:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Package dr-minimalapi
+```
+
+Le dipendenze mancanti vengono installate da sole (`dr-minimalapi` tira `dr-dotnet-backend`). Un nome non in elenco produce un errore con i pacchetti disponibili. `-Package` e `-Global` sono mutuamente esclusivi.
+
 Ogni installazione viene tracciata in `.ai/dr-guidelines-packages.json` nel progetto host.
 
 ### Finché i repo sono Private

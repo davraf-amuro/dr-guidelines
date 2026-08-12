@@ -62,8 +62,18 @@ Leggi, nell'ordine, senza scrivere nulla:
 | Esiste solo `package.json` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi `dr-scaffold-solution` in modalità multi-repo |
 | Esistono progetti ma manifest assente o incompleto rispetto alle tipologie presenti | `dr-scaffold-guidelines` |
 | Esiste tutto (solution + progetti + manifest completo) | Nessuna delega: elenca cosa c'è e chiedi cosa manca |
+| **Qualsiasi altro stato senza solution** — cartella non vuota, nessun `*.csproj`, nessun `package.json` (es. repo di docs o tooling) | `dr-scaffold-solution` |
 
-**Prerequisito mancante ≠ vicolo cieco.** Se l'utente chiede una tipologia specifica ("aggiungi un worker", "crea una minimal api") e manca il contenitore che la regge — solution, o repo — non rispondere che serve un'altra skill: **proponi di creare anche il contenitore** e, se accetta, delega portandoti dietro la tipologia richiesta. Il flusso a valle la trova già scelta e non la richiede.
+L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare.
+
+**Prerequisito mancante ≠ vicolo cieco.** Se l'utente chiede una tipologia specifica ("aggiungi un worker", "crea una minimal api") e manca il contenitore che la regge — solution, o repo — non rispondere che serve un'altra skill: **proponi di creare anche il contenitore**. La proposta è una sola finestra `AskUserQuestion`, nella forma della Fase 0-bis di `/dr-scaffold-project`:
+
+- domanda: `Non esiste nessuna solution in <path>. Ne creo una .slnx?`
+- opzione 1: `Sì, crea <cartella>.slnx` — la `description` avvisa che un nome diverso si scrive in "Altro"
+- opzione 2: `No, procedi senza solution` — il progetto nasce comunque, sciolto
+- "Altro", aggiunto dalla UI, è il campo dove l'utente digita il nome e vale come un sì
+
+Niente domanda sulla destinazione (la cartella corrente è la destinazione), niente elenco di tipologie o pacchetti: deleghi portandoti dietro nome e tipologia richiesta, e il flusso a valle non le richiede.
 
 Ambiguità vera (due file solution nella stessa cartella, una solution in una sottocartella e una qui) → mostra cosa hai trovato e **chiedi**: quella non la decidi tu.
 

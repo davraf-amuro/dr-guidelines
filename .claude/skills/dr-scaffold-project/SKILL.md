@@ -26,22 +26,42 @@ INPUT_UTENTE
 
 ---
 
-## Fase 0-bis — Solution assente: chiedi, non fermarti
+## Fase 0-bis — Solution assente: una finestra, tre vie
 
-Una richiesta come "aggiungi una minimal api" in una cartella senza solution non è un errore dell'utente: è un prerequisito mancante. **Proponi di crearlo**, non rimandare l'utente a un'altra skill come se fosse un suo compito.
+Una richiesta come "aggiungi una minimal api" in una cartella senza solution non è un errore dell'utente: è un prerequisito mancante. **Proponi di crearlo** — con una sola finestra, non con un tema svolto.
 
-Distingui prima **cosa c'è davvero** nella cartella corrente:
+**Forma obbligatoria: `AskUserQuestion`, una domanda, due opzioni.**
 
-| Cosa trovi | Cosa proponi |
+- **Domanda**: `Non esiste nessuna solution in <path>. Ne creo una .slnx?` — header `Solution`
+- **Opzione 1**: `Sì, crea <cartella>.slnx` — `<cartella>` è il nome della cartella corrente in lowercase. Nella `description`, la riga che rende usabile la finestra: *"Nome diverso? Scrivilo in «Altro»."*
+- **Opzione 2**: `No, procedi senza solution` — `description`: *"Il progetto viene creato lo stesso, sciolto, senza aggancio."*
+
+L'opzione **"Altro"** la aggiunge la UI da sé: quello che l'utente scrive lì **è** il nome della solution e vale come un sì. È il campo di testo della finestra — per questo il rimando va scritto nella descrizione dell'opzione 1, altrimenti nessuno sa dove digitare.
+
+Valida il nome — proposto o digitato — con `defaults.namePattern` del catalogo (`^[A-Za-z][A-Za-z0-9._-]{0,63}$`). Nome della cartella non conforme (spazi, cifra iniziale) → non proporlo come opzione 1: lascia che arrivi da "Altro".
+
+In questa finestra **non** chiedere e **non** scrivere:
+
+- la destinazione — la cartella corrente *è* la destinazione; un path diverso lo indica l'utente, non lo proponi tu
+- la tipologia del progetto — è Fase 1, e se l'argomento la contiene già non si chiede affatto
+- l'elenco del catalogo, i pacchetti `dr-*`, il dry-run, le motivazioni sul perché la cartella è o non è adatta
+
+Una domanda che diventa un modulo da compilare è il difetto che questa fase serve a evitare: massimo due righe di preambolo prima della finestra.
+
+Tre stati cambiano il testo delle opzioni; tutto il resto usa la finestra standard:
+
+| Cosa trovi | Domanda e opzioni |
 |---|---|
-| Cartella vuota, o soli file di appoggio (`README`, `.gitignore`, `LICENSE`) | "Non c'è nessuna solution in `<path>`. Ne creo una e ci aggiungo `<tipologia>`?" |
-| `*.csproj` sciolti, nessun file solution | "Trovo `<N>` progetti senza solution: `<elenco>`. Creo la solution, aggancio quelli esistenti e poi aggiungo `<tipologia>`?" |
-| Solo `package.json` (repo frontend) e la tipologia chiesta è .NET | "Questo è un repo frontend. La solution .NET va in un repo separato: procedo con il workspace multi-repo?" |
-| Una sottocartella di primo livello contiene una solution | "La solution è in `<sottocartella>`, non qui. Lavoro lì dentro?" — e prosegui normalmente da quel path |
+| `*.csproj` sciolti, nessun file solution | `Trovo <N> progetti senza solution. Ne creo una e li aggancio?` — opzione 1 `Sì, crea <cartella>.slnx e aggancia i <N> progetti`, opzione 2 `No, procedi senza solution` |
+| Una sottocartella di primo livello contiene una solution | `La solution è in <sottocartella>, non qui. Lavoro lì dentro?` — opzione 1 `Sì, lavora in <sottocartella>` (e prosegui normalmente da quel path), opzione 2 `No, crea una solution qui` |
+| Solo `package.json` (repo frontend) e la tipologia chiesta è .NET | `Questo è un repo frontend: la parte .NET va in un repo separato. Procedo?` — opzione 1 `Sì, workspace multi-repo`, opzione 2 `No, ferma tutto` |
+| **Qualsiasi altro stato senza solution** — cartella vuota, soli file di appoggio, repo di docs o tooling senza `.csproj` | la finestra standard qui sopra |
 
-**Se l'utente accetta:** invoca `/dr-scaffold-solution` passandole tutto il contesto già raccolto — path corrente, esito del gate prerequisiti, tipologia richiesta, nome proposto, progetti già presenti da agganciare. L'utente non ripete niente: alla Fase 1 di quella skill le risposte che hai già arrivano precompilate.
+L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare.
 
-**Se l'utente rifiuta:** allora sì, fermati. Senza solution non c'è niente a cui agganciare un progetto.
+**Opzione 1, o "Altro" con un nome:** invoca `/dr-scaffold-solution` passandole tutto ciò che hai già — path corrente, esito del gate prerequisiti, **nome della solution appena scelto**, formato `slnx`, nessun workspace multi-repo, i `*.csproj` sciolti da agganciare, e la tipologia **solo se** era già nell'argomento dell'utente. Quello che hai già non si richiede: alla Fase 1 di quella skill arriva precompilato.
+
+**Opzione 2 — senza solution:** non fermarti. Prosegui con le Fasi 1-4 nel **ramo senza solution**: il progetto nasce comunque in `targetPath\<nome>`, non agganciato a niente. Ogni fase a valle dice cosa cambia.
 
 Non creare tu la solution da qui: `dotnet new sln` più l'aggancio più i pacchetti è il flusso di `/dr-scaffold-solution`, che ha il proprio dry-run e la propria conferma unica. Questa skill delega, non duplica.
 
@@ -55,6 +75,8 @@ Non creare tu la solution da qui: `dotnet new sln` più l'aggancio più i pacche
 
 Il percorso di destinazione è `targetPath` della tipologia (`src` per i progetti applicativi, `test` per i test), mai deciso a mano.
 
+**Ramo senza solution.** Non esiste un `<nome-solution>` da cui derivare il nome: proponi il nome della cartella corrente in lowercase più `defaultNameSuffix` (es. cartella `test` + `minimal-api` → `test.api`). Tutto il resto della fase è identico.
+
 ---
 
 ## Fase 2 — Dry-run e conferma unica
@@ -65,6 +87,13 @@ Mostra cosa creerai e con quali comandi:
 ordini.slnx  (esistente, verrà modificato)
   src\ordini.service\        [nuovo]  dotnet new worker --framework net10.0
   → aggancio: dotnet sln ordini.slnx add src\ordini.service\ordini.service.csproj
+```
+
+**Ramo senza solution** — nessuna riga di aggancio, e lo dici:
+
+```
+(nessuna solution: il progetto resta sciolto)
+  src\test.api\              [nuovo]  dotnet new web --framework net10.0
 ```
 
 Poi una sola conferma. Se la cartella di destinazione esiste già: **STOP**, non sovrascrivere e non fondere.
@@ -85,6 +114,18 @@ dotnet format <solution>
 `minimal-api` usa il template `web` (ASP.NET Core vuoto), non `webapi`.
 
 Il `dotnet format` finale serve perché i template scrivono UTF-8 con BOM mentre `.editorconfig` del core impone `charset = utf-8`: senza, `dotnet format --verify-no-changes` esce `2` e il gate di push si blocca.
+
+### Progetto .NET — ramo senza solution
+
+Niente `dotnet sln add`, e build e format lavorano sul `.csproj`:
+
+```powershell
+dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-restore
+dotnet build <targetPath>\<nome>\<nome>.csproj --nologo
+dotnet format <targetPath>\<nome>\<nome>.csproj
+```
+
+Il `dotnet format` resta obbligatorio per la stessa ragione (BOM contro `.editorconfig`): il gate di push non guarda se esiste una solution.
 
 ### Frontend Vue
 
@@ -117,6 +158,19 @@ Chiedi prima quale progetto deve referenziare quale: non dedurlo.
 | `dotnet format <solution> --verify-no-changes` | exit code `0` |
 | `npm run build` (solo FE) | build completata |
 
+**Ramo senza solution** — la prima riga non si applica, le altre girano sul `.csproj`:
+
+| Comando | Atteso |
+|---|---|
+| `dotnet build <targetPath>\<nome>\<nome>.csproj --nologo` | `Avvisi: 0  Errori: 0` |
+| `dotnet format <targetPath>\<nome>\<nome>.csproj --verify-no-changes` | exit code `0` |
+
+Chiudi dicendo che il progetto è sciolto e come agganciarlo quando una solution ci sarà:
+
+```powershell
+dotnet sln <solution> add <targetPath>\<nome>\<nome>.csproj
+```
+
 Verifica fallita → fermati e riportala.
 
 ---
@@ -143,13 +197,15 @@ In alternativa, aggancio già committato:
 dotnet sln <solution> remove <targetPath>\<nome>\<nome>.csproj
 ```
 
+Ramo senza solution: solo `git clean -fd <targetPath>\<nome>`. Nessun file solution è stato toccato, quindi niente `git checkout --` e niente `dotnet sln remove`.
+
 Rimuovere la cartella con `Remove-Item -Recurse -Force` è irreversibile: verifica il percorso e chiedi conferma esplicita prima.
 
 ---
 
 ## Regole
 
-- Non creare solution né workspace con le tue mani: se manca, la proponi (Fase 0-bis) e deleghi a `/dr-scaffold-solution`.
+- Non creare solution né workspace con le tue mani: se manca, apri la finestra della Fase 0-bis e deleghi a `/dr-scaffold-solution`. Se l'utente sceglie "senza solution", il progetto si crea lo stesso — sciolto — e la solution non la crei comunque.
 - Non installare pacchetti: quello è `/dr-scaffold-guidelines`.
 - Nessun `git commit`, nessun `git push`.
 - Progetto o cartella già esistente → STOP. Mai `--force` su `dotnet new`.

@@ -16,6 +16,9 @@
     Installazione globale (scrive ~/.claude/CLAUDE.md, non tocca il progetto corrente):
         & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Global
 
+    Installazione di un pacchetto dominio, senza scaricare il suo installer:
+        & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Package dr-minimalapi
+
     dr-guidelines e' il pacchetto core: instructions/skill trasversali, file di
     configurazione radice, sezione CLAUDE.md. Nessuna dipendenza.
 .PARAMETER Update
@@ -24,12 +27,18 @@
 .PARAMETER Global
     Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto
     corrente. Il progetto corrente non viene toccato in alcun modo.
+.PARAMETER Package
+    Nome del pacchetto dr-* da installare al posto del core (es. dr-minimalapi).
+    Le dipendenze mancanti vengono installate da sole: dr-minimalapi tira
+    dr-dotnet-backend. Nome sconosciuto -> errore con l'elenco dei pacchetti
+    disponibili. Mutuamente esclusivo con -Global.
 #>
 
 [CmdletBinding()]
 param(
     [switch]$Update,
-    [switch]$Global
+    [switch]$Global,
+    [string]$Package
 )
 
 # --- Risoluzione della libreria condivisa ---
@@ -90,8 +99,14 @@ if (-not $libLoaded) {
     throw "Caricamento di $libName fallito."
 }
 
+if ($Global -and $Package) {
+    throw "-Global e -Package sono mutuamente esclusivi: -Global scrive ~/.claude/CLAUDE.md e non tocca il progetto corrente."
+}
+
 if ($Global) {
     Install-DrGlobal -Update:$Update
+} elseif ($Package) {
+    Install-DrPackage -PackageName $Package -Update:$Update
 } else {
     Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
 }
