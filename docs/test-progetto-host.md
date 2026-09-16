@@ -1,21 +1,24 @@
-# Test end-to-end: progetto host `test-uno` + pacchetti `dr-*`
+# Collaudo dell'installer su un progetto host di prova
 
-Procedura passo passo per creare un progetto host di prova (`test-uno`) dentro il workspace multi-repo e installarci sopra `dr-guidelines` (core) più un pacchetto dominio, verificando che l'installer, il manifest e le skill funzionino.
+Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` funzionino davvero, su una cartella di prova. Copre quello che la [guida alla soluzione nuova](guida-nuova-soluzione.md) non mette alla prova: dipendenze, idempotenza, `-Update`, aggiornamento dopo un push.
+
+> **Da non confondere con la guida utente.** Qui si collauda il meccanismo passo per passo, a mano. Per creare un progetto vero segui [`guida-nuova-soluzione.md`](guida-nuova-soluzione.md).
 
 ---
 
-## 🎯 Obiettivo
+## 🎯 Cosa si verifica
 
-| Cosa si verifica | Come |
+| Cosa | Come |
 |---|---|
-| `dr-guidelines-install.ps1` copia i file attesi | Ispezione albero `test-uno/` dopo l'esecuzione |
-| Merge sezione `<!-- dr-guidelines -->` in `CLAUDE.md` | Confronto contenuto prima/dopo |
-| Risoluzione automatica dipendenze | `dr-minimalapi` → deve tirarsi dietro `dr-dotnet-backend` |
+| L'installer del core copia i file attesi | Ispezione della cartella dopo l'esecuzione |
+| Merge della sezione `<!-- dr-guidelines -->` in `CLAUDE.md` | Contenuto prima e dopo |
+| Dipendenze automatiche | `dr-minimalapi` deve installare anche `dr-dotnet-backend` |
 | Idempotenza (`[SKIP]`) e `-Update` (`[UPD]`) | Doppia esecuzione dell'installer |
-| Manifest `.ai/dr-guidelines-packages.json` | Contenuto JSON dopo ogni installazione |
-| Skill `dr-*` caricate da Claude Code | Invocazione di `/dr-snapshot` nel progetto host |
+| Manifest `.ai/dr-guidelines-packages.json` | Una voce per pacchetto, con commit |
+| Si installa il `main` remoto, non il clone locale | Modifica non pushata che non deve arrivare |
+| Skill caricate da Claude Code | `/dr-snapshot` e `/dr-get-latest` dal progetto di prova |
 
-> ⚠️ **Questo test NON chiude il gate 2b del piano di split.** Il gate (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`, fase 2b) richiede esplicitamente un **progetto host reale esistente**, non una cartella di test sintetica. `test-uno` serve a validare il meccanismo, non a sbloccare il flip Private → Public dei 7 repo.
+> Questo collaudo **non** chiude il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`): quel gate richiede un progetto host reale. La cartella di prova valida il meccanismo, non sblocca il passaggio dei repo a Public.
 
 ---
 
@@ -23,96 +26,76 @@ Procedura passo passo per creare un progetto host di prova (`test-uno`) dentro i
 
 | Requisito | Verifica |
 |---|---|
-| PowerShell 7+ (`pwsh`) | `$PSVersionTable.PSVersion` |
-| Git installato e autenticato sui repo **Private** `davraf-amuro/dr-*` | `git ls-remote https://github.com/davraf-amuro/dr-guidelines.git` deve rispondere senza chiedere credenziali |
-| Workspace clonato in `E:\Davide\Progetti\dr-guidelines-workspace\` con tutti e 7 i repo | `Get-ChildItem E:\Davide\Progetti\dr-guidelines-workspace -Directory` |
-| Claude Code / VS Code per la parte skill (passi 6-8) | — |
+| PowerShell 7+ | `pwsh --version` |
+| git | `git --version` |
+| `gh` autenticato con scope `repo` | `gh auth status` |
+| git con credenziali per i repo Private | `git ls-remote https://github.com/davraf-amuro/dr-guidelines.git` risponde senza chiedere credenziali. Se non va: `gh auth setup-git` |
+| VS Code con Claude Code | Per il passo 8 |
+| Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
-**Perché conta l'autenticazione git:** i 7 repo `dr-*` sono attualmente **Private**. `Install-DrPackage` fa `git clone --depth 1 https://github.com/davraf-amuro/<pacchetto>.git` in una temp dir: senza credential manager attivo il clone fallisce con `git clone fallito per ... (repo Private? verifica autenticazione git/gh)`.
+**Non serve che i repo siano Public.** L'installer si scarica con `gh api`, che legge i repo Private. La forma `irm https://raw.githubusercontent.com/... | iex` risponde `404` finché restano Private.
 
-**Conseguenza sul bootstrap:** il percorso pubblico `irm .../<pacchetto>-install.ps1 | iex` **non funziona** finché i repo restano Private (raw.githubusercontent risponde 404). Restano due vie, entrambe coperte dalla catena di risoluzione dell'installer:
-
-- **path locale** — quella usata in questa procedura: attiva il secondo tentativo (`$PSScriptRoot`)
-- **`gh api`** — terzo tentativo, non richiede nessun clone locale:
-  ```powershell
-  & ([scriptblock]::Create((gh api repos/davraf-amuro/<pacchetto>/contents/<pacchetto>-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
-  ```
+**Il workspace `dr-*` clonato serve solo ai passi 7 e 8.4.** Tutti gli altri comandi scaricano da GitHub.
 
 ---
 
-## 1️⃣ Creare il progetto host `test-uno`
+## 1️⃣ Creare la cartella di prova
 
-Da PowerShell:
+Fuori dal workspace dei repo `dr-*`. Nell'esempio: `E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01`.
 
 ```powershell
-Set-Location E:\Davide\Progetti\dr-guidelines-workspace
-New-Item -ItemType Directory -Path .\test-uno | Out-Null
-Set-Location .\test-uno
-git init
+New-Item -ItemType Directory E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
+Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
 ```
 
-Serve almeno un commit iniziale, così il rollback con `git checkout -- .` ha un riferimento:
+**Commit iniziale: consigliato per il collaudo, non richiesto dall'installer.** L'installer non chiede nulla a git sul progetto host. Il commit serve a tornare indietro con due comandi tra un test e l'altro:
 
 ```powershell
-"# test-uno`n`nProgetto host di prova per i pacchetti dr-*." | Set-Content README.md -Encoding UTF8
+git init
+"# dr-test-01" | Set-Content README.md -Encoding UTF8
 git add README.md
 git commit -m "chore: init progetto host di prova"
 ```
 
-> `test-uno` deve essere un **repo git proprio**. La cartella padre `dr-guidelines-workspace\` non è un repo git (per progetto), quindi non eredita nulla.
+---
+
+## 2️⃣ Aprire la cartella in una finestra separata
+
+```powershell
+code E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
+```
+
+**Non aggiungerla al workspace `dr-guidelines.code-workspace`.** In quel workspace Claude Code vede le skill dei repo sorgente: il test delle skill installate non sarebbe attendibile.
 
 ---
 
-## 2️⃣ Aggiungere `test-uno` al workspace VS Code
+## 3️⃣ Installare il core
 
-Apri `E:\Davide\Progetti\dr-guidelines-workspace\dr-guidelines.code-workspace` e aggiungi la voce in coda all'array `folders`:
-
-```json
-{
-	"folders": [
-		{ "path": "dr-guidelines" },
-		{ "path": "dr-minimalapi" },
-		{ "path": "dr-winsvc" },
-		{ "path": "dr-efdb" },
-		{ "path": "dr-fe" },
-		{ "path": "dr-devops" },
-		{ "path": "dr-dotnet-backend" },
-		{ "path": "test-uno" },
-		{ "path": "../davraf-guidelines" }
-	]
-}
-```
-
-Poi ricarica la finestra (`Developer: Reload Window`) oppure riapri il workspace:
+Dal terminale della finestra di prova:
 
 ```powershell
-code E:\Davide\Progetti\dr-guidelines-workspace\dr-guidelines.code-workspace
+Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
----
+⚠️ L'installer usa la cartella corrente come root del progetto host. Lanciato da un'altra cartella, scrive lì senza errori.
 
-## 3️⃣ Installare il pacchetto core `dr-guidelines`
+**Cosa succede dentro:**
 
-⚠️ `Install-DrPackage` usa `(Get-Location).Path` come root del progetto host: **devi trovarti dentro `test-uno`** quando lanci lo script, altrimenti i file finiscono nella cartella sbagliata.
+1. `dr-guidelines-install.ps1` cerca la libreria `dr-guidelines-install-lib.ps1`: raw pubblico (`404`) → clone locale (assente: lo script arriva da uno stream) → `gh api` (riesce)
+2. La libreria carica `scaffolding-catalog.json` con la stessa catena e costruisce l'elenco dei pacchetti
+3. `Install-DrPackage` clona il `main` di `dr-guidelines` in `%TEMP%\dr-install-<guid>`
+4. Copia i file nella cartella di prova, fonde `.claude/settings.json` e `CLAUDE.md`, aggiorna il manifest
+5. Cancella la cartella temporanea
 
-```powershell
-Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
-& ..\dr-guidelines\dr-guidelines-install.ps1
-```
-
-**Cosa succede internamente:**
-
-1. `dr-guidelines-install.ps1` tenta `irm .../dr-guidelines/main/dr-guidelines-install-lib.ps1` → fallisce (repo Private)
-2. Secondo tentativo: `$PSScriptRoot` è valorizzato → dot-source di `..\dr-guidelines\dr-guidelines-install-lib.ps1` locale. Se anche questo mancasse, il terzo tentativo passa da `gh api`
-3. `Install-DrPackage -PackageName "dr-guidelines"` clona il repo in `%TEMP%\dr-install-<guid>`
-4. Copia file, merge `CLAUDE.md`, upsert manifest, elimina la temp dir
+**Nella cartella di prova non arriva nessun repository:** niente `.gitmodules`, niente `.git` di `dr-guidelines`.
 
 **Output atteso** (estratto):
 
 ```
 === dr-guidelines ===
   Repo    : davraf-amuro/dr-guidelines
-  Progetto: E:\Davide\Progetti\dr-guidelines-workspace\test-uno
+  Progetto: E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
   Clonazione davraf-amuro/dr-guidelines...
   .github/instructions/:
   [OK]   code-organization.instructions.md
@@ -124,6 +107,10 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
   [OK]   .editorconfig
   ...
   [OK]   .mcp.json
+  .claude/settings.json:
+  [OK]   .claude/settings.json
+  Catalogo scaffolding:
+  [OK]   dr-scaffolding-catalog.json
   CLAUDE.md:
   [OK]   CLAUDE.md creato con sezione dr-guidelines
   [OK]   Manifest aggiornato: dr-guidelines (a1b2c3d)
@@ -137,95 +124,84 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
 ```powershell
 Get-ChildItem -Force | Select-Object Name
 Get-ChildItem .github\instructions | Select-Object Name
+Get-ChildItem .github\prompts | Select-Object Name
 Get-ChildItem .claude\skills -Directory | Select-Object Name
 Get-Content .ai\dr-guidelines-packages.json
-```
-
-**Atteso in `test-uno/`:**
-
-| Elemento | Note |
-|---|---|
-| `.editorconfig`, `.gitignore`, `.gitattributes` | Copiati dal core |
-| `Directory.Build.props`, `global.json` | **Assenti**: non appartengono al core. Arrivano al passo 5 con `dr-dotnet-backend` |
-| `.claude/settings.json` | Copiato se assente; se esiste, ne vengono aggiunte solo le voci `permissions.allow` mancanti |
-| `.mcp.json` | Generato da `.mcp.example.json`, **solo perché assente** |
-| `.github/instructions/` | 10 file `*.instructions.md` |
-| `.claude/skills/` | 10 cartelle skill `dr-*` |
-| `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
-| `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>","commit":"<sha del commit installato>"}]}` |
-
-**Nota `.github/prompts/`:** il core **ne ha** — `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator` e `dr-scaffold`. I pacchetti dominio aggiungono i propri (es. `card-minimal-api`, `endpoints-analyzer` con `dr-minimalapi`).
-
-**Nota `.ai/dr-scaffolding-catalog.json`:** il core distribuisce anche il catalogo delle tipologie di progetto e dei pacchetti, letto dalle skill `dr-scaffold*` nel progetto host.
-
-**Nota `Directory.Build.props` e `global.json`:** non arrivano più dal core. Appartengono a `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo: li ricevi installando quel pacchetto (che è già dipendenza di `dr-minimalapi` e `dr-winsvc`), non installando il core. In un repo frontend non compaiono semplicemente perché quel pacchetto non è tra i suoi.
-
-**Controllo git — cosa risulta ignorato:** il `.gitignore` appena copiato esclude `.mcp.json` e `.claude/settings.local.json`. Verifica che `.mcp.json` **non** compaia tra i file da committare:
-
-```powershell
 git status --short
 ```
 
+**Atteso** (conteggi del core al 2026-09-16):
+
+| Elemento | Atteso |
+|---|---|
+| `.editorconfig`, `.gitignore`, `.gitattributes` | Presenti |
+| `Directory.Build.props`, `global.json` | **Assenti**: appartengono a `dr-dotnet-backend`, arrivano al passo 5 |
+| `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
+| `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
+| `.github/instructions/` | 11 file `*.instructions.md` |
+| `.github/prompts/` | 7 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-segnala-miglioria` |
+| `.claude/skills/` | 16 cartelle skill `dr-*` |
+| `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
+| `.ai/dr-scaffolding-catalog.json` | Presente: è `scaffolding-catalog.json` del core, copiato con questo nome |
+| `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>","commit":"<sha>"}]}` |
+| `git status --short` | `.mcp.json` **non** compare: il `.gitignore` copiato lo esclude |
+
 ---
 
-## 5️⃣ Installare un pacchetto dominio (test dipendenze)
+## 5️⃣ Installare un pacchetto di dominio
 
-`dr-minimalapi` dichiara dipendenza da `dr-dotnet-backend`: se manca dal manifest, l'installer la installa **prima**, automaticamente.
+`dr-minimalapi` dipende da `dr-dotnet-backend`. Se manca dal manifest, l'installer lo installa **prima**, da solo.
 
 ```powershell
-& ..\dr-minimalapi\dr-minimalapi-install.ps1
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Package dr-minimalapi
 ```
 
-**Output atteso** — la riga chiave è:
+**Riga chiave dell'output:**
 
 ```
   Dipendenza mancante: dr-dotnet-backend -> installazione automatica
 ```
 
-**Verifica manifest dopo:**
+**Verifiche:**
 
 ```powershell
-Get-Content .ai\dr-guidelines-packages.json
+Get-Content .ai\dr-guidelines-packages.json                  # tre pacchetti
+Get-ChildItem .github\prompts | Select-Object Name           # ora anche card-minimal-api, endpoints-analyzer
+Get-ChildItem .claude\skills -Directory | Select-Object Name # ora anche dr-audit-api
+Test-Path Directory.Build.props, global.json                 # True, True
 ```
 
-Deve elencare **tre** pacchetti: `dr-guidelines`, `dr-dotnet-backend`, `dr-minimalapi`.
+Il manifest deve elencare `dr-guidelines`, `dr-dotnet-backend`, `dr-minimalapi`.
 
-**Verifica contenuto aggiunto:**
-
-```powershell
-Get-ChildItem .github\prompts | Select-Object Name          # card-minimal-api, endpoints-analyzer
-Get-ChildItem .claude\skills -Directory | Select-Object Name # ora include dr-audit-api
-```
-
-> I pacchetti dominio **non** toccano `CLAUDE.md` né i file di configurazione radice: la sezione marcata e i config sono esclusiva del core (`IsCore = $true`).
+> I pacchetti di dominio non toccano `CLAUDE.md` né `.editorconfig`, `.gitignore`, `.gitattributes`: sono esclusiva del core. Copiano solo i file di radice dichiarati nel catalogo (`rootFiles`), come `global.json` per `dr-dotnet-backend`.
 
 ---
 
 ## 6️⃣ Verificare idempotenza e `-Update`
 
-**Seconda esecuzione senza flag** — nessun file deve essere sovrascritto:
+**Seconda esecuzione senza flag.** Nessun file deve essere sovrascritto:
 
 ```powershell
-& ..\dr-guidelines\dr-guidelines-install.ps1
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-Atteso: tutte righe `[SKIP]`, più `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md (usa -Update per aggiornare)`.
+Atteso: nessuna riga `[OK]` o `[UPD]` sui file. Compaiono righe `[SKIP]`, `Nessuna novita': gia' al commit <sha>` e `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md (usa -Update per aggiornare)`. Fa eccezione `[OK]   Manifest aggiornato`: il manifest si riscrive a ogni esecuzione, con la data del giorno.
 
-**Test `-Update`** — modifica volutamente un file copiato, poi ripristina via installer:
+**`-Update` ripristina un file modificato:**
 
 ```powershell
 Add-Content .github\instructions\logging.instructions.md "`n<!-- modifica locale di test -->"
-& ..\dr-guidelines\dr-guidelines-install.ps1 -Update
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Update
 Select-String -Path .github\instructions\logging.instructions.md -Pattern "modifica locale di test"
 ```
 
-Atteso: righe `[UPD]`, `[UPD]  Sezione dr-guidelines aggiornata in CLAUDE.md`, e l'ultimo comando **nessun risultato** (la modifica è stata sovrascritta).
+Atteso: righe `[UPD]`, `[UPD]  Sezione dr-guidelines aggiornata in CLAUDE.md`, e l'ultimo comando **senza risultati**.
 
-**Test preservazione contenuto host in `CLAUDE.md`** — il merge non deve toccare nulla fuori dai marker:
+**`-Update` preserva il contenuto di `CLAUDE.md` fuori dai marker:**
 
 ```powershell
 Add-Content CLAUDE.md "`n## Sezione mia del progetto`n`nQuesta riga deve sopravvivere all'update."
-& ..\dr-guidelines\dr-guidelines-install.ps1 -Update
+& ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Update
 Select-String -Path CLAUDE.md -Pattern "deve sopravvivere"
 ```
 
@@ -233,109 +209,84 @@ Atteso: la riga **c'è ancora**.
 
 ---
 
-## 7️⃣ Verificare le skill in Claude Code
+## 7️⃣ Verificare che si installi il `main` remoto
 
-1. Assicurati che `test-uno` sia nel workspace (passo 2) e **riavvia Claude Code** — le skill in `.claude/skills/` vengono lette all'avvio della sessione.
-2. Con `test-uno` come cartella di lavoro, invoca:
+Serve il clone locale: il test ha senso solo lanciando l'installer **dal percorso locale**. Con la forma `gh api` il risultato sarebbe scontato.
 
-```
-/dr-snapshot
-```
+1. Nel clone locale di `dr-minimalapi` aggiungi una riga riconoscibile a `.github/instructions/minimal-api-architecture.instructions.md`, **senza commit né push**
+2. Dalla cartella di prova lancia l'installer dal percorso locale:
+   ```powershell
+   Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
+   & ..\dr-minimalapi\dr-minimalapi-install.ps1 -Update
+   ```
+3. Cerca la riga nella copia installata:
+   ```powershell
+   Select-String -Path .github\instructions\minimal-api-architecture.instructions.md -Pattern "<testo della riga>"
+   ```
 
-Atteso: genera `.ai/context/snapshot.md` con il riassunto del progetto host.
+Atteso: **nessun risultato**. Dal clone locale l'installer prende solo la libreria; il contenuto del pacchetto lo clona dal `main` su GitHub. Poi annulla la modifica nel clone locale con `git checkout -- <file>`.
 
-3. Prova la guard di `/dr-get-latest` **dal repo sorgente** (non dall'host): posizionati su `dr-guidelines` e invoca `/dr-get-latest`. Deve rispondere:
+---
+
+## 8️⃣ Verificare le skill in Claude Code
+
+1. Nella finestra della cartella di prova: `Developer: Reload Window`. Le skill si leggono all'avvio della sessione
+2. Invoca `/dr-snapshot`. Atteso: nasce `.ai/context/snapshot.md`
+3. Invoca `/dr-get-latest`. Atteso: aggiorna i tre pacchetti del manifest. Su repo Private la skill usa la forma `gh api`
+4. Controprova della guard: apri Claude Code su un repo sorgente (per esempio `dr-guidelines`) e invoca `/dr-get-latest`. Atteso, testuale:
 
 > "Sei in un repo sorgente dr-*: qui non esiste un manifest pacchetti da aggiornare. Usa `git pull` per allinearti al remoto."
 
 ---
 
-## 8️⃣ Testare `/dr-get-latest` sul progetto host
-
-Da `test-uno`:
-
-```
-/dr-get-latest
-```
-
-**Limite noto — fallirà finché i repo sono Private.** La skill esegue, per ogni pacchetto del manifest:
-
-```powershell
-& ([scriptblock]::Create((Invoke-RestMethod -Uri "https://raw.githubusercontent.com/davraf-amuro/<package>/main/<package>-install.ps1"))) -Update
-```
-
-Con repo Private, `Invoke-RestMethod` restituisce 404 e — poiché lo script arriva da `iex`, quindi `$PSScriptRoot` è vuoto — il fallback locale non si attiva. Comportamento atteso e corretto: la skill segnala il fallimento per pacchetto e prosegue con i successivi.
-
-**Equivalente manuale funzionante durante la fase Private:**
-
-```powershell
-Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
-& ..\dr-guidelines\dr-guidelines-install.ps1     -Update
-& ..\dr-dotnet-backend\dr-dotnet-backend-install.ps1 -Update
-& ..\dr-minimalapi\dr-minimalapi-install.ps1     -Update
-```
-
----
-
-## 📋 Checklist di verifica finale
+## 📋 Checklist finale
 
 | # | Criterio | Esito |
 |---|----------|-------|
-| 1 | `test-uno` è un repo git con commit iniziale | ☐ |
-| 2 | `test-uno` compare nel `.code-workspace` | ☐ |
-| 3 | Config radice dal core presenti (`.editorconfig`, `.gitignore`, `.gitattributes`); `Directory.Build.props` e `global.json` solo se è installato `dr-dotnet-backend` | ☐ |
-| 4 | `.mcp.json` generato e ignorato da git | ☐ |
-| 5 | 10 file in `.github/instructions/` | ☐ |
-| 6 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
-| 7 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
-| 8 | Dipendenza `dr-dotnet-backend` installata automaticamente | ☐ |
-| 9 | Seconda esecuzione senza flag → solo `[SKIP]` | ☐ |
-| 10 | `-Update` sovrascrive i file e ri-mergia la sezione | ☐ |
-| 11 | Contenuto host di `CLAUDE.md` fuori marker preservato | ☐ |
-| 12 | Nessun `.gitmodules`, nessuna cartella `davraf-guidelines/` in `test-uno` | ☐ |
-| 13 | `/dr-snapshot` eseguita con successo dall'host | ☐ |
-| 14 | `/dr-get-latest` dal repo sorgente → guard attiva | ☐ |
+| 1 | Cartella di prova fuori dal workspace `dr-*`, aperta in finestra separata | ☐ |
+| 2 | Config radice del core presenti; `Directory.Build.props` e `global.json` solo dopo `dr-dotnet-backend` | ☐ |
+| 3 | `.mcp.json` generato e ignorato da git | ☐ |
+| 4 | 11 istruzioni, 7 prompt, 16 skill dopo il solo core | ☐ |
+| 5 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
+| 6 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
+| 7 | `dr-dotnet-backend` installato in automatico | ☐ |
+| 8 | Seconda esecuzione senza flag → nessun file sovrascritto (solo `[SKIP]`, più la riga del manifest) | ☐ |
+| 9 | `-Update` sovrascrive e riscrive la sezione | ☐ |
+| 10 | Contenuto di `CLAUDE.md` fuori dai marker preservato | ☐ |
+| 11 | Modifica non pushata non arriva nell'host | ☐ |
+| 12 | Nessun `.gitmodules` né repo annidato nella cartella di prova | ☐ |
+| 13 | `/dr-snapshot` funziona dall'host | ☐ |
+| 14 | `/dr-get-latest` funziona dall'host e si ferma nel repo sorgente | ☐ |
 
-Verifica rapida del criterio 12:
+Verifica del criterio 12:
 
 ```powershell
-Test-Path .gitmodules            # atteso: False
-Test-Path .\davraf-guidelines    # atteso: False
+Test-Path .gitmodules                 # atteso: False
+Get-ChildItem -Recurse -Force -Directory -Filter .git | Select-Object FullName   # solo la .git della cartella di prova
 ```
 
 ---
 
 ## ♻️ Rollback e pulizia
 
-**Annullare le modifiche mantenendo il progetto:**
+**Tornare al commit iniziale mantenendo la cartella:**
 
 ```powershell
-Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
+Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
 git clean -fd          # rimuove i file non tracciati aggiunti dall'installer
 git checkout -- .      # ripristina i file tracciati modificati
 ```
 
-**Eliminare del tutto il progetto di prova:**
+`.mcp.json` resta: è ignorato da git e `git clean -fd` non lo tocca. Cancellalo a mano se vuoi ripartire da zero.
+
+**Eliminare la cartella di prova:**
 
 ```powershell
 Set-Location E:\Davide\Progetti\dr-guidelines-workspace
-Remove-Item .\test-uno -Recurse -Force
+Remove-Item .\dr-test-01 -Recurse -Force
 ```
 
-Poi rimuovi la voce `{ "path": "test-uno" }` dal `.code-workspace`.
-
-> ⚠️ `Remove-Item -Recurse -Force` è irreversibile e cancella anche il repo git locale di `test-uno`. Nessun remote è coinvolto: `test-uno` non viene mai pushato.
-
----
-
-## ⚠️ Limiti noti in fase Private
-
-| Limite | Workaround |
-|--------|-----------|
-| `irm .../<pacchetto>-install.ps1 \| iex` non funziona (repo Private) | Path locale `& ..\<pacchetto>\<pacchetto>-install.ps1`, oppure `gh api` senza clone locale |
-| `/dr-get-latest` usa `Invoke-RestMethod` come prima scelta | Su repo Private la skill passa alla forma `gh api`; se `gh` manca, sequenza manuale `<pacchetto>-install.ps1 -Update` (passo 8) |
-| Questo test non chiude il gate 2b dello split | Serve un progetto host **reale**, non sintetico |
-| `git clone` dei pacchetti richiede credenziali valide | Credential manager git o `gh auth login` |
+> ⚠️ `Remove-Item -Recurse -Force` è irreversibile e cancella anche il repository git locale della cartella di prova. Nessun remote è coinvolto: la cartella non viene mai pushata.
 
 ---
 
@@ -343,11 +294,12 @@ Poi rimuovi la voce `{ "path": "test-uno" }` dal `.code-workspace`.
 
 | Documento | Contenuto |
 |-----------|-----------|
-| [`README.md`](../README.md) | Panoramica pacchetti `dr-*`, installazione e aggiornamento |
-| [`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`](../.ai/plans/2026-07-22-dr-guidelines-split/plan.md) | Piano di split, gate 2b, design dell'installer |
-| [`dr-guidelines-install-lib.ps1`](../dr-guidelines-install-lib.ps1) | Registry pacchetti e orchestratore `Install-DrPackage` |
-| [`docs/onboarding.md`](onboarding.md) | Onboarding developer senior |
+| [`guida-nuova-soluzione.md`](guida-nuova-soluzione.md) | Percorso utente: dalla cartella vuota alla solution |
+| [`bozza-manuale-installazione.md`](bozza-manuale-installazione.md) | Esiti delle prove sul campo |
+| [`../README.md`](../README.md) | Pacchetti, installazione, aggiornamento |
+| [`../dr-guidelines-install-lib.ps1`](../dr-guidelines-install-lib.ps1) | `Get-DrCatalog`, `Install-DrPackage`, `Install-DrGlobal` |
+| [`onboarding.md`](onboarding.md) | Onboarding per chi sviluppa il core |
 
 ---
 
-*Revisione v1.2 — 2026-08-09 11:40 — claude-opus-5*
+*Revisione v2.0 — 2026-09-16 16:09 — claude-opus-5*

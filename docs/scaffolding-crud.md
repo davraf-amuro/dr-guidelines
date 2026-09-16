@@ -1,6 +1,6 @@
 # Scaffolding: CRUD endpoint per una tabella
 
-Questa guida mostra cosa succede quando si chiede a Claude Code (con davraf-guidelines attive) di creare gli endpoint CRUD per una tabella — es. `"crea gli endpoint crud per la tabella MyTable"`.
+Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-minimalapi` installati) di creare gli endpoint CRUD per una tabella — es. `"crea gli endpoint crud per la tabella MyTable"`.
 
 Prerequisito: progetto Minimal API già esistente con la struttura di base.
 
@@ -231,4 +231,4 @@ Tutti i campi filter sono **nullable** — nessun filtro è obbligatorio.
 
 ---
 
-*Revisione v1.0 — 2026-06-13 15:30 — claude-sonnet-4-6*
+*Revisione v1.1 — 2026-09-16 16:09 — claude-opus-5*

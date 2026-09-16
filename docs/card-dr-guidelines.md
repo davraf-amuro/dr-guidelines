@@ -2,20 +2,20 @@
 
 ## Identificazione
 
-- **Progetto:** dr-guidelines — pacchetto **core** della suite `dr-*`
+- **Progetto:** dr-guidelines — pacchetto **core** e catalogo della suite `dr-*`
 - **Solution:** —
-- **Workspace:** `E:\Davide\Progetti\dr-guidelines-workspace\` (7 repo `dr-*` come cartelle sorelle)
+- **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, con i 7 repo `dr-*` come cartelle sorelle
 - **Repository:** https://github.com/davraf-amuro/dr-guidelines (Private)
-- **Tipo Applicazione:** Repository di linee guida e configurazioni — distribuito come pacchetto autoinstallante via `dr-guidelines-install.ps1`
-- **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code
-- **Versione Corrente:** Da verificare con il team
+- **Tipo Applicazione:** Repository di linee guida e configurazioni, distribuito come pacchetto installabile con `dr-guidelines-install.ps1`
+- **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code, catalogo JSON come fonte unica dei pacchetti
+- **Versione Corrente:** Da verificare con il team (nessun tag di rilascio; gli host registrano il commit installato)
 - **Owner/Team:** davide 'davraf' raffagli
 - **Referente:** davide 'davraf' raffagli
-- **Contatto Supporto:** d.raffagli@gmail.com
+- **Contatto Supporto:** d.raffagli@gmail.com · issue sul repository, via `/dr-segnala-miglioria`
 
 ## Stack Tecnologico
 
-- **Linguaggio Principale:** PowerShell, Markdown
+- **Linguaggio Principale:** PowerShell 7, Markdown, JSON
 - **Framework:** —
 - **Target Framework:** —
 - **SDK Version:** —
@@ -24,13 +24,16 @@
 
 ### Progetti Interni
 
-- Nessuna (è il progetto provider, non il consumatore)
+- Nessuna dipendenza in ingresso: è il provider.
+- Consumato dai 6 pacchetti di dominio (`dr-dotnet-backend`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`), i cui installer caricano `dr-guidelines-install-lib.ps1` e il catalogo da questo repo.
 
 ### Pacchetti Esterni
 
 | Pacchetto | Versione | Scopo |
 |-----------|----------|-------|
-| `@fabriqa.ai/pdf-reader-mcp` | latest | MCP server per lettura PDF in Claude Code (riferimento committato in `.mcp.example.json`; la config reale va in `.mcp.json`, in `.gitignore`) |
+| `@fabriqa.ai/pdf-reader-mcp` | latest | MCP server per leggere PDF in Claude Code. Riferimento in `.mcp.example.json`; la config reale va in `.mcp.json`, ignorato da git |
+| `gh` (GitHub CLI) | — | Prerequisito del bootstrap su repo Private |
+| `git` | — | Prerequisito: l'installer clona i pacchetti |
 
 ## Database
 
@@ -41,15 +44,16 @@
 
 | Tipo | Nome/Endpoint | Protocollo | Autenticazione | Scopo/Descrizione |
 |------|---------------|------------|----------------|-------------------|
-| CDN | `raw.githubusercontent.com` | HTTPS | — | Download di `dr-guidelines-install.ps1`/`dr-guidelines-install-lib.ps1` tramite `irm` (richiede repo Public) |
-| VCS | GitHub | HTTPS/SSH | PAT / SSH key | Hosting dei 7 repo `dr-*`; `git clone --depth 1` eseguito dall'installer |
+| API | GitHub REST API (`gh api repos/.../contents/...`) | HTTPS | Token di `gh auth login` (scope `repo`) | Download di installer, libreria e catalogo su repo Private |
+| CDN | `raw.githubusercontent.com` | HTTPS | — | Stesso download via `irm`. Primo tentativo dell'installer; risponde `404` finché i repo sono Private |
+| VCS | GitHub | HTTPS | Credential manager di git, o `gh auth setup-git` | `git clone --depth 1` del `main` di ogni pacchetto in `%TEMP%` |
 
 ## Configurazione e Hosting
 
-- **Entrypoint:** `install.ps1` (installa il pacchetto core nel progetto host) · `install.ps1 -Update` (aggiorna i file già presenti) · `dr-guidelines-install.ps1 -Global` / `-Global -Update` (scrive la sezione linee guida in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato di un progetto nuovo, nessuno script) · `/dr-install-global` (installazione globale guidata)
+- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Update` (sovrascrive i file presenti) · `-Package <nome>` (pacchetto di dominio con dipendenze) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
 - **Ambiente Test:** non pubblicato
 - **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v2.5 — 2026-08-09 11:40 — claude-opus-5*
+*Revisione v2.6 — 2026-09-16 16:09 — claude-opus-5*

@@ -3,6 +3,8 @@
 > 🚧 **Documento in lavorazione.** Non è ancora il manuale utente: è il taccuino dove annotiamo i passaggi **verificati sul campo**, mano a mano che li proviamo. Quando tutti i passaggi saranno confermati, questo file diventa la base del manuale definitivo.
 >
 > Regola del taccuino: qui entra **solo** ciò che è stato eseguito e ha funzionato. Tutto il resto sta nella sezione [Da verificare](#-da-verificare), esplicitamente marcato.
+>
+> 📘 **La guida per l'utente è [`guida-nuova-soluzione.md`](guida-nuova-soluzione.md)** (2026-09-16). Questo taccuino resta la fonte degli esiti: quando un passaggio qui diventa verificato, va aggiornata anche la tabella "Cosa è stato provato sul campo" della guida.
 
 ---
 
@@ -23,7 +25,7 @@ Un utente apre **VS Code con Claude Code** su una **cartella vuota** e vuole ins
 
 ## ✅ Passo 0 — Verificare i prerequisiti
 
-Cinque comandi di sola lettura. Nessuno scrive niente.
+Sei comandi di sola lettura. Nessuno scrive niente.
 
 ```powershell
 dotnet --list-sdks
@@ -145,19 +147,19 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | Elemento | Presente? | Note |
 |---|---|---|
 | `.editorconfig`, `.gitignore`, `.gitattributes` | Sì | Sempre copiati dal core |
-| `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve — nessun rilevamento dello stack è coinvolto |
+| `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
 | `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Sì | Generato da `.mcp.example.json`, solo perché assente. Il `.gitignore` copiato lo esclude dai commit |
-| `.github/instructions/` | Sì | 10 file `*.instructions.md` |
-| `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` |
-| `.claude/skills/` | Sì | 10 cartelle skill `dr-*` |
+| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`) |
+| `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` al 2026-08-12. Al 2026-09-16 anche `dr-get-latest` e `dr-segnala-miglioria` |
+| `.claude/skills/` | Sì | Il taccuino del 2026-08-12 riportava 10 cartelle, ma nei commit di quel giorno (`faf6a6c`, `cffb1f2`) le skill del core erano 15: conteggio da rifare. Al 2026-09-16 il core ne ha 16 |
 | `CLAUDE.md` | Sì | Contiene i marker `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-guidelines-packages.json` | Sì | Manifest dei pacchetti installati |
 | `.ai/dr-scaffolding-catalog.json` | Sì | Catalogo tipologie/pacchetti, letto dalle skill `dr-scaffold*` |
 
 ---
 
-## ✅ Passo 3 — Riavviare Claude Code
+## 🚧 Passo 3 — Riavviare Claude Code (da provare)
 
 Claude Code legge `.claude/skills/` **all'avvio della sessione**. Le skill appena installate non compaiono finché non riavvii.
 
@@ -178,12 +180,14 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 2 | `/dr-scaffold` su cartella con solo il core installato → delega a `dr-scaffold-solution` | ☐ Da provare |
 | 3 | Creazione di una solution `.slnx` + primo progetto | ☐ Da provare |
 | 4 | Installazione di un pacchetto dominio (`dr-minimalapi`) e risoluzione automatica della dipendenza `dr-dotnet-backend` | ☐ Da provare |
-| 5 | Idempotenza: seconda esecuzione dell'installer senza flag → solo righe `[SKIP]` | ☐ Da provare |
+| 5 | Idempotenza: seconda esecuzione dell'installer senza flag → nessun file sovrascritto (righe `[SKIP]`, più `Nessuna novita'` e `[OK] Manifest aggiornato`, che si riscrive sempre) | ☐ Da provare |
 | 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | ☐ Da provare |
 | 7 | `/dr-snapshot` eseguita dal progetto host | ☐ Da provare |
 | 8 | `/dr-get-latest` dal progetto host | ☐ Da provare |
-| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) — al 2026-08-09 risultavano Private | ☐ Da confermare con `gh repo view davraf-amuro/dr-guidelines --json visibility` |
-| 10 | Nome del catalogo dopo la copia: nel repo sorgente il file sta in root e si chiama `scaffolding-catalog.json`; `test-progetto-host.md` lo dà per `.ai/dr-scaffolding-catalog.json` nell'host. Rinomina prevista o discrepanza? | ☐ Da confermare con `Get-ChildItem .ai` nella cartella host |
+| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ 2026-09-16: `dr-guidelines` → `PRIVATE`. Il test **non** richiede di renderli pubblici: basta `gh` autenticato (forma `gh api`, Passo 1) |
+| 10 | Nome del catalogo dopo la copia: nel repo sorgente il file sta in root e si chiama `scaffolding-catalog.json`; `test-progetto-host.md` lo dà per `.ai/dr-scaffolding-catalog.json` nell'host. Rinomina prevista o discrepanza? | 🟡 Rinomina prevista nel codice: `Copy-ScaffoldingCatalog` in `dr-guidelines-install-lib.ps1` copia il file come `.ai\dr-scaffolding-catalog.json`. ☐ Conferma sul campo con `Get-ChildItem .ai` nella cartella host |
+| 11 | Il test prova sempre il `main` **remoto**: `Install-DrPackage` fa `git clone --depth 1` da `github.com` anche se l'installer è lanciato da path locale. Modifiche non pushate non vengono installate | ☐ Da provare: modifica locale non pushata → assente nella cartella host |
+| 12 | Passi 1 e 2 di questo taccuino dopo la riscrittura della libreria (`aee84a4`, 2026-09-16: catalogo come fonte dei pacchetti, `rootFiles`, nessun rilevamento dello stack). Le prove del 2026-08-12 riguardano la versione precedente | ☐ Da riverificare in una cartella vuota |
 
 ---
 
@@ -197,6 +201,8 @@ Annotate qui perché il manuale finale non le riperda.
 | 2 | Il passo 3️⃣ descrive `git clone` tra i passaggi interni | Il wording va reso esplicito: il clone avviene **in `%TEMP%`** ed è invisibile all'utente. Detto senza contesto, fa credere che il repo finisca nella cartella del progetto. È stato un fraintendimento reale in sessione |
 | 3 | La procedura usa la forma a **path locale** (`& ..\dr-guidelines\dr-guidelines-install.ps1`) | Funziona solo se hai già il workspace multi-repo clonato di fianco. Per il manuale utente la forma di riferimento è **`gh api`**: nessun clone locale richiesto, funziona sia su repo Public che Private |
 | 4 | La cartella di test si chiama `test-uno` | Nella sessione del 2026-08-12 è stata usata `dr-test-01`. Il nome è irrilevante per la procedura — il manuale finale dovrebbe usare un segnaposto generico |
+
+**Recepite il 2026-09-16** in `test-progetto-host.md` v2.0: `git init` è consigliato ma dichiarato non richiesto, il clone in `%TEMP%` è spiegato, la forma di riferimento è `gh api`, la cartella di prova è `dr-test-01` fuori dal workspace e aperta in finestra separata.
 
 ---
 
@@ -268,4 +274,4 @@ Punti che la futura linea guida dovrebbe fissare:
 
 ---
 
-*Revisione v1.3 — 2026-08-12 22:31 — claude-opus-5*
+*Revisione v1.4 — 2026-09-16 16:09 — claude-opus-5*
