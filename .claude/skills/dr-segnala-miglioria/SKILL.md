@@ -25,6 +25,8 @@ Leggi `.ai/dr-guidelines-packages.json` dalla root del progetto corrente per ott
 
 ### 2. Determina il pacchetto di competenza
 
+**Caso a parte — gap di catalogo.** Se la segnalazione non riguarda un pacchetto esistente ma il fatto che **nessun pacchetto copra un dominio** (tipicamente arrivi qui delegato da `/dr-scaffold`, che ha applicato il `fallback` del catalogo), il repo di destinazione è sempre `davraf-amuro/dr-guidelines`: è lì che vive il catalogo. Salta la deduzione e vai al passo 3 con la variante "nuovo pacchetto" del corpo.
+
 - Se l'input nomina esplicitamente un pacchetto (es. "dr-efdb") o un repo — usalo direttamente, salta la deduzione.
 - Se l'input fa riferimento a un file presente nel progetto corrente, verifica dove si trova realmente (es. `.github/instructions/minimal-api-architecture.instructions.md` → `dr-minimalapi`; `.claude/skills/dr-audit-api/` → `dr-dotnet-backend`): la posizione del file nel progetto host basta a dedurre il pacchetto, nessuna tabella statica necessaria.
 - Se resta ambiguo (più pacchetti plausibili, nessun file citato, o il file citato non esiste nel progetto) → usa `AskUserQuestion`, opzioni = pacchetti elencati nel manifest (+ possibilità di indicarne uno diverso).
@@ -35,6 +37,11 @@ Leggi `.ai/dr-guidelines-packages.json` dalla root del progetto corrente per ott
 
 - **Titolo**: sintetico, imperativo (es. "Chiarire soglia batch size in database-provider.instructions.md").
 - **Corpo**: contesto (in quale progetto/situazione è emersa la necessità), descrizione del problema/miglioria, riferimento a file/riga se disponibile.
+
+**Variante "nuovo pacchetto"** (gap di catalogo, dal passo 2):
+
+- **Titolo**: `Nuovo pacchetto: <dominio richiesto>`
+- **Corpo**: cosa voleva fare l'utente con le sue parole, perché nessun pacchetto esistente copre il caso, quale `kind` sembra appropriato (`dotnet`, `node`, `embedded`, `content`, o nuovo), e quali guide/skill dovrebbe contenere il pacchetto. Se il dominio somiglia a un pacchetto esistente, dillo: può essere un'estensione invece di un repo nuovo.
 
 ### 4. Conferma esplicita — mai invio automatico
 
@@ -72,6 +79,7 @@ Dopo conferma:
 | `gh` non autenticato | URL precompilato di fallback, nessun errore bloccante |
 | Utente non conferma titolo/corpo al passo 4 | Nessuna issue creata, nessuna azione ulteriore |
 | Issue simile già esistente (se rilevabile) | Segnalala e chiedi se procedere comunque prima di aprirne una nuova |
+| Nessun pacchetto copre il dominio (delega da `/dr-scaffold`) | Destinazione fissa `dr-guidelines`, corpo in variante "nuovo pacchetto"; la conferma del passo 4 resta obbligatoria |
 
 ---
 

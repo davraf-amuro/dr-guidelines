@@ -52,7 +52,9 @@ npm --version     # solo se il progetto avrà un frontend
 | `gh` | `davraf-amuro`, scopes `gist`, `read:org`, `repo`, `workflow` |
 | node / npm | `v26.5.0` / `10.7.0` |
 
-**Perché il gate va prima di scrivere:** l'installer del core copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
+**Perché il gate va prima di scrivere:** su un progetto .NET l'installer di `dr-dotnet-backend` copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
+
+I prerequisiti da verificare dipendono dal dominio: l'SDK .NET serve solo ai domini .NET, node/npm a quelli frontend, PlatformIO a quelli firmware. Un progetto di soli contenuti richiede solo git.
 
 ---
 
@@ -143,7 +145,8 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | Elemento | Presente? | Note |
 |---|---|---|
 | `.editorconfig`, `.gitignore`, `.gitattributes` | Sì | Sempre copiati dal core |
-| `Directory.Build.props`, `global.json` | **No** | Copiati solo se l'host è .NET (esiste un `*.csproj`/`*.sln`/`*.slnx` entro 3 livelli). In cartella vuota l'installer stampa `[SKIP] Directory.Build.props, global.json (host non .NET)` — è il comportamento corretto |
+| `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve — nessun rilevamento dello stack è coinvolto |
+| `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Sì | Generato da `.mcp.example.json`, solo perché assente. Il `.gitignore` copiato lo esclude dai commit |
 | `.github/instructions/` | Sì | 10 file `*.instructions.md` |
 | `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` |

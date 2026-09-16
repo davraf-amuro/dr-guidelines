@@ -5,7 +5,7 @@
   "identity": "Davraf.Guidelines",
   "name": "Davraf Guidelines – Copilot + EditorConfig per .NET 10",
   "shortName": "davraf-guidelines",
-  "description": "Aggiunge .github/copilot-instructions.md, instruction files modulari (Minimal API, Database Provider, Docker Swarm, Windows Service), .editorconfig, Directory.Build.props, global.json, .gitignore e .gitattributes configurati per .NET 10.",
+  "description": "Aggiunge .github/copilot-instructions.md, le instruction files trasversali, .editorconfig, .gitignore e .gitattributes. Le regole e i file di progetto di un dominio specifico (per esempio Directory.Build.props e global.json per .NET) arrivano dal pacchetto dr-* di quel dominio.",
   "tags": {
     "language": "",
     "type": "solution"

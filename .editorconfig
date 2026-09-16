@@ -10,6 +10,10 @@ indent_style = space
 indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
+# Allineato a .gitattributes (`* text=auto eol=lf`): senza questa direttiva
+# dotnet format usa il newline di default della piattaforma, quindi lo stesso
+# codice risulta conforme su Linux e non conforme su Windows.
+end_of_line = lf
 
 # Code files
 [*.{cs,csx,vb,vbx}]

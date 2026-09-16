@@ -191,7 +191,7 @@ Pop-Location
 
 `Install-DrPackage` usa `(Get-Location).Path` come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori, e il target è la **root del repo**. Il core per primo perché crea `CLAUDE.md` e la configurazione radice.
 
-Nel repo frontend l'installer non copia `Directory.Build.props` e `global.json` (rilevamento automatico: nessun `.csproj` → sono file .NET-only e vengono saltati). È il comportamento atteso, non un errore.
+Nel repo frontend `Directory.Build.props` e `global.json` non compaiono: non appartengono al core ma a `dr-dotnet-backend`, che lì non viene installato. È il comportamento atteso, non un errore.
 
 ### 4.8 Formattazione — non è opzionale
 

@@ -1,6 +1,6 @@
 ---
 name: dr-scaffold
-description: Punto d'ingresso unico dello scaffolding dr-*. Verifica i prerequisiti, rileva lo stato della cartella corrente (vuota, solution esistente, progetto già presente) e delega a dr-scaffold-solution, dr-scaffold-project o dr-scaffold-guidelines. Invoca con /dr-scaffold [richiesta opzionale].
+description: Punto d'ingresso unico dello scaffolding dr-*. Risolve il dominio della richiesta leggendo la intentMap del catalogo, verifica i prerequisiti di quel dominio, rileva lo stato della cartella corrente e delega a dr-scaffold-solution, dr-scaffold-project o dr-scaffold-guidelines. Se nessun pacchetto copre il dominio richiesto, propone di aprire una issue invece di finire in un vicolo cieco. Invoca con /dr-scaffold [richiesta opzionale].
 ---
 
 Sei un **Scaffolding Router**. Non crei nulla tu: verifichi che l'ambiente sia in grado di sostenere lo scaffolding, capisci in che stato è la cartella corrente e passi il lavoro alla skill giusta.
@@ -15,28 +15,52 @@ INPUT_UTENTE
 
 ---
 
+## Fase 0-pre — Risolvi il dominio dalla richiesta
+
+Prima del gate: **quale dominio** sta chiedendo l'utente. I prerequisiti da verificare dipendono da questo, non sono fissi.
+
+1. Leggi `scaffolding-catalog.json` (nella radice del progetto oppure in `.ai/`, dove l'installer del core lo distribuisce).
+2. Confronta la richiesta dell'utente con le `phrases` di ogni voce di `intentMap` e individua il `domain`.
+3. Dal dominio ricava il `kind` e, da `kinds`, l'elenco dei `prerequisites` da verificare nella Fase 0.
+
+Il catalogo è la fonte: non tenere qui un elenco parallelo di domini o di frasi, andrebbe fuori sincrono al primo pacchetto nuovo.
+
+**Nessuna corrispondenza** → applica il blocco `fallback` del catalogo, senza inventare un dominio:
+
+> "Nessun pacchetto `dr-*` copre `<dominio richiesto>`. Posso procedere con il solo core generico (istruzioni trasversali, nessuna guida specifica), oppure aprire una issue di richiesta nuovo pacchetto."
+
+Offri le due opzioni con `AskUserQuestion`. Se l'utente sceglie la issue, delega a `/dr-segnala-miglioria` indicando che si tratta di un **gap di catalogo** sul repo `dr-guidelines`: nessuna issue viene creata senza la sua conferma esplicita del testo.
+
+Richiesta generica senza indizi di dominio ("crea un progetto") → non tirare a indovinare: elenca le `label` dei domini disponibili e chiedi quale.
+
+---
+
 ## Fase 0 — Gate prerequisiti (obbligatorio, prima di qualsiasi rilevamento)
 
-Esegui e riporta l'esito in tabella. Sono tutti comandi di sola lettura.
+Verifica **solo** i prerequisiti del `kind` risolto nella Fase 0-pre, più quelli comuni. Riporta l'esito in tabella. Sono tutti comandi di sola lettura.
 
 ```powershell
-dotnet --list-sdks
-git --version
-pwsh --version
-gh auth status
-node --version    # solo se l'utente vuole un frontend
-npm --version     # solo se l'utente vuole un frontend
+git --version     # sempre
+pwsh --version    # sempre
+gh auth status    # sempre: i repo dr-* sono Private
+dotnet --list-sdks    # solo kind dotnet
+node --version        # solo kind node, o frontend richiesto
+npm --version         # solo kind node, o frontend richiesto
+pio --version         # solo kind embedded
 ```
 
-| Requisito | Esito atteso | Se manca |
-|---|---|---|
-| .NET SDK 10.x | almeno una riga `10.*` | STOP — nessun progetto .NET è creabile |
-| git | qualsiasi versione | STOP — serve per `git init` e per il clone dei pacchetti |
-| PowerShell 7+ | `7.*` | STOP — gli installer `<pacchetto>-install.ps1` girano su pwsh |
-| gh autenticato | `Logged in to github.com` | STOP — i repo `dr-*` sono Private: senza credenziali `git clone` fallisce |
-| node + npm | qualsiasi versione | Solo blocco del frontend, il resto procede |
+| Requisito | Quando | Esito atteso | Se manca |
+|---|---|---|---|
+| git | sempre | qualsiasi versione | STOP — serve per `git init` e per il clone dei pacchetti |
+| PowerShell 7+ | sempre | `7.*` | STOP — gli installer `<pacchetto>-install.ps1` girano su pwsh |
+| gh autenticato | sempre | `Logged in to github.com` | STOP — i repo `dr-*` sono Private: senza credenziali `git clone` fallisce |
+| .NET SDK 10.x | kind `dotnet` | almeno una riga `10.*` | STOP — nessun progetto .NET è creabile |
+| node + npm | kind `node`, o frontend richiesto | qualsiasi versione | STOP se il progetto è solo frontend; se è un pezzo di un progetto più grande, blocca solo quel pezzo |
+| PlatformIO Core | kind `embedded` | `PlatformIO Core, version ...` | STOP — nessun firmware è compilabile o caricabile sulla scheda |
 
-**Perché il gate va prima di scrivere:** l'install del core copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
+**Perché il gate va prima di scrivere:** su un progetto .NET l'installer di `dr-dotnet-backend` copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
+
+Un dominio di soli contenuti (`kind: content`) non richiede toolchain: verifica git e fermati lì. **Non chiedere l'SDK .NET a chi sta scrivendo una guida turistica.**
 
 Anche una sola riga STOP → fermati, riporta cosa manca e **non** procedere alla Fase 1.
 
@@ -65,6 +89,16 @@ Leggi, nell'ordine, senza scrivere nulla:
 | **Qualsiasi altro stato senza solution** — cartella non vuota, nessun `*.csproj`, nessun `package.json` (es. repo di docs o tooling) | `dr-scaffold-solution` |
 
 L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare.
+
+**La tabella qui sopra vale per i `kind` `dotnet` e `node`**, gli unici che hanno un contenitore di progetto (solution, `package.json`). Per gli altri:
+
+| Kind risolto | Delega a |
+|---|---|
+| `embedded` | `dr-scaffold-guidelines` per installare il pacchetto del dominio; la struttura del firmware la detta l'istruzione del pacchetto, non questa skill |
+| `content` | `dr-scaffold-guidelines`; nessuna solution, nessun `dotnet new`, nessun contenitore da creare |
+| `any` (solo pacchetti trasversali, es. `dr-devops`) | `dr-scaffold-guidelines` sul repository esistente |
+
+Non forzare `dr-scaffold-solution` su un dominio che non ha solution: creerebbe un contenitore .NET attorno a un progetto che non è .NET.
 
 **Prerequisito mancante ≠ vicolo cieco.** Se l'utente chiede una tipologia specifica ("aggiungi un worker", "crea una minimal api") e manca il contenitore che la regge — solution, o repo — non rispondere che serve un'altra skill: **proponi di creare anche il contenitore**. La proposta è una sola finestra `AskUserQuestion`, nella forma della Fase 0-bis di `/dr-scaffold-project`:
 

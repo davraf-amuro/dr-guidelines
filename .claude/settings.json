@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Edit(/.claude/skills/dr-*/**)"
+      "Edit(/.claude/skills/dr-*/**)",
+      "Write(.ai/**)",
+      "Edit(.ai/**)"
     ]
   }
 }

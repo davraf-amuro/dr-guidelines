@@ -126,7 +126,7 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
   [OK]   .mcp.json
   CLAUDE.md:
   [OK]   CLAUDE.md creato con sezione dr-guidelines
-  [OK]   Manifest aggiornato: dr-guidelines
+  [OK]   Manifest aggiornato: dr-guidelines (a1b2c3d)
   Completato: dr-guidelines
 ```
 
@@ -145,18 +145,20 @@ Get-Content .ai\dr-guidelines-packages.json
 
 | Elemento | Note |
 |---|---|
-| `.editorconfig`, `Directory.Build.props`, `global.json`, `.gitignore`, `.gitattributes` | Copiati dal core |
+| `.editorconfig`, `.gitignore`, `.gitattributes` | Copiati dal core |
+| `Directory.Build.props`, `global.json` | **Assenti**: non appartengono al core. Arrivano al passo 5 con `dr-dotnet-backend` |
+| `.claude/settings.json` | Copiato se assente; se esiste, ne vengono aggiunte solo le voci `permissions.allow` mancanti |
 | `.mcp.json` | Generato da `.mcp.example.json`, **solo perché assente** |
 | `.github/instructions/` | 10 file `*.instructions.md` |
 | `.claude/skills/` | 10 cartelle skill `dr-*` |
 | `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
-| `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>"}]}` |
+| `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>","commit":"<sha del commit installato>"}]}` |
 
 **Nota `.github/prompts/`:** il core **ne ha** — `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator` e `dr-scaffold`. I pacchetti dominio aggiungono i propri (es. `card-minimal-api`, `endpoints-analyzer` con `dr-minimalapi`).
 
 **Nota `.ai/dr-scaffolding-catalog.json`:** il core distribuisce anche il catalogo delle tipologie di progetto e dei pacchetti, letto dalle skill `dr-scaffold*` nel progetto host.
 
-**Nota `Directory.Build.props` e `global.json`:** vengono copiati **solo** se l'host è .NET (esiste almeno un `*.csproj`/`*.sln`/`*.slnx` entro 3 livelli). In un repo frontend l'installer stampa `[SKIP] Directory.Build.props, global.json (host non .NET)`: è il comportamento atteso.
+**Nota `Directory.Build.props` e `global.json`:** non arrivano più dal core. Appartengono a `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo: li ricevi installando quel pacchetto (che è già dipendenza di `dr-minimalapi` e `dr-winsvc`), non installando il core. In un repo frontend non compaiono semplicemente perché quel pacchetto non è tra i suoi.
 
 **Controllo git — cosa risulta ignorato:** il `.gitignore` appena copiato esclude `.mcp.json` e `.claude/settings.local.json`. Verifica che `.mcp.json` **non** compaia tra i file da committare:
 
@@ -281,7 +283,7 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\test-uno
 |---|----------|-------|
 | 1 | `test-uno` è un repo git con commit iniziale | ☐ |
 | 2 | `test-uno` compare nel `.code-workspace` | ☐ |
-| 3 | Config radice presenti (`.editorconfig`, `Directory.Build.props`, `global.json`, `.gitignore`, `.gitattributes`) | ☐ |
+| 3 | Config radice dal core presenti (`.editorconfig`, `.gitignore`, `.gitattributes`); `Directory.Build.props` e `global.json` solo se è installato `dr-dotnet-backend` | ☐ |
 | 4 | `.mcp.json` generato e ignorato da git | ☐ |
 | 5 | 10 file in `.github/instructions/` | ☐ |
 | 6 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |

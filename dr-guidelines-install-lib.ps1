@@ -9,14 +9,87 @@
     Vive solo in dr-guidelines: anche gli installer dei pacchetti dominio la prendono da qui.
 #>
 
-$Script:PackageRegistry = @{
-    "dr-guidelines"     = @{ Repo = "davraf-amuro/dr-guidelines";     IsCore = $true;  Dependencies = @() }
-    "dr-minimalapi"     = @{ Repo = "davraf-amuro/dr-minimalapi";     IsCore = $false; Dependencies = @("dr-dotnet-backend") }
-    "dr-winsvc"         = @{ Repo = "davraf-amuro/dr-winsvc";         IsCore = $false; Dependencies = @("dr-dotnet-backend") }
-    "dr-efdb"           = @{ Repo = "davraf-amuro/dr-efdb";           IsCore = $false; Dependencies = @() }
-    "dr-fe"             = @{ Repo = "davraf-amuro/dr-fe";             IsCore = $false; Dependencies = @() }
-    "dr-devops"         = @{ Repo = "davraf-amuro/dr-devops";         IsCore = $false; Dependencies = @() }
-    "dr-dotnet-backend" = @{ Repo = "davraf-amuro/dr-dotnet-backend"; IsCore = $false; Dependencies = @() }
+# L'elenco dei pacchetti vive in un posto solo: scaffolding-catalog.json nel repo core.
+# Aggiungere un pacchetto e' una voce nel catalogo, non una modifica a questo script.
+$Script:CatalogRepo   = "davraf-amuro/dr-guidelines"
+$Script:CatalogName   = "scaffolding-catalog.json"
+$Script:AllowedOwner  = "davraf-amuro"
+$Script:Catalog         = $null
+$Script:PackageRegistry = $null
+
+function Get-DrCatalog {
+    if ($Script:Catalog) { return $Script:Catalog }
+
+    # Stessa catena di fallback con cui i wrapper caricano questa libreria:
+    #   1. raw pubblico   2. copia locale accanto allo script   3. gh api (repo Private)
+    $failures = @()
+    $parsed   = $null
+
+    try {
+        $content = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/$Script:CatalogRepo/main/$Script:CatalogName" -ErrorAction Stop
+        $parsed  = if ($content -is [string]) { $content | ConvertFrom-Json } else { $content }
+    } catch {
+        $failures += "raw pubblico: $($_.Exception.Message)"
+    }
+
+    if (-not $parsed -and $PSScriptRoot) {
+        $localCatalog = Join-Path $PSScriptRoot $Script:CatalogName
+        if (Test-Path $localCatalog) {
+            try {
+                $parsed = Get-Content $localCatalog -Raw | ConvertFrom-Json
+            } catch {
+                $failures += "copia locale: JSON non valido in $localCatalog"
+            }
+        } else {
+            $failures += "copia locale: $Script:CatalogName non trovato in $PSScriptRoot"
+        }
+    }
+
+    if (-not $parsed -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+        try {
+            $content = gh api "repos/$Script:CatalogRepo/contents/$Script:CatalogName" -H "Accept: application/vnd.github.raw" 2>$null | Out-String
+            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($content)) {
+                throw "gh api ha restituito exit $LASTEXITCODE (autenticato? 'gh auth status')"
+            }
+            $parsed = $content | ConvertFrom-Json
+        } catch {
+            $failures += "gh api: $($_.Exception.Message)"
+        }
+    }
+
+    # Nessun elenco incorporato come ripiego: un catalogo non raggiungibile e' un errore,
+    # non un motivo per installare da una lista potenzialmente obsoleta.
+    if (-not $parsed) {
+        throw "Impossibile caricare $Script:CatalogName. Tentativi: $($failures -join ' | ')"
+    }
+
+    $Script:Catalog = $parsed
+    return $Script:Catalog
+}
+
+function Get-DrPackageRegistry {
+    if ($Script:PackageRegistry) { return $Script:PackageRegistry }
+
+    $catalog  = Get-DrCatalog
+    $registry = @{}
+
+    foreach ($p in $catalog.packages) {
+        # L'URL da clonare arriva da un file di dati: l'owner deve restare quello atteso
+        $owner = ($p.repo -split '/')[0]
+        if ($owner -ne $Script:AllowedOwner) {
+            throw "Pacchetto '$($p.name)': owner non consentito '$owner' (atteso '$Script:AllowedOwner')."
+        }
+
+        $registry[$p.name] = @{
+            Repo         = $p.repo
+            IsCore       = [bool]$p.isCore
+            Dependencies = @($p.dependencies | Where-Object { $_ })
+            RootFiles    = @($p.rootFiles    | Where-Object { $_ })
+        }
+    }
+
+    $Script:PackageRegistry = $registry
+    return $registry
 }
 
 function Copy-GuidelineFile {
@@ -82,16 +155,18 @@ function Copy-Skills {
     }
 }
 
-function Test-DotnetHost {
-    param([string]$HostRoot)
+function Copy-PackageRootFiles {
+    param([string]$TempRoot, [string]$HostRoot, [string[]]$RootFiles, [switch]$Update)
 
-    # Profondita' 3: copre root, src\<progetto>\x.csproj e test\<progetto>\x.csproj senza scendere in node_modules
-    foreach ($pattern in @("*.csproj", "*.fsproj", "*.vbproj", "*.sln", "*.slnx")) {
-        $found = Get-ChildItem -Path $HostRoot -Filter $pattern -Recurse -Depth 3 -File -ErrorAction SilentlyContinue |
-                 Select-Object -First 1
-        if ($found) { return $true }
+    # File di radice propri di un pacchetto di dominio (es. Directory.Build.props per .NET).
+    # Chi installa il pacchetto ha gia' dichiarato il dominio: nessun rilevamento dello stack,
+    # altrimenti in una cartella vuota i file verrebbero saltati proprio quando servono.
+    if (-not $RootFiles -or $RootFiles.Count -eq 0) { return }
+
+    Write-Host "  File di configurazione del pacchetto:" -ForegroundColor White
+    foreach ($file in $RootFiles) {
+        Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
     }
-    return $false
 }
 
 function Copy-CoreConfigFiles {
@@ -102,15 +177,8 @@ function Copy-CoreConfigFiles {
         Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
     }
 
-    # Directory.Build.props e global.json sono .NET-only: in un repo frontend resterebbero file inerti
-    if (Test-DotnetHost -HostRoot $HostRoot) {
-        foreach ($file in @("Directory.Build.props", "global.json")) {
-            Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
-        }
-    } else {
-        Write-Host "  [SKIP] Directory.Build.props, global.json (host non .NET)" -ForegroundColor DarkGray
-        Write-Host "         Se aggiungi progetti .NET, rilancia l'installer con -Update per ottenerli." -ForegroundColor DarkGray
-    }
+    # Directory.Build.props e global.json non stanno piu' nel core: sono contenuto .NET
+    # e vivono in dr-dotnet-backend, che li installa quando il progetto e' davvero .NET.
 
     # .mcp.json: mai sovrascritto se il contenuto host diverge (puo contenere server MCP aggiunti dal progetto)
     $mcpSrc  = Join-Path $TempRoot ".mcp.example.json"
@@ -124,6 +192,73 @@ function Copy-CoreConfigFiles {
         } else {
             Write-Host "  [SKIP] .mcp.json identico" -ForegroundColor DarkGray
         }
+    }
+}
+
+function Merge-ClaudeSettings {
+    param([string]$TempRoot, [string]$HostRoot)
+
+    # Merge non distruttivo dei permessi condivisi: aggiunge solo le voci permissions.allow
+    # mancanti. Le altre chiavi del file host (mcpServers, env, hooks) non vengono toccate.
+    # Additivo e idempotente: si esegue anche senza -Update.
+    $src  = Join-Path $TempRoot ".claude\settings.json"
+    $dest = Join-Path $HostRoot ".claude\settings.json"
+
+    Write-Host "  .claude/settings.json:" -ForegroundColor White
+
+    if (-not (Test-Path $src)) {
+        Write-Host "  [WARN] settings.json non trovato nel pacchetto core" -ForegroundColor Yellow
+        return
+    }
+
+    $destDir = Split-Path $dest -Parent
+    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+
+    if (-not (Test-Path $dest)) {
+        Copy-Item -Path $src -Destination $dest -Force
+        Write-Host "  [OK]   .claude/settings.json" -ForegroundColor Green
+        return
+    }
+
+    $srcJson  = $null
+    $destJson = $null
+    try {
+        $srcJson  = Get-Content $src  -Raw | ConvertFrom-Json
+        $destJson = Get-Content $dest -Raw | ConvertFrom-Json
+    } catch {
+        Write-Host "  [WARN] JSON non valido - merge saltato, confronta manualmente" -ForegroundColor Yellow
+        return
+    }
+    if ($null -eq $srcJson -or $null -eq $destJson) { return }
+
+    if (-not $destJson.PSObject.Properties['permissions']) {
+        $destJson | Add-Member -NotePropertyName permissions -NotePropertyValue ([pscustomobject]@{ allow = @() })
+    }
+    if (-not $destJson.permissions.PSObject.Properties['allow']) {
+        $destJson.permissions | Add-Member -NotePropertyName allow -NotePropertyValue @()
+    }
+
+    $destAllow = [System.Collections.Generic.List[string]]::new()
+    foreach ($entry in @($destJson.permissions.allow)) {
+        if ($entry) { $destAllow.Add([string]$entry) }
+    }
+
+    $added = 0
+    foreach ($entry in @($srcJson.permissions.allow)) {
+        if ($entry -and -not $destAllow.Contains([string]$entry)) {
+            $destAllow.Add([string]$entry)
+            $added++
+        }
+    }
+
+    if ($added -gt 0) {
+        $destJson.permissions.allow = $destAllow.ToArray()
+        $out = $destJson | ConvertTo-Json -Depth 20
+        # UTF-8 senza BOM: indipendente dalla versione di PowerShell
+        [System.IO.File]::WriteAllText($dest, $out, [System.Text.UTF8Encoding]::new($false))
+        Write-Host "  [UPD]  .claude/settings.json - $added voci aggiunte" -ForegroundColor Green
+    } else {
+        Write-Host "  [SKIP] .claude/settings.json - nessuna voce da aggiungere" -ForegroundColor DarkGray
     }
 }
 
@@ -210,8 +345,15 @@ function Test-DrPackageInstalled {
     return [bool]($Manifest.installed | Where-Object { $_.package -eq $PackageName })
 }
 
+function Get-DrInstalledCommit {
+    param($Manifest, [string]$PackageName)
+    $entry = $Manifest.installed | Where-Object { $_.package -eq $PackageName }
+    if ($entry -and $entry.PSObject.Properties['commit']) { return $entry.commit }
+    return $null
+}
+
 function Update-DrManifest {
-    param([string]$HostRoot, [string]$PackageName)
+    param([string]$HostRoot, [string]$PackageName, [string]$Commit)
 
     $path = Get-DrManifestPath -HostRoot $HostRoot
     $dir  = Split-Path $path -Parent
@@ -224,13 +366,21 @@ function Update-DrManifest {
 
     if ($existing) {
         $existing.installedAt = $today
+        # Il manifest e' anche il lock file: registra da quale commit arriva il contenuto installato
+        if (-not $existing.PSObject.Properties['commit']) {
+            $existing | Add-Member -NotePropertyName commit -NotePropertyValue $Commit
+        } else {
+            $existing.commit = $Commit
+        }
     } else {
-        $installedList += [PSCustomObject]@{ package = $PackageName; installedAt = $today }
+        $installedList += [PSCustomObject]@{ package = $PackageName; installedAt = $today; commit = $Commit }
     }
 
     $manifest.installed = $installedList
     ($manifest | ConvertTo-Json -Depth 5) | Set-Content -Path $path -Encoding UTF8
-    Write-Host "  [OK]   Manifest aggiornato: $PackageName" -ForegroundColor Green
+
+    $shortCommit = if ($Commit) { $Commit.Substring(0, [Math]::Min(7, $Commit.Length)) } else { "sconosciuto" }
+    Write-Host "  [OK]   Manifest aggiornato: $PackageName ($shortCommit)" -ForegroundColor Green
 }
 
 function Install-DrPackage {
@@ -241,11 +391,12 @@ function Install-DrPackage {
         [switch]$Update
     )
 
-    if (-not $Script:PackageRegistry.ContainsKey($PackageName)) {
-        throw "Pacchetto sconosciuto: $PackageName. Pacchetti disponibili: $($Script:PackageRegistry.Keys -join ', ')"
+    $registry = Get-DrPackageRegistry
+    if (-not $registry.ContainsKey($PackageName)) {
+        throw "Pacchetto sconosciuto: $PackageName. Pacchetti disponibili: $($registry.Keys -join ', ')"
     }
 
-    $pkg      = $Script:PackageRegistry[$PackageName]
+    $pkg      = $registry[$PackageName]
     $hostRoot = (Get-Location).Path
 
     Write-Host ""
@@ -273,17 +424,40 @@ function Install-DrPackage {
             throw "git clone fallito per $($pkg.Repo) (repo Private? verifica autenticazione git/gh)"
         }
 
+        # Commit effettivamente installato: e' quello che finisce nel manifest/lock file
+        $newCommit = (git -C $tempDir rev-parse HEAD 2>$null | Out-String).Trim()
+        $oldCommit = Get-DrInstalledCommit -Manifest $manifest -PackageName $PackageName
+
+        if ($oldCommit -and $newCommit) {
+            if ($oldCommit -eq $newCommit) {
+                Write-Host "  Nessuna novita': gia' al commit $($newCommit.Substring(0,7))" -ForegroundColor DarkGray
+            } else {
+                Write-Host "  Aggiornamento: $($oldCommit.Substring(0,7)) -> $($newCommit.Substring(0,7))" -ForegroundColor White
+                # --quiet perche' il clone e' --depth 1: il vecchio commit non e' nella history locale
+                $changed = git -C $tempDir diff --name-only "$oldCommit" HEAD 2>$null
+                if ($LASTEXITCODE -eq 0 -and $changed) {
+                    Write-Host "  File modificati a monte:" -ForegroundColor White
+                    $changed | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+                }
+            }
+        }
+
         Copy-InstructionsAndPrompts -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
         Copy-Skills -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
 
+        if ($pkg.RootFiles) {
+            Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -Update:$Update
+        }
+
         if ($pkg.IsCore) {
             Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+            Merge-ClaudeSettings -TempRoot $tempDir -HostRoot $hostRoot
             Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             Write-Host "  CLAUDE.md:" -ForegroundColor White
             Merge-ClaudeMdSection -SrcClaudeMd (Join-Path $tempDir "CLAUDE.md") -DestClaudeMd (Join-Path $hostRoot "CLAUDE.md") -PackageName $PackageName -Update:$Update
         }
 
-        Update-DrManifest -HostRoot $hostRoot -PackageName $PackageName
+        Update-DrManifest -HostRoot $hostRoot -PackageName $PackageName -Commit $newCommit
     }
     finally {
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -334,7 +508,7 @@ function Install-DrGlobal {
             $templatePath = $localTemplate
             Write-Host "  Sorgente: $templatePath"
         } else {
-            $repo    = $Script:PackageRegistry["dr-guidelines"].Repo
+            $repo    = (Get-DrPackageRegistry)["dr-guidelines"].Repo
             $tempDir = Join-Path $env:TEMP ("dr-install-" + [guid]::NewGuid().ToString("N"))
             New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 

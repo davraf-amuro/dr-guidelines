@@ -96,7 +96,7 @@ Prerequisito della seconda forma: `gh auth status` autenticato. `irm ... | iex` 
 - Un pacchetto che fallisce (rete, credenziali, repo Private non autenticato): riporta l'errore per quel pacchetto e **continua** con i successivi.
 - Nessun `-Update` in questa skill: qui si aggiunge. Se un file esiste già, l'installer fa `[SKIP]` — è il comportamento corretto e non va forzato.
 
-In un repo senza progetti .NET l'installer **non** copia `Directory.Build.props` e `global.json` (rilevamento automatico dello stack): comportamento atteso. Se in quel repo aggiungerai progetti .NET più tardi, serve un `<pacchetto>-install.ps1 -Update` — cioè `/dr-get-latest`.
+`Directory.Build.props` e `global.json` non fanno parte del core: appartengono a `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un repo senza progetti .NET non li riceve perché non installa quel pacchetto — nessun rilevamento dello stack è coinvolto. Se in quel repo aggiungerai progetti .NET più tardi, installa `dr-dotnet-backend` (arriva da sé come dipendenza di `dr-minimalapi` e `dr-winsvc`).
 
 ---
 

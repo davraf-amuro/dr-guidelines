@@ -78,12 +78,10 @@ dr-guidelines/
   scaffolding-catalog.json  ← Catalogo tipologie di progetto e pacchetti, letto da skill e prompt
   CLAUDE.md           ← Istruzioni Claude Code per questo repository
   .editorconfig       ← Naming conventions e stile codice
-  Directory.Build.props  ← Configurazione MSBuild centralizzata (.NET 10, Nullable)
-  global.json         ← Versione .NET SDK fissata
   .mcp.example.json   ← Server MCP consigliati — la config reale va in `.mcp.json`, in `.gitignore`
 ```
 
-`Directory.Build.props` e `global.json` vengono copiati **solo** in un host .NET: in un repo frontend sarebbero file inerti, e l'installer li salta dichiarandolo (`[SKIP] ... (host non .NET)`).
+Il core non contiene file di progetto .NET. `Directory.Build.props` e `global.json` vivono in `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo e li installa insieme alle convenzioni .NET: un repo frontend, un firmware o una raccolta di documenti non li riceve, perché non installa quel pacchetto.
 
 **Dove vivono le cose che tocchi più spesso:**
 

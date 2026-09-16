@@ -84,8 +84,9 @@ Prima di dichiarare il task completato:
 
 1. Rileggi `plan.md`
 2. Verifica ogni criterio in "Criteri di verifica finale"
-3. Verifica ogni file in "Scope" — riletto e confermato
-4. Se tutti i criteri soddisfatti:
+3. Applica `dev-cycle.instructions.md` — Fase 4 ("tutti i file modificati riletti e verificati") su ogni file di "Scope"
+4. Esegui il controllo del punto 3 in un contesto isolato dalla conversazione che ha scritto il codice, quando lo strumento usato lo consente (nuova sessione, sub-agente, secondo revisore) — chi ha scritto il codice tende a confermarlo, un controllo a freddo senza cronologia pregressa lo rileva meglio. Su Claude Code: skill `dr-verify-plan`.
+5. Se tutti i criteri soddisfatti:
    - Aggiorna `Stato: COMPLETATO`
    - Dichiara esplicitamente: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
 
@@ -130,4 +131,4 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 
 ---
 
-*Istruzione v1.3 - Plan Tracking - 2026-07-02 00:03 — claude-fable-5 — eccezione /dr-promote-to su regola 6 esecutore*
+*Istruzione v1.4 - Plan Tracking - 2026-09-16 — claude-opus-5 — Fase 4: punto 3 rimanda a dev-cycle Fase 4 (era duplicato), aggiunto punto 4 verifica in contesto isolato (skill `dr-verify-plan`); mantenuta l'eccezione /dr-promote-to su regola 6 esecutore*

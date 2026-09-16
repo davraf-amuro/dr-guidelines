@@ -1,12 +1,82 @@
 {
-  "schemaVersion": 1,
-  "updatedAt": "2026-08-08",
+  "schemaVersion": 2,
+  "updatedAt": "2026-09-16",
   "defaults": {
     "dotnetFramework": "net10.0",
     "solutionFormat": "slnx",
     "sourcePath": "src",
     "testPath": "test",
     "namePattern": "^[A-Za-z][A-Za-z0-9._-]{0,63}$"
+  },
+  "kinds": [
+    {
+      "id": "dotnet",
+      "label": "Progetto .NET",
+      "prerequisites": ["SDK .NET 10", "git", "PowerShell 7"]
+    },
+    {
+      "id": "node",
+      "label": "Progetto Node/frontend web",
+      "prerequisites": ["node", "npm", "git"]
+    },
+    {
+      "id": "embedded",
+      "label": "Firmware per microcontrollore",
+      "prerequisites": ["PlatformIO Core (pio)", "git", "driver seriale USB della scheda"]
+    },
+    {
+      "id": "content",
+      "label": "Contenuto documentale",
+      "prerequisites": ["git"]
+    },
+    {
+      "id": "any",
+      "label": "Qualsiasi progetto",
+      "prerequisites": ["git"]
+    }
+  ],
+  "domains": [
+    {
+      "id": "dotnet-backend",
+      "label": "Backend .NET (API, servizi, worker)",
+      "kind": "dotnet",
+      "packages": ["dr-dotnet-backend"],
+      "projectTypes": ["minimal-api", "worker-service", "classlib", "xunit-test"]
+    },
+    {
+      "id": "web-frontend",
+      "label": "Frontend web",
+      "kind": "node",
+      "packages": ["dr-fe"],
+      "projectTypes": ["vue-fe"]
+    },
+    {
+      "id": "devops",
+      "label": "Deploy, container e CI/CD",
+      "kind": "any",
+      "packages": ["dr-devops"],
+      "projectTypes": []
+    }
+  ],
+  "intentMap": [
+    {
+      "domain": "dotnet-backend",
+      "phrases": ["api rest", "minimal api", "endpoint", "backend", "windows service", "servizio windows", "worker", "servizio in background"]
+    },
+    {
+      "domain": "web-frontend",
+      "phrases": ["frontend", "interfaccia web", "sito", "applicazione web", "vue", "spa"]
+    },
+    {
+      "domain": "devops",
+      "phrases": ["deploy", "docker", "container", "swarm", "portainer", "pipeline", "ci/cd"]
+    }
+  ],
+  "fallback": {
+    "behavior": "dichiara-e-proponi",
+    "description": "Nessun dominio corrisponde all'intento dell'utente: non procedere assumendo uno stack. Dichiara che nessun pacchetto dr-* copre il dominio richiesto, proponi di proseguire con il solo core generico, e offri di aprire una issue di richiesta nuovo pacchetto sul repo dr-guidelines delegando a dr-segnala-miglioria. Nessuna issue viene creata senza conferma esplicita dell'utente.",
+    "issueRepo": "davraf-amuro/dr-guidelines",
+    "skill": "dr-segnala-miglioria"
   },
   "projectTypes": [
     {
@@ -89,7 +159,8 @@
       "isCore": false,
       "dependencies": [],
       "appliesTo": ["dotnet"],
-      "description": "Base backend .NET condivisa: skill dr-audit-api."
+      "rootFiles": ["Directory.Build.props", "global.json"],
+      "description": "Base backend .NET condivisa: skill dr-audit-api, file di progetto .NET comuni (Directory.Build.props, global.json)."
     },
     {
       "name": "dr-minimalapi",

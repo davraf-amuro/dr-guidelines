@@ -17,7 +17,7 @@
 
 > **Esenzione — Claude Code Skills.** I file in `.claude/skills/` sono artefatti specifici di Claude Code *by design* (usano `$ARGUMENTS`, sub-agenti, `AskUserQuestion`, `EnterPlanMode`) e non sono portabili su GitHub Copilot: sono **esenti** da questa regola. La compatibilità duale resta obbligatoria per `.github/instructions/*.md`, `.github/prompts/*.prompt.md` e ogni altra regola/documento condiviso.
 
-## Standard di progetto .NET
+## Standard di progetto (trasversali)
 @.github/copilot-instructions.md
 
 ## Regola MCP Server
@@ -97,7 +97,9 @@ Intento utente corrisponde a skill disponibile → **invoca direttamente** senza
 | "promote", "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/dr-promote-to [target-branch] [--merge] [--delete]` |
 | "audit api", "fai l'audit del backend", "analizza le api", "cerca dead code", "controlla il codice backend" | `/dr-audit-api [focus opzionale]` |
 | "audit frontend", "fai l'audit del fe", "analizza il frontend", "controlla i componenti" | `/dr-audit-fe [focus opzionale]` |
-| "aggiorna il submodule", "aggiorna davraf-guidelines", "aggiorna le linee guida", "get-latest" | `/dr-get-latest` |
+| "aggiorna i pacchetti", "aggiorna le linee guida", "get-latest" | `/dr-get-latest` |
+| "segnala una miglioria", "apri una issue", "questa regola non va bene", "manca un pacchetto per" | `/dr-segnala-miglioria [descrizione]` |
+| "verifica il piano", "controlla che il piano sia stato rispettato", "verifica finale" | `/dr-verify-plan` |
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/dr-professor [richiesta]` |
 | "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/dr-snapshot` |
 | "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles [profili]` |

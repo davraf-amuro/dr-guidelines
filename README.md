@@ -1,22 +1,35 @@
 # dr-guidelines
 
-Pacchetto core della suite `dr-*`: linee guida trasversali, skill Claude Code e meccanismo di installazione per progetti .NET 10 integrati con GitHub Copilot e Claude Code.
+Pacchetto core della suite `dr-*`: catalogo dei pacchetti di dominio, linee guida trasversali, skill Claude Code e meccanismo di installazione, per progetti di qualsiasi stack integrati con GitHub Copilot e Claude Code.
 
 ## 🧩 Pacchetti dr-* disponibili
 
-`dr-guidelines` (questo repo) è il core della suite. I contenuti specifici di dominio vivono in 6 pacchetti separati, installabili singolarmente in base allo stack del progetto:
+`dr-guidelines` (questo repo) è il **catalogo** della suite: dice quali pacchetti esistono, a quale dominio servono, dove stanno e come si installano, e porta le istruzioni valide per qualsiasi progetto. Le regole di un dominio specifico non vivono qui: vivono nei pacchetti, installabili singolarmente.
 
 | Pacchetto | Repo | Scope |
 |---|---|---|
-| **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Istruzioni/skill trasversali, meccanismo di installazione (`dr-guidelines-install.ps1`) |
+| **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Catalogo dei pacchetti, istruzioni/skill trasversali, meccanismo di installazione (`dr-guidelines-install.ps1`) |
 | dr-minimalapi | [davraf-amuro/dr-minimalapi](https://github.com/davraf-amuro/dr-minimalapi) | Architettura Minimal API .NET, prompt endpoint/scaffolding. Dipende da `dr-dotnet-backend` |
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service .NET. Dipende da `dr-dotnet-backend` |
 | dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza avvio |
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione frontend + audit |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
-| dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Skill di audit backend .NET (Minimal API + Windows Service) |
+| dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Base backend .NET: rilevamento tipo progetto, convenzioni .NET, `Directory.Build.props` e `global.json`, skill di audit |
 
 Le dipendenze dichiarate (`dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`) vengono installate automaticamente dall'installer se assenti.
+
+### Aggiungere un dominio nuovo
+
+Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), che è l'unica fonte: l'installer legge da lì l'elenco dei pacchetti, e `/dr-scaffold` legge da lì domini e intenti. Per aggiungere un pacchetto servono quattro voci nello stesso file:
+
+1. **`packages`** — nome, repository, dipendenze, e i `rootFiles` che il pacchetto installa nella radice del progetto host
+2. **`kinds`** — se il dominio richiede una toolchain non ancora prevista, con i suoi prerequisiti (`dotnet`, `node`, `embedded`, `content`, `any`)
+3. **`domains`** — etichetta leggibile, `kind`, pacchetti che lo compongono
+4. **`intentMap`** — le frasi con cui un utente descriverebbe quel lavoro ("progetto per ESP32", "guida turistica")
+
+Il repository del pacchetto contiene il proprio `<pacchetto>-install.ps1` (un thin wrapper che carica la libreria condivisa da questo repo) più le sue `.github/instructions/`, `.github/prompts/` e `.claude/skills/`. Nessuna modifica all'installer: l'elenco dei pacchetti non è scritto in nessuno script.
+
+**Nessun pacchetto copre il dominio richiesto?** `/dr-scaffold` non finisce in un vicolo cieco: dichiara il gap, propone di proseguire con il solo core e offre di aprire una issue di richiesta nuovo pacchetto su questo repository.
 
 > **Nota:** i 7 repo sono attualmente **Private**. Il bootstrap pubblico `irm ... | iex` richiede repo Public; finché restano Private si usa `gh api` (vedi [Finché i repo sono Private](#finché-i-repo-sono-private)), che è autenticato e scarica ugualmente da GitHub. Il `git clone` che l'installer fa per prendere il contenuto del pacchetto funziona già oggi grazie al credential manager.
 
@@ -31,11 +44,12 @@ Lo scaffolding non è più uno script: è guidato dall'agente AI. Apri in VS Cod
 ```
 
 Il flusso:
-1. **Gate prerequisiti** — verifica SDK .NET 10, git, PowerShell 7, autenticazione `gh` (e node/npm se serve un frontend). Nessuna scrittura finché il gate non passa.
-2. **Rileva lo stato della cartella** e delega al pezzo giusto: cartella vuota → solution da zero; solution esistente → aggiunta di un progetto; progetti senza pacchetti → installazione guidelines. Se chiedi una tipologia e manca il contenitore che la regge (progetto senza solution), **propone di creare anche quello** invece di fermarsi.
-3. **Raccoglie tutte le risposte** — workspace VS Code multi-repo (per frontend e backend in repo separati), nome e formato solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository.
-4. **Mostra il dry-run dell'albero** e chiede **una sola conferma**.
-5. **Esegue** nell'ordine: `.code-workspace` → `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend Vue → `git init` + commit iniziale → installer dei pacchetti → `dotnet format`.
+1. **Risoluzione del dominio** — dalla richiesta ("una Minimal API", "un frontend") ricava il dominio leggendo la `intentMap` del catalogo. Nessun dominio corrispondente → lo dichiara e propone di aprire una issue, invece di assumere uno stack.
+2. **Gate prerequisiti del dominio** — git, PowerShell 7 e `gh` autenticato sempre; SDK .NET 10 solo per i domini .NET, node/npm solo per quelli frontend. Nessuna scrittura finché il gate non passa.
+3. **Rileva lo stato della cartella** e delega al pezzo giusto: cartella vuota → solution da zero; solution esistente → aggiunta di un progetto; progetti senza pacchetti → installazione guidelines. Se chiedi una tipologia e manca il contenitore che la regge (progetto senza solution), **propone di creare anche quello** invece di fermarsi. I domini senza contenitore di progetto (firmware, contenuti) vanno direttamente all'installazione dei pacchetti.
+4. **Raccoglie tutte le risposte** — workspace VS Code multi-repo (per frontend e backend in repo separati), nome e formato solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository.
+5. **Mostra il dry-run dell'albero** e chiede **una sola conferma**.
+6. **Esegue** nell'ordine: `.code-workspace` → `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend Vue → `git init` + commit iniziale → installer dei pacchetti → `dotnet format`.
 
 Le tipologie di progetto e i pacchetti disponibili vengono letti da [`scaffolding-catalog.json`](scaffolding-catalog.json): aggiungerne una è una voce nel catalogo, non una modifica ai prompt.
 
@@ -90,17 +104,19 @@ Dopo l'esecuzione di `dr-guidelines-install.ps1`, il progetto host avrà:
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
 | `.editorconfig` | copia | Stile di codice e naming conventions |
-| `Directory.Build.props` | copia | Configurazione MSBuild centralizzata (.NET 10, Nullable) |
-| `global.json` | copia | Versione .NET SDK |
 | `.gitignore` | copia | File ignorati da Git |
 | `.gitattributes` | copia | Normalizzazione line endings |
 | `.mcp.json` | copia da `.mcp.example.json` (solo se assente, mai sovrascritto) | Server MCP consigliati |
 | `.github/instructions/`, `.github/prompts/` | copia file per file | Istruzioni Copilot/Claude e prompt modulari (contenuto core) |
-| `.claude/skills/` | copia cartella per cartella | Skill Claude Code core (dr-warroom, dr-professor, dr-tattico, dr-tech, dr-get-latest, dr-segnala-miglioria, ecc.) |
+| `.claude/skills/` | copia cartella per cartella | Skill Claude Code core (dr-warroom, dr-professor, dr-tattico, dr-tech, dr-get-latest, dr-segnala-miglioria, dr-verify-plan, ecc.) |
+| `.claude/settings.json` | copia / merge additivo | Permessi condivisi: le voci `permissions.allow` mancanti vengono aggiunte, quelle già presenti e le altre chiavi (`mcpServers`, `env`, `hooks`) non vengono toccate |
 | `CLAUDE.md` | generato / merge | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->` iniettata/aggiornata automaticamente, resto del file preservato |
-| `.ai/dr-guidelines-packages.json` | generato / upsert | Manifest dei pacchetti `dr-*` installati nel progetto |
+| `.ai/dr-scaffolding-catalog.json` | copia | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` nel progetto host |
+| `.ai/dr-guidelines-packages.json` | generato / upsert | Manifest dei pacchetti `dr-*` installati, con il **commit** da cui proviene ciascuno: funge da lock file, e `-Update` lo usa per dire cosa è cambiato a monte |
 
-I pacchetti dominio installano solo `.github/instructions/`, `.github/prompts/` e/o `.claude/skills/` propri — nessun file di configurazione radice, nessuna sezione `CLAUDE.md` (esclusiva del core).
+I pacchetti dominio installano `.github/instructions/`, `.github/prompts/` e/o `.claude/skills/` propri, e i **file di radice che dichiarano nel catalogo** (campo `rootFiles`). Nessuna sezione `CLAUDE.md`: quella resta esclusiva del core.
+
+> **Il core non è più un pacchetto .NET.** `Directory.Build.props` e `global.json` appartengono a `dr-dotnet-backend`, che li installa insieme alle convenzioni .NET: un progetto frontend, un firmware o un repository di documentazione non li riceve più. Un progetto .NET li ottiene installando quel pacchetto — che è già dipendenza obbligata di `dr-minimalapi` e `dr-winsvc`.
 
 ---
 
@@ -148,6 +164,7 @@ Contenuto **core**, trasversale a qualsiasi stack. Le istruzioni specifiche di d
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
 | `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni, formato atomico |
 | `code-organization.instructions.md` | Struttura classi e file, commenti obbligatori (tutti i linguaggi) |
+| `no-hardcoded-values.instructions.md` | Centralizzazione dei valori letterali: cosa estrarre, dove metterlo, cosa lasciare inline (tutti i linguaggi) |
 | `input-validation.instructions.md` | Validazione obbligatoria di ogni input esterno con `IValidator<T>` |
 | `logging.instructions.md` | Logging strutturato con placeholder (mai string interpolation) |
 | `sensitive-data.instructions.md` | Gestione credenziali e dati sensibili |
@@ -226,6 +243,8 @@ Determina il pacchetto `dr-*` pertinente (dal manifest o dal file citato), compo
 /dr-segnala-miglioria la soglia batch size in database-provider.instructions.md non è chiara
 ```
 
+> **Il pacchetto non si modifica nel progetto host.** Una correzione fatta solo nella copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli — `miglioria.md` per una richiesta evolutiva, `problema.md` per un malfunzionamento — e la skill li usa per comporre la issue. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-segnala-miglioria.prompt.md`](.github/prompts/dr-segnala-miglioria.prompt.md).
+
 ### `/dr-snapshot` — Contesto Progetto per Claude
 
 Genera o aggiorna `.ai/context/dr-snapshot.md`: riassunto denso del progetto leggibile in una sola Read, senza riscansionare il codice a ogni sessione.
@@ -252,6 +271,15 @@ Genera una documentazione completa di handoff per permettere a un altro sviluppa
 **Uso:**
 ```
 /dr-handoff
+```
+
+### `/dr-verify-plan` — Verifica Indipendente di un Piano
+
+Lancia un subagente senza il contesto della conversazione che ha implementato il piano: rilegge i file di Scope, li confronta con le azioni dichiarate e valuta i criteri di verifica, prima che il piano venga segnato `COMPLETATO`. Chi ha scritto il codice tende a confermarlo; un controllo a freddo no.
+
+**Uso:**
+```
+/dr-verify-plan
 ```
 
 ---

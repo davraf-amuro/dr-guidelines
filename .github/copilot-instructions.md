@@ -2,74 +2,73 @@
 
 Language: Italian — Rispondi sempre in italiano.
 
-Progetto .NET 10. Rileva il tipo dal codice prima di procedere.
+Queste istruzioni valgono per **qualsiasi progetto**, indipendentemente dal linguaggio e dallo stack. Le regole specifiche di un dominio (backend .NET, frontend, firmware, contenuto documentale) arrivano dal pacchetto `dr-*` installato per quel dominio.
 
-## Tipo di progetto
+## Dominio del progetto
 
-| Segnale nel codice | Tipo | Istruzione modulare |
-|--------------------|------|---------------------|
-| ``Workers/*.cs`` presente | Windows Service | ``windows-service.instructions.md`` |
-| ``Endpoints/*.cs`` presente | Minimal API | ``minimal-api-architecture.instructions.md`` |
-| Entrambi presenti (``Workers/`` e ``Endpoints/``) | Soluzione multi-progetto | Leggi entrambe le istruzioni modulari |
-| ``package.json`` presente, nessun ``.csproj`` | Frontend | ``frontend-organization.instructions.md`` |
-| Nessun segnale riconoscibile | Tipo non rilevato | Fermati. Chiedi: "Questo è un Minimal API o un Windows Service?" |
+Prima di generare o modificare codice, stabilisci in quale dominio stai lavorando:
 
-Il rilevamento tipo vale per i task che generano o modificano **codice applicativo**. Per task di sola documentazione o configurazione (docs, markdown, file di config), non porre la domanda: prosegui con l'istruzione modulare pertinente al file (es. ``doc-versioning``, ``readme-structure``).
+1. Leggi `.ai/dr-guidelines-packages.json` — elenca i pacchetti `dr-*` installati in questo progetto.
+2. Leggi le istruzioni modulari che quei pacchetti hanno portato in `.github/instructions/`.
+3. L'istruzione del dominio è quella che comanda su struttura, convenzioni di linguaggio e comandi di verifica.
 
-Leggi sempre l'istruzione modulare corretta prima di generare o modificare codice.
+Nessun pacchetto di dominio installato e il task richiede codice applicativo → fermati e chiedi quale dominio, invece di assumerne uno.
 
-## Convenzioni essenziali (tutti i tipi)
-- Primary constructors, async/await per I/O
-- Logging strutturato con placeholder (no string interpolation nei log)
-- Naming: namespace snake_case, classi PascalCase, variabili camelCase
-- Validazione input: ogni endpoint con body usa ``IValidator<T>``; segui ``input-validation.instructions.md``
-- Dati sensibili: segui sempre ``sensitive-data.instructions.md``; credenziali **mai** in file committati
+Il rilevamento vale per i task che generano o modificano **codice applicativo**. Per task di sola documentazione o configurazione (markdown, file di config), non porre la domanda: prosegui con l'istruzione modulare pertinente al file (es. `doc-versioning`, `readme-structure`).
+
+## Convenzioni essenziali (tutti i domini)
+
+- `async`/`await` (o l'equivalente idiomatico del linguaggio) per ogni operazione di I/O
+- Logging strutturato con placeholder — mai interpolazione di stringa dentro il log
+- Naming coerente con le convenzioni del linguaggio in uso, applicate in modo uniforme in tutto il progetto
+- Validazione esplicita di ogni input che arriva dall'esterno; segui `input-validation.instructions.md`
+- Valori letterali con significato centralizzati; segui `no-hardcoded-values.instructions.md`
+- Dati sensibili: segui sempre `sensitive-data.instructions.md`; credenziali **mai** in file committati
 
 ## Checklist Pre-Task (obbligatoria)
 
-Fonte unica: ``dev-cycle.instructions.md`` — Fase 0. Compila quella checklist nell'output prima di qualsiasi azione. Anche una sola risposta NO → fermati e completa il passo prima di procedere.
+Fonte unica: `dev-cycle.instructions.md` — Fase 0. Compila quella checklist nell'output prima di qualsiasi azione. Anche una sola risposta NO → fermati e completa il passo prima di procedere.
 
 ## Checklist Post-Generazione
-- [ ] Tipo rilevato correttamente, istruzione modulare letta
+
+- [ ] Dominio individuato dai pacchetti installati, istruzione modulare letta
 - [ ] Ho seguito le istruzioni modulari pertinenti
-- [ ] Logging strutturato e async/await usati dove serve
+- [ ] Logging strutturato e gestione asincrona dell'I/O usati dove servono
 
 ## Verifica post-modifica (qualsiasi file)
+
 Dopo ogni modifica a un file:
 1. Rileggi il file modificato
 2. Confronta il contenuto con quanto richiesto
 3. Solo se corrispondono, dichiara la modifica completata
 
 ## Ciclo di sviluppo obbligatorio
-Ogni task segue il ciclo definito in ``dev-cycle.instructions.md``:
+
+Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Dichiara** scope e file prima di agire
 - **Esegui** un'operazione alla volta
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza - non assumere silenziosamente
 
-Task con >= 2 operazioni: crea piano su disco in ``.ai/plans/<YYYY-MM-DD>-<slug>/`` prima di procedere.
-Segui ``plan-tracking.instructions.md`` per struttura e verifica finale.
+Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` prima di procedere.
+Segui `plan-tracking.instructions.md` per struttura e verifica finale.
 
-## Gate di Push — Lint obbligatorio
+## Gate di Push — Verifica obbligatoria
 
-⛔ Prima di qualsiasi `git push`, eseguire sempre la verifica lint in base al tipo di progetto:
-
-| Tipo | Comando |
-|------|---------|
-| .NET | `dotnet format <percorso>.csproj --verify-no-changes` |
-| Node.js | `npm run lint` (se lo script `lint` è definito in `package.json`) |
-| Python | `ruff check .` oppure `flake8` |
+⛔ Prima di qualsiasi `git push`, esegui il comando di verifica dichiarato dall'istruzione di dominio del progetto (lint, formattazione, analisi statica).
 
 | Exit code | Azione |
 |-----------|--------|
-| `0` | Lint clean — push consentita |
+| `0` | Verifica pulita — push consentita |
 | Non-zero | **BLOCCA la push** — segnala le violazioni |
 
 In caso di blocco:
-1. Elenca i file con violazioni (dall'output del comando lint)
+1. Elenca i file con violazioni (dall'output del comando)
 2. Chiedi conferma prima di applicare correzioni automatiche
 3. Riesegui il check, poi procedi con la push
 
-> Regola assoluta: nessun `git push` senza lint clean confermato.
+Nessun comando di verifica applicabile al progetto (per esempio un repository di soli documenti) → **dichiaralo esplicitamente nell'output** prima della push. L'assenza di target si dichiara, non si salta in silenzio.
 
-*Template v1.7 - .NET 10 - Token-optimized for AI agents* - Last Update 2026-07-02 00:03 - claude-fable-5
+> Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
+
+*Template v2.0 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-09-16 — claude-opus-5

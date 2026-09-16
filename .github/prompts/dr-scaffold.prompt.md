@@ -31,28 +31,46 @@ Ambiguità vera (due file solution nella stessa cartella, una solution qui e una
 
 ---
 
-## Gate 0 — Prerequisiti (obbligatorio in tutte le sezioni)
+## Gate 0-pre — Dominio della richiesta
 
-Esegui questi comandi di sola lettura e riporta l'esito:
+Prima dei prerequisiti: **quale dominio** sta chiedendo l'utente. Da questo dipende cosa va verificato.
+
+1. Leggi il catalogo (percorsi nel Gate 0-bis qui sotto).
+2. Confronta la richiesta con le `phrases` di ogni voce di `intentMap` e individua il `domain`.
+3. Dal dominio ricava il `kind`, e da `kinds` l'elenco dei `prerequisites`.
+
+Il catalogo è la fonte: non tenere in questo prompt un elenco parallelo di domini o frasi.
+
+**Nessuna corrispondenza** → applica il blocco `fallback` del catalogo: dichiara che nessun pacchetto `dr-*` copre quel dominio, proponi di proseguire con il solo core generico oppure di aprire una issue di richiesta nuovo pacchetto sul repository indicato da `fallback.issueRepo`. Nessuna issue senza conferma esplicita dell'utente sul testo.
+
+Richiesta generica senza indizi ("crea un progetto") → elenca le `label` dei domini disponibili e chiedi quale, invece di assumerne uno.
+
+## Gate 0 — Prerequisiti del dominio (obbligatorio in tutte le sezioni)
+
+Verifica **solo** i prerequisiti del `kind` risolto, più quelli comuni. Comandi di sola lettura:
 
 ```powershell
-dotnet --list-sdks
-git --version
-pwsh --version
-gh auth status
-node --version   # solo se serve il frontend
-npm --version    # solo se serve il frontend
+git --version        # sempre
+pwsh --version       # sempre
+gh auth status       # sempre
+dotnet --list-sdks   # solo kind dotnet
+node --version       # solo kind node, o frontend richiesto
+npm --version        # solo kind node, o frontend richiesto
+pio --version        # solo kind embedded
 ```
 
-| Requisito | Esito atteso | Se manca |
-|---|---|---|
-| .NET SDK 10.x | almeno una riga `10.*` | STOP |
-| git | qualsiasi versione | STOP |
-| PowerShell 7+ | `7.*` | STOP |
-| gh autenticato | `Logged in to github.com` | STOP — i repo `dr-*` sono Private |
-| node + npm | qualsiasi versione | blocca solo il frontend |
+| Requisito | Quando | Esito atteso | Se manca |
+|---|---|---|---|
+| git | sempre | qualsiasi versione | STOP |
+| PowerShell 7+ | sempre | `7.*` | STOP |
+| gh autenticato | sempre | `Logged in to github.com` | STOP — i repo `dr-*` sono Private |
+| .NET SDK 10.x | kind `dotnet` | almeno una riga `10.*` | STOP |
+| node + npm | kind `node`, o frontend richiesto | qualsiasi versione | STOP se il progetto è solo frontend, altrimenti blocca solo quel pezzo |
+| PlatformIO Core | kind `embedded` | `PlatformIO Core, version ...` | STOP |
 
-L'install del core copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Con un SDK che non lo soddisfa, **ogni** comando `dotnet` in quella cartella fallisce dopo l'install: per questo il gate va prima di scrivere.
+Su un progetto .NET l'install di `dr-dotnet-backend` copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Con un SDK che non lo soddisfa, **ogni** comando `dotnet` in quella cartella fallisce dopo l'install: per questo il gate va prima di scrivere.
+
+Un dominio di soli contenuti (`kind: content`) non richiede toolchain: verifica git e fermati lì.
 
 ## Gate 0-bis — Catalogo
 
@@ -188,7 +206,7 @@ Push-Location <root-repo>
 Pop-Location
 ```
 
-L'installer usa la directory corrente come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori e il target è la **root del repo**. Nel repo frontend l'installer non copia `Directory.Build.props` e `global.json` (nessun `.csproj` → file .NET-only saltati): comportamento atteso.
+L'installer usa la directory corrente come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori e il target è la **root del repo**. `Directory.Build.props` e `global.json` non arrivano dal core: li porta `dr-dotnet-backend` tramite i suoi `rootFiles`, quindi un repo frontend non li riceve semplicemente perché quel pacchetto non è tra i suoi.
 
 **8. Formattazione — non è opzionale:**
 
