@@ -1,6 +1,6 @@
 # Piano — Linea guida autenticazione nei pacchetti dr-*
 
-**Stato:** IN CORSO
+**Stato:** COMPLETATO — criteri verificati il 2026-08-12; verifica end-to-end annullata dall'utente il 2026-09-21
 **Data:** 2026-08-12
 **Slug:** `2026-08-12-auth-guidelines`
 **Modello:** claude-opus-5
@@ -81,49 +81,56 @@ Senza regola scritta, ogni progetto con login riceve uno schema improvvisato dal
 
 File: `dr-minimalapi/.github/instructions/minimal-api-architecture.instructions.md`
 
-1. [ ] Sostituire la riga 16 con un rimando alla nuova sezione, mantenendo il principio "nessun pattern auth di default"
-2. [ ] Aggiungere al gate "Raccolta informazioni iniziale" un punto sull'autenticazione, accanto a quello su Serilog: chiedere se il progetto prevede utenti umani con login
-3. [ ] Aggiungere la sezione "Autenticazione" con la matrice di scelta:
+1. [x] Sostituire la riga 16 con un rimando alla nuova sezione, mantenendo il principio "nessun pattern auth di default"
+2. [x] Aggiungere al gate "Raccolta informazioni iniziale" un punto sull'autenticazione, accanto a quello su Serilog: chiedere se il progetto prevede utenti umani con login
+3. [x] Aggiungere la sezione "Autenticazione" con la matrice di scelta:
    - utenti umani → ASP.NET Identity; cookie per browser same-origin, bearer opachi per client non-browser; nota sulla coesistenza via `MapIdentityApi`
    - nessun utente umano, solo servizio-a-servizio → `SimpleAuthenticationTools` (API Key)
    - auth non richiesta → non proporla
-4. [ ] Aggiungere la sottosezione "Rilascio in container": portachiavi Data Protection persistito e condiviso (`PersistKeysToDbContext` default, `PersistKeysToFileSystem` su volume alternativa, sempre con `SetApplicationName`); `UseForwardedHeaders` come primo middleware con `KnownNetworks`/`KnownProxies` configurati per la rete Docker; rimando a `database-startup-resilience.instructions.md`
-5. [ ] Aggiungere in "Vietato": `AddJwtBearer` per utenti umani, salvo richiesta esplicita e motivata (nessuna revoca prima della scadenza)
-6. [ ] Rileggere il file e verificare che nessuna sezione preesistente sia stata alterata
+4. [x] Aggiungere la sottosezione "Rilascio in container": portachiavi Data Protection persistito e condiviso (`PersistKeysToDbContext` default, `PersistKeysToFileSystem` su volume alternativa, sempre con `SetApplicationName`); `UseForwardedHeaders` come primo middleware con `KnownNetworks`/`KnownProxies` configurati per la rete Docker; rimando a `database-startup-resilience.instructions.md`
+5. [x] Aggiungere in "Vietato": `AddJwtBearer` per utenti umani, salvo richiesta esplicita e motivata (nessuna revoca prima della scadenza)
+6. [x] Rileggere il file e verificare che nessuna sezione preesistente sia stata alterata
 
 ### [x] Fase 2 — `dr-fe`: regola auth lato frontend
 
 File: `dr-fe/.github/instructions/frontend-organization.instructions.md`
 
-1. [ ] Aggiungere la sezione "Autenticazione lato frontend" con:
+1. [x] Aggiungere la sezione "Autenticazione lato frontend" con:
    - obbligo di **chiedere** all'utente se il frontend prevede una login, quando non è già dichiarato
    - regola di propagazione: la login non si implementa nel FE — utenti, password e sessioni stanno nell'API. Risposta affermativa → il progetto API deve adottare uno schema utenti (rimando alla sezione di `minimal-api-architecture`)
    - cookie: configurare il client HTTP con l'invio delle credenziali; nessun token da custodire
    - bearer: token mai in `localStorage` quando è evitabile; storage in memoria + refresh
    - route guard e stato utente: dove collocarli nella struttura già descritta dal file
-2. [ ] Rileggere il file e verificare la coerenza con la struttura cartelle già documentata
+2. [x] Rileggere il file e verificare la coerenza con la struttura cartelle già documentata
 
 ### [x] Fase 3 — `dr-devops`: portachiavi lato stack
 
 File: `dr-devops/.github/instructions/docker-swarm-compose.instructions.md`
 
-1. [ ] Inserire la sezione "6. Chiavi Data Protection (servizi con autenticazione)" prima di "Adattare per un nuovo progetto"
-2. [ ] Rinumerare "Adattare per un nuovo progetto" da 6 a 7
-3. [ ] Aggiungere una voce alla checklist post-modifica in coda al file
-4. [ ] Rileggere e verificare la coerenza della numerazione
+1. [x] Inserire la sezione "6. Chiavi Data Protection (servizi con autenticazione)" prima di "Adattare per un nuovo progetto"
+2. [x] Rinumerare "Adattare per un nuovo progetto" da 6 a 7
+3. [x] Aggiungere una voce alla checklist post-modifica in coda al file
+4. [x] Rileggere e verificare la coerenza della numerazione
 
 ### [x] Fase 4 — `dr-guidelines`: aggiornare la bozza del manuale
 
 File: `dr-guidelines/docs/bozza-manuale-installazione.md`
 
-1. [ ] Chiudere la domanda #1 in "Domande emerse": da aperta a risolta, con il rimando ai due file modificati
-2. [ ] Bump footer a v1.3 con data e ora correnti
+1. [x] Chiudere la domanda #1 in "Domande emerse": da aperta a risolta, con il rimando ai due file modificati
+2. [x] Bump footer a v1.3 con data e ora correnti
 
-### [ ] Fase 5 — Commit
+### [x] Fase 5 — Commit
 
-1. [ ] `git status` nei quattro repo, per non includere modifiche estranee
-2. [ ] Un commit per repo, messaggio in Conventional Commits
-3. [ ] **Nessuna push senza richiesta esplicita dell'utente**
+1. [x] `git status` nei quattro repo, per non includere modifiche estranee
+2. [x] Un commit per repo, messaggio in Conventional Commits — l'utente ha scelto commit diretti su `main`
+3. [x] **Nessuna push senza richiesta esplicita dell'utente** — nessuna push eseguita
+
+| Repo | Commit |
+|---|---|
+| `dr-minimalapi` | `12d9fed` feat(instructions): schema auth per utenti umani |
+| `dr-fe` | `67b4637` feat(instructions): regola auth lato frontend |
+| `dr-devops` | `40cf760` feat(instructions): portachiavi Data Protection nello stack |
+| `dr-guidelines` | `faf6a6c` docs: bozza manuale installazione e piano auth guidelines |
 
 ---
 
@@ -141,6 +148,31 @@ File: `dr-guidelines/docs/bozza-manuale-installazione.md`
 | 8 | Nessun file usa sintassi esclusiva di Claude Code | Ricerca di `$ARGUMENTS`, `AskUserQuestion`, `EnterPlanMode`, `sub-agente` nei tre file di istruzione: zero occorrenze |
 | 9 | La domanda #1 della bozza risulta risolta e il footer è a v1.3 | Rilettura del file |
 | 10 | Nessun file fuori dal perimetro dichiarato è stato modificato | `git status` nei quattro repo |
+
+### Esito della verifica — 2026-08-12 22:40
+
+Tutti e dieci i criteri soddisfatti.
+
+| # | Riscontro |
+|---|---|
+| 1 | Riga 16 ora rimanda alla sezione "Autenticazione" |
+| 2 | `## Autenticazione` alla riga 142, matrice a cinque rami |
+| 3 | Punto 4 "Autenticazione" nel gate, riga 29 |
+| 4 | `AddJwtBearer` in "Vietato", riga 40, con la motivazione sulla revoca |
+| 5 | `### Rilascio in container` alla riga 182; `KnownProxies` alla riga 199 |
+| 6 | `## Regola 7 — Autenticazione lato frontend` alla riga 263, propagazione all'API alla 265 |
+| 7 | `## 6. Chiavi Data Protection` alla riga 144, `## 7. Adattare` alla 171. Nessun riferimento incrociato rotto: `portainer-swarm-stack` cita `docker-swarm-compose §3`, invariata |
+| 8 | Zero occorrenze di sintassi Claude-only nei tre file modificati. Le due presenti nel workspace sono in `plan-tracking.instructions.md`, preesistenti e fuori perimetro |
+| 9 | Domanda #1 marcata risolta, footer a v1.3 |
+| 10 | `git status`: solo i file dichiarati, in tutti e quattro i repo |
+
+### Verifica end-to-end — ANNULLATA dall'utente il 2026-09-21
+
+Nella cartella host `dr-test-01`: rieseguire gli installer dei pacchetti toccati con `-Update`, poi ridare il prompt che chiedeva esplicitamente una login. Atteso: l'agente propone Identity + cookie citando la sezione della guideline, non JWT, e se emerge il rilascio in container tira fuori da sé la persistenza del portachiavi.
+
+⚠️ Richiede che i commit siano stati **pushati** sui repo remoti: gli installer clonano da GitHub, non leggono i repo locali.
+
+Verifica 2026-09-21: i quattro commit sono su `origin/main` (prerequisito soddisfatto); la cartella `dr-test-01` non esiste più. La prova non si esegue.
 
 ---
 
