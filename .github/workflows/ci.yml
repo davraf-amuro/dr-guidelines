@@ -49,46 +49,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify scaffolding-catalog.json matches the package registry
+      - name: Verify scaffolding-catalog.json consistency
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
-          # dr-guidelines-install-lib.ps1 al caricamento definisce solo funzioni e $Script:PackageRegistry: nessun side effect
+          # dr-guidelines-install-lib.ps1 al caricamento definisce solo funzioni e variabili: nessun side effect
           . ./dr-guidelines-install-lib.ps1
           $catalog = Get-Content ./scaffolding-catalog.json -Raw | ConvertFrom-Json
 
+          # Il registry si costruisce dal catalogo: precaricato con quello del checkout, altrimenti
+          # Get-DrCatalog scaricherebbe il main pubblicato invece del commit in verifica.
+          # Get-DrPackageRegistry applica anche l'allowlist dell'owner e fallisce su un repo estraneo.
+          $Script:Catalog = $catalog
+          $null = Get-DrPackageRegistry
+
           $problems = @()
 
-          $registryNames = @($Script:PackageRegistry.Keys | Sort-Object)
-          $catalogNames  = @($catalog.packages.name | Sort-Object)
+          $catalogNames = @($catalog.packages.name)
+          $kindIds      = @($catalog.kinds.id)
+          $domainIds    = @($catalog.domains.id)
 
-          $onlyRegistry = @($registryNames | Where-Object { $catalogNames -notcontains $_ })
-          $onlyCatalog  = @($catalogNames  | Where-Object { $registryNames -notcontains $_ })
-          foreach ($n in $onlyRegistry) { $problems += "pacchetto '$n' presente in dr-guidelines-install-lib.ps1 ma assente da scaffolding-catalog.json" }
-          foreach ($n in $onlyCatalog)  { $problems += "pacchetto '$n' presente in scaffolding-catalog.json ma assente da dr-guidelines-install-lib.ps1" }
+          foreach ($dup in @($catalogNames | Group-Object | Where-Object { $_.Count -gt 1 })) {
+            $problems += "pacchetto duplicato: '$($dup.Name)'"
+          }
 
           foreach ($pkg in $catalog.packages) {
-            $entry = $Script:PackageRegistry[$pkg.name]
-            if (-not $entry) { continue }
-
-            if ($entry.Repo -ne $pkg.repo) {
-              $problems += "repo divergente per '$($pkg.name)': registry='$($entry.Repo)' catalogo='$($pkg.repo)'"
-            }
-            if ([bool]$entry.IsCore -ne [bool]$pkg.isCore) {
-              $problems += "isCore divergente per '$($pkg.name)'"
-            }
-
-            $registryDeps = ($entry.Dependencies | Sort-Object) -join ','
-            $catalogDeps  = ($pkg.dependencies  | Sort-Object) -join ','
-            if ($registryDeps -ne $catalogDeps) {
-              $problems += "dipendenze divergenti per '$($pkg.name)': registry='$registryDeps' catalogo='$catalogDeps'"
-            }
-
             foreach ($dep in $pkg.dependencies) {
               if ($catalogNames -notcontains $dep) {
                 $problems += "dipendenza non risolvibile: '$($pkg.name)' -> '$dep'"
               }
+            }
+            foreach ($kind in $pkg.appliesTo) {
+              if ($kindIds -notcontains $kind) {
+                $problems += "pacchetto '$($pkg.name)': appliesTo cita il kind inesistente '$kind'"
+              }
+            }
+          }
+
+          foreach ($domain in $catalog.domains) {
+            if ($kindIds -notcontains $domain.kind) {
+              $problems += "dominio '$($domain.id)': kind inesistente '$($domain.kind)'"
+            }
+            foreach ($ref in $domain.packages) {
+              if ($catalogNames -notcontains $ref) {
+                $problems += "dominio '$($domain.id)' cita il pacchetto inesistente '$ref'"
+              }
+            }
+          }
+
+          foreach ($intent in $catalog.intentMap) {
+            if ($domainIds -notcontains $intent.domain) {
+              $problems += "intentMap punta al dominio inesistente '$($intent.domain)'"
             }
           }
 
