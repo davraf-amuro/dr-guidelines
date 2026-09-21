@@ -1,6 +1,6 @@
 # Piano — Bootstrap autoinstallante su repo Private via `gh api` + rename installer
 
-Stato: COMPLETATO (Fase A). Fase B in carico all'utente — richiede una sessione nuova aperta sulla cartella di prova.
+Stato: COMPLETATO — Fase A completata; Fase B annullata dall'utente il 2026-09-21; punti fuori scope chiusi (verifica 2026-09-21)
 Data: 2026-08-09
 Slug: 2026-08-09-bootstrap-gh-private
 
@@ -163,7 +163,7 @@ Fasi 1-6 eseguite. Divergenze e scoperte:
 
 ## Fuori scope dichiarato
 
-- Flip Private → Public
-- Gate 2b dello split (install su progetto host reale esistente): la cartella di prova è sintetica e non lo chiude
-- Esecuzione della Fase B (scaffolding vero da sessione nuova)
-- `/dr-get-latest`, che usa `Invoke-RestMethod` senza fallback: stessa limitazione, ma è un file diverso e va valutato a parte
+- [x] Flip Private → Public — **chiuso 2026-09-21** (verifica): i 7 repo `dr-*` sono `PUBLIC`
+- [x] Gate 2b dello split (install su progetto host reale esistente): la cartella di prova è sintetica e non lo chiude — **chiuso 2026-09-21** nel piano `2026-07-22-dr-guidelines-split`
+- [~] Esecuzione della Fase B (scaffolding vero da sessione nuova) — **ANNULLATA dall'utente il 2026-09-21**, come il dogfooding di `/dr-scaffold` del piano `2026-08-08-scaffolding-skills`; la cartella di prova `dr-guidelines-workspace\test\` non esiste più
+- [x] `/dr-get-latest`, che usa `Invoke-RestMethod` senza fallback: stessa limitazione, ma è un file diverso e va valutato a parte — **chiuso 2026-09-21** (verifica): la skill documenta anche il bootstrap `gh api ... | Out-String`, e con i repo `PUBLIC` il raw risponde
