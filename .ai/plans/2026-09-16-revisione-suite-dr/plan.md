@@ -1,6 +1,6 @@
 # Piano: revisione suite dr-* — core agnostico, domini arbitrari, feedback via issue
 Data: 2026-09-16
-Stato: COMPLETATO PARZIALE — blocchi A, B, C, E, F completati e verificati; blocco D (repo `dr-esp32` e `dr-travelguide`) differito su decisione dell'utente al gate D1.
+Stato: COMPLETATO — blocchi A, B, C, E, F completati e verificati; blocco D (repo `dr-esp32` e `dr-travelguide`), archiviazione del legacy e decisioni rimandate **annullati dall'utente il 2026-09-21**. Il lavoro già eseguito e pushato non è stato revertito.
 
 ## Verifica finale
 
@@ -12,7 +12,7 @@ Eseguita il 2026-09-16 con `/dr-verify-plan`, in contesto isolato da chi ha impl
 4. **Documentazione di un comportamento eliminato**: `dr-scaffold-guidelines`, `dr-scaffold-solution`, `docs/onboarding.md`, `docs/test-progetto-host.md`, `docs/bozza-manuale-installazione.md` e `.template.config/template.json` descrivevano ancora il rilevamento automatico dello stack e l'output `[SKIP] Directory.Build.props, global.json (host non .NET)`, che il codice non può più produrre dopo la rimozione di `Test-DotnetHost`. Riscritti.
 5. **Omissioni nella tabella "Cosa viene configurato"** del README: mancava `.ai/dr-scaffolding-catalog.json`, e il manifest non era descritto come lock file con il commit.
 
-I criteri 10 e 11 sono marcati `[~] DIFFERITO` insieme alle fasi D1-D3 a cui appartengono, invece di essere spuntati: la parte architetturale (ramo di fallback) è completa, i due domini specifici no.
+I criteri 10 e 11 sono marcati `[~] DIFFERITO` insieme alle fasi D1-D3 a cui appartengono, invece di essere spuntati: la parte architetturale (ramo di fallback) è completa, i due domini specifici no. — Aggiornamento 2026-09-21: criteri 10-11 e fasi D1-D3 **annullati dall'utente**.
 
 ## Obiettivo
 Chiudere il repo legacy, svuotare `dr-guidelines` del contenuto .NET e trasformarlo nell'indice che instrada l'agente verso i pacchetti-guida di qualsiasi dominio, a partire da ESP32 e guida turistica.
@@ -68,8 +68,8 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 - [x] `.github/prompts/dr-segnala-miglioria.prompt.md` — CREATE (parità Copilot)
 - [x] `.github/prompts/dr-get-latest.prompt.md` — CREATE (parità Copilot)
 - [x] `.github/ISSUE_TEMPLATE/` — CREATE in tutti i repo dr-*
-- [ ] Repo nuovo `dr-esp32` — CREATE
-- [ ] Repo nuovo `dr-travelguide` — CREATE
+- [~] Repo nuovo `dr-esp32` — CREATE — **ANNULLATO dall'utente il 2026-09-21**
+- [~] Repo nuovo `dr-travelguide` — CREATE — **ANNULLATO dall'utente il 2026-09-21**
 - [x] Repo `dr-dotnet-backend` — riceve `Directory.Build.props`, `global.json` e le regole .NET del core
 
 ### Perimetro negativo
@@ -155,7 +155,7 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 - **Su divergenza**: STOP — se emerge una regola presente solo nel legacy, elencala prima di modificare
 
 ### Fase A5: chiusura del legacy — GATE UTENTE
-- **Stato**: [x] — README di redirect scritto, committato (`f4d188e`) e pushato su `davraf-amuro/davraf-guidelines`. Gate lint: nessun target applicabile nel repo (nessun `.csproj`, `package.json` o sorgente Python) — assenza dichiarata, non saltata. **Archiviazione GitHub rimandata per scelta esplicita dell'utente**: il repo resta scrivibile. Push autorizzato dall'utente nello stesso gate, in deroga alla regola esecutore 6.
+- **Stato**: [x] — README di redirect scritto, committato (`f4d188e`) e pushato su `davraf-amuro/davraf-guidelines`. Gate lint: nessun target applicabile nel repo (nessun `.csproj`, `package.json` o sorgente Python) — assenza dichiarata, non saltata. **Archiviazione GitHub rimandata per scelta esplicita dell'utente**: il repo resta scrivibile. Push autorizzato dall'utente nello stesso gate, in deroga alla regola esecutore 6. — Aggiornamento 2026-09-21: archiviazione **ANNULLATA dall'utente** (vedi anche fase 7 del piano `2026-07-22-dr-guidelines-split`); il repo resta `PUBLIC` e non archiviato.
 - **Precondizione**: Fasi A1-A4 verificate, nessun contenuto del legacy resta non propagato
 - **File**: `README.md` del repo `davraf-guidelines`
 - **Operazione**: EDIT
@@ -251,7 +251,7 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 ---
 
 ### Fase D1: repo `dr-esp32` — GATE UTENTE sulla creazione
-- **Stato**: [~] RIMANDATA — al gate della Fase D1 l'utente ha risposto "per ora non servono": nessun repo creato. Il contenuto della fase resta valido come specifica per quando servirà.
+- **Stato**: [~] ANNULLATA dall'utente il 2026-09-21 — al gate della Fase D1 (2026-09-16) l'utente aveva risposto "per ora non servono": nessun repo creato. Il testo della fase resta solo come traccia storica.
 - **Precondizione**: Fase C4 verificata
 - **File**: nuovo repo `davraf-amuro/dr-esp32`
 - **Operazione**: CREATE
@@ -261,7 +261,7 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 - **Su divergenza**: STOP — nessuna creazione di repo senza conferma per ciascuno
 
 ### Fase D2: repo `dr-travelguide` — GATE UTENTE sulla creazione
-- **Stato**: [~] RIMANDATA — stesso gate della D1, stessa risposta. Il nome `dr-travelguide` resta non confermato.
+- **Stato**: [~] ANNULLATA dall'utente il 2026-09-21 — stesso esito della D1. Il nome `dr-travelguide` non è mai stato confermato.
 - **Precondizione**: Fase D1 verificata
 - **File**: nuovo repo `davraf-amuro/dr-travelguide`
 - **Operazione**: CREATE
@@ -271,7 +271,7 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 - **Su divergenza**: STOP — se il sito richiede uno stack non coperto da `dr-fe`, rimanda al planner
 
 ### Fase D3: registrazione dei due domini nel catalogo
-- **Stato**: [~] RIMANDATA — dipende da D1 e D2. Nel catalogo restano comunque i `kind` `embedded` e `content` con i loro prerequisiti: sono predisposizione, non pacchetti. Finché non esiste un pacchetto per quei domini, una richiesta ESP32 o guida turistica cade nel ramo `fallback` (Fase C4), che dichiara il gap e offre l'apertura di una issue invece di fallire.
+- **Stato**: [~] ANNULLATA dall'utente il 2026-09-21 — dipendeva da D1 e D2. Nel catalogo restano comunque i `kind` `embedded` e `content` con i loro prerequisiti: sono predisposizione, non pacchetti. Finché non esiste un pacchetto per quei domini, una richiesta ESP32 o guida turistica cade nel ramo `fallback` (Fase C4), che dichiara il gap e offre l'apertura di una issue invece di fallire.
 - **Precondizione**: Fasi D1 e D2 verificate
 - **File**: `scaffolding-catalog.json`, `README.md`
 - **Operazione**: EDIT
@@ -337,14 +337,16 @@ Tutte le altre 11 skill del legacy risultano presenti nella suite con il prefiss
 - [x] `scaffolding-catalog.json` è `schemaVersion: 2`, valido, con `domains`, `intentMap` e `fallback`
 - [x] L'elenco dei pacchetti esiste in un solo posto: nessuna lista scritta a mano resta in `dr-guidelines-install-lib.ps1`
 - [x] `/dr-scaffold` risolve l'intento leggendo la `intentMap` del catalogo e ha un ramo esplicito per i domini non coperti, che dichiara il gap e offre l'apertura di una issue
-- [~] DIFFERITO con le fasi D1-D3 — `/dr-scaffold` risolve "crea una guida turistica" e "progetto per ESP32" nei **rispettivi domini** invece che nel fallback. Oggi entrambe le richieste cadono correttamente nel fallback, perché quei domini non hanno pacchetti
-- [~] DIFFERITO con le fasi D1-D3 — i repo `dr-esp32` e `dr-travelguide` esistono, sono registrati nel catalogo e installabili con `-Package`
+- [~] ANNULLATO con le fasi D1-D3 (2026-09-21) — `/dr-scaffold` risolve "crea una guida turistica" e "progetto per ESP32" nei **rispettivi domini** invece che nel fallback. Oggi entrambe le richieste cadono correttamente nel fallback, perché quei domini non hanno pacchetti
+- [~] ANNULLATO con le fasi D1-D3 (2026-09-21) — i repo `dr-esp32` e `dr-travelguide` esistono, sono registrati nel catalogo e installabili con `-Package`
 - [x] Tutti i repo dr-* hanno `.github/ISSUE_TEMPLATE/` con i due template
 - [x] Esistono i prompt Copilot per segnalazione miglioria e aggiornamento pacchetti
 - [x] Gate lint dichiarato ed eseguito prima di ogni push (nessun push fatto dall'esecutore)
 
 ## Decisioni rimandate
 
-- Semver e release per pacchetto: la suite resta "sempre latest" (deciso nel piano split del 2026-07-22, non rivisto qui)
-- Passaggio dei repo da Private a Public, che renderebbe funzionante il bootstrap `irm ... | iex` senza fallback `gh api`
-- Nome definitivo di `dr-travelguide` (alternativa italiana) — da confermare in Fase D2
+Tutte chiuse il 2026-09-21: annullate dall'utente insieme al resto del piano, oppure già superate.
+
+- [~] Semver e release per pacchetto: la suite resta "sempre latest" (deciso nel piano split del 2026-07-22, non rivisto qui) — **ANNULLATA**: resta "sempre latest"
+- [x] Passaggio dei repo da Private a Public, che renderebbe funzionante il bootstrap `irm ... | iex` senza fallback `gh api` — **superata**: i 7 repo `dr-*` sono `PUBLIC`
+- [~] Nome definitivo di `dr-travelguide` (alternativa italiana) — da confermare in Fase D2 — **ANNULLATA** insieme alla Fase D2
