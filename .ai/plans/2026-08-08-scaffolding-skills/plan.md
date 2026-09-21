@@ -1,6 +1,6 @@
 # Piano: Sistema di scaffolding dr-* (skill + prompt duale + catalogo)
 Data: 2026-08-08
-Stato: COMPLETATO
+Stato: COMPLETATO — lavoro residuo: 3 punti chiusi (verifica 2026-09-21), dogfooding di `/dr-scaffold` annullato dall'utente il 2026-09-21
 
 ## Obiettivo
 Implementare `TODO/01-install-scaffholding.md`: scaffolding guidato (workspace → solution → progetti → pacchetti dr-*) come skill Claude Code + prompt Copilot, alimentati da un catalogo dati unico.
@@ -132,7 +132,7 @@ Nota `.github/prompts/` corretta (il core copia 5 prompt, non zero); aggiunte le
 - [x] Nessun `git commit`/`git push` eseguito
 
 ## Lavoro residuo (fuori da questo piano)
-- Commit + push: finché il catalogo non è su `origin/main`, l'installer stampa il `[WARN]` sopra.
-- `docs/onboarding.md` è ancora largamente tarato sul modello a submodule `davraf-guidelines` (sezioni 3 e 4): qui sono stati corretti solo i riferimenti a `CreateNewSolution.ps1`. Riscrittura completa da valutare con `/dr-professor`.
-- Migrazione di `setup.ps1 -GlobalInstall`/`-GlobalUpdate` a `install.ps1`: TODO preesistente, non affrontato.
-- Dogfooding di `/dr-scaffold` su una cartella vuota reale: i comandi che compone sono stati verificati singolarmente, il flusso completo end-to-end no.
+- [x] Commit + push: finché il catalogo non è su `origin/main`, l'installer stampa il `[WARN]` sopra. — **chiuso 2026-09-21** (verifica): `scaffolding-catalog.json` presente su `origin/main`
+- [x] `docs/onboarding.md` è ancora largamente tarato sul modello a submodule `davraf-guidelines` (sezioni 3 e 4): qui sono stati corretti solo i riferimenti a `CreateNewSolution.ps1`. Riscrittura completa da valutare con `/dr-professor`. — **chiuso 2026-09-21** (verifica): riscritto dal piano `2026-09-16-riscrittura-doc-dr`, il submodule compare solo per spiegare perché non si usa
+- [x] Migrazione di `setup.ps1 -GlobalInstall`/`-GlobalUpdate` a `install.ps1`: TODO preesistente, non affrontato. — **chiuso 2026-09-21** (verifica): `setup.ps1` rimosso; l'installazione globale è `dr-guidelines-install.ps1 -Global` (skill `/dr-install-global`), che usa ancora `templates/global-claude.md`
+- [~] Dogfooding di `/dr-scaffold` su una cartella vuota reale: i comandi che compone sono stati verificati singolarmente, il flusso completo end-to-end no. — **ANNULLATO dall'utente il 2026-09-21**: non si esegue in questo piano (le prove sul campo restano elencate in `docs/bozza-manuale-installazione.md`, sezione "Da verificare")
