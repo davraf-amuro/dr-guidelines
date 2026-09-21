@@ -2,7 +2,7 @@
 
 **Data:** 2026-07-22
 **Skill/persona:** `/tech` (Ops)
-**Stato:** IN CORSO — fasi 1-4 completate, si riprende da fase 5
+**Stato:** COMPLETATO — fasi 1-6 completate (verifica 2026-09-21); fasi 7 e 8 annullate dall'utente il 2026-09-21
 **Nota:** copia attiva del piano, migrata da `e:\Davide\Progetti\davraf-guidelines\.ai\plans\2026-07-22-dr-guidelines-split\plan.md` — il lavoro prosegue da questo repo (`dr-guidelines` core, dentro il workspace multi-repo), non più dal repo originale.
 
 ## Obiettivo
@@ -123,7 +123,7 @@ Apertura: `code dr-guidelines.code-workspace`.
 
 - [x] 1. Conferma naming, mappatura, decisioni — **completato 2026-07-22**
 - [x] 2. Creazione dei 7 repo via `gh CLI` (Private, MIT) + clone in `E:\Davide\Progetti\dr-guidelines-workspace\` + `.code-workspace` — **completato 2026-07-22**
-- [ ] 2b. Gate: repo restano Private finché test diretto `install.ps1` su ≥1 progetto host reale non ha esito positivo → poi flip a Public
+- [x] 2b. Gate: repo restano Private finché test diretto `install.ps1` su ≥1 progetto host reale non ha esito positivo → poi flip a Public — **chiuso 2026-09-21** (verifica): `gh repo list davraf-amuro` riporta i 7 repo `dr-*` `PUBLIC`
 - [x] 3. Estrazione contenuti con history (`git filter-repo`) da `davraf-guidelines` verso ciascun repo nuovo — **completato 2026-07-22**: pilota `dr-minimalapi` validato (clone `--no-local` → filter-repo per path → merge `--allow-unrelated-histories` con LICENSE remoto → push → sync clone locale), poi replicato su `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-dotnet-backend` (keep-path) e `dr-guidelines` core (invert-paths, tutto tranne i 13 path assegnati ai 6 pacchetti dominio). Tutti e 7 i repo pushati e sincronizzati nel workspace locale, nessuna history persa, nessun force-push usato.
   - Nota housekeeping (non bloccante, da valutare in fase 6): `dr-guidelines` core ha ereditato anche `.claude/skills/dr-handoff/skill.md.original.md` (backup file già presente nell'originale) e i vecchi `.ai/plans/*` della repo originale — nessuna azione richiesta ora.
 - [x] 4. Scrittura `install.ps1` per pacchetto (con gestione dipendenze) + formato manifest `.ai/dr-guidelines-packages.json` + aggiornamento `/dr-get-latest` — **completato 2026-07-22**
@@ -152,16 +152,16 @@ Apertura: `code dr-guidelines.code-workspace`.
 
   **Fase 4 completata 2026-07-22.**
   Nota housekeeping (non bloccante): cartella `TODO/01-install-scaffholding.md` trovata non tracciata in `dr-guidelines` durante questa fase — nota utente su un'idea futura (scaffolding interattivo a prompt per workspace/solution/progetti), non toccata, fuori scope fase 4, segnalata all'utente.
-- [ ] 5. Nuova skill `dr-segnala-miglioria` in `dr-guidelines` core — **prossimo passo**
+- [x] 5. Nuova skill `dr-segnala-miglioria` in `dr-guidelines` core — **chiuso 2026-09-21** (verifica): completata fuori da questo piano
 
   ### Decisioni di scope (confermate con l'utente 2026-07-22)
   - Cleanup housekeeping (3 cartelle `.ai/plans/*` non pertinenti + `.claude/skills/dr-handoff/skill.md.original.md`): **fatto ora**, in fase 6, commit dedicato
   - Gate 2b (Private→Public) e fase 7 (archiviazione `davraf-guidelines`): **rimandati** — nessun progetto host reale disponibile in questa sessione per il test richiesto dal gate
 
   ### Fasi atomiche
-  - [ ] 5.1 — CREATE `dr-guidelines/.claude/skills/dr-segnala-miglioria/SKILL.md` (legge manifest host per determinare il pacchetto, compone titolo/corpo, conferma esplicita obbligatoria, `gh issue create` o URL precompilato di fallback)
+  - [x] 5.1 — CREATE `dr-guidelines/.claude/skills/dr-segnala-miglioria/SKILL.md` (legge manifest host per determinare il pacchetto, compone titolo/corpo, conferma esplicita obbligatoria, `gh issue create` o URL precompilato di fallback) — **chiuso 2026-09-21** (verifica): il file esiste
 
-- [ ] 6. README per ciascun pacchetto + aggiornamento README core
+- [x] 6. README per ciascun pacchetto + aggiornamento README core — **chiuso 2026-09-21** (verifica): sottofasi 6.1-6.6 completate fuori da questo piano, evidenze sotto
 
   ### Analisi preliminare
   - `README.md` core esistente è interamente tarato sul vecchio modello (submodule + `setup.ps1`, repo `davraf-guidelines`) — da riscrivere per il nuovo modello `install.ps1`
@@ -169,14 +169,16 @@ Apertura: `code dr-guidelines.code-workspace`.
   - `CreateNewSolution.ps1` (sezione 2 "Avvio Rapido") resta **invariato** per decisione già presa (fase 4) — punta ancora al repo legacy `davraf-guidelines` (submodule+setup.ps1), che resta valido finché non archiviato in fase 7: nessuna modifica necessaria a questa sezione ora
 
   ### Fasi atomiche
-  - [ ] 6.1 — EDIT `dr-guidelines/.github/instructions/readme-structure.instructions.md`: aggiunta sezione "Pacchetti dr-* disponibili" (tabella nome/repo/scope) dopo titolo+tagline; sezione 3 e 5 riscritte per `install.ps1`/`-Update`/`/dr-get-latest` (non più submodule/setup.ps1); note sezioni 6-7 aggiornate per riflettere che ora descrivono solo il contenuto **core** (i pacchetti dominio hanno le proprie istruzioni/skill, non più nel core)
-  - [ ] 6.2 — EDIT `dr-guidelines/README.md`: riscritto secondo la struttura aggiornata al passo 6.1
-  - [ ] 6.3 — CREATE `README.md` per `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-dotnet-backend` (titolo+tagline, install/update via `irm`/scriptblock, nota dipendenza se presente, tabella contenuto instructions/prompts/skills, footer stile `readme-structure`)
-  - [ ] 6.4 — DELETE `dr-guidelines/.ai/plans/2026-06-17-global-install/`, `.ai/plans/2026-07-01-audit-agent-fixes/`, `.ai/plans/2026-07-01-audit-fixes/` (non pertinenti al nuovo repo, ereditati da filter-repo)
-  - [ ] 6.5 — DELETE `dr-guidelines/.claude/skills/dr-handoff/skill.md.original.md` (file di backup ereditato)
-  - [ ] 6.6 — Commit su ciascuno dei 7 repo interessati (non push, gate lint + conferma restano validi per fase push)
-- [ ] 7. Deprecazione repo vecchio `davraf-guidelines` (redirect + archive)
-- [ ] 8. Piano di migrazione progetti host esistenti (separato, dopo pilota su 1 progetto)
+  - [x] 6.1 — EDIT `dr-guidelines/.github/instructions/readme-structure.instructions.md`: aggiunta sezione "Pacchetti dr-* disponibili" (tabella nome/repo/scope) dopo titolo+tagline; sezione 3 e 5 riscritte per `install.ps1`/`-Update`/`/dr-get-latest` (non più submodule/setup.ps1); note sezioni 6-7 aggiornate per riflettere che ora descrivono solo il contenuto **core** (i pacchetti dominio hanno le proprie istruzioni/skill, non più nel core) — **chiuso 2026-09-21** (verifica): la sezione "Pacchetti dr-* disponibili" c'è, il submodule compare solo come modello da non descrivere
+  - [x] 6.2 — EDIT `dr-guidelines/README.md`: riscritto secondo la struttura aggiornata al passo 6.1 — **chiuso 2026-09-21** (verifica): README sul modello installer, submodule citato solo per dire che non si usa
+  - [x] 6.3 — CREATE `README.md` per `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-dotnet-backend` (titolo+tagline, install/update via `irm`/scriptblock, nota dipendenza se presente, tabella contenuto instructions/prompts/skills, footer stile `readme-structure`) — **chiuso 2026-09-21** (verifica): `README.md` tracciato in tutti e 6 i repo
+  - [x] 6.4 — DELETE `dr-guidelines/.ai/plans/2026-06-17-global-install/`, `.ai/plans/2026-07-01-audit-agent-fixes/`, `.ai/plans/2026-07-01-audit-fixes/` (non pertinenti al nuovo repo, ereditati da filter-repo) — **chiuso 2026-09-21** (verifica): le tre cartelle non esistono più
+  - [x] 6.5 — DELETE `dr-guidelines/.claude/skills/dr-handoff/skill.md.original.md` (file di backup ereditato) — **chiuso 2026-09-21** (verifica): `dr-handoff/` contiene solo `SKILL.md`
+  - [x] 6.6 — Commit su ciascuno dei 7 repo interessati (non push, gate lint + conferma restano validi per fase push) — **chiuso 2026-09-21** (verifica): i 7 repo sono allineati a `origin/main`
+- [~] 7. Deprecazione repo vecchio `davraf-guidelines` (redirect + archive) — **ANNULLATA dall'utente il 2026-09-21**: il repo non viene archiviato
+  - Verifica 2026-09-21: README di redirect fatto e pushato (`f4d188e`, footer corretto in `b44855e`). Resta solo `gh repo archive davraf-amuro/davraf-guidelines`, rimandato dall'utente il 2026-09-16 (piano `2026-09-16-revisione-suite-dr`, Fase A5). Il repo oggi è `PUBLIC` e non archiviato. Archiviare non rompe i submodule della fase 8: un repo archiviato si clona ancora.
+- [~] 8. Piano di migrazione progetti host esistenti (separato, dopo pilota su 1 progetto) — **ANNULLATA dall'utente il 2026-09-21**: nessun piano di migrazione
+  - Verifica 2026-09-21: progetti in `E:\Davide\Progetti` con il submodule `davraf-guidelines` ancora in `.gitmodules` → `CondominioPiaveIII`, `Dr.NutrizioNino`, `dr-mcp-dbschema`, `local-ai`, `test-test`. Già sul manifest `dr-*`: `dr-postman`, `my-home`.
 
 ## Rollback
 
@@ -188,4 +190,4 @@ Apertura: `code dr-guidelines.code-workspace`.
 - Dopo fase 3: `git log --follow` sul repo estratto mostra history preservata per i file del dominio migrato. **Verificato.**
 - Dopo fase 4: `install.ps1` testato su un progetto host di prova — file copiati = attesi, dipendenza `dr-dotnet-backend` installata automaticamente dove serve, merge `CLAUDE.md` corretto, nessun `.gitmodules`, manifest scritto correttamente.
 - Dopo fase 5: skill genera issue/URL puntando al repo pacchetto corretto per almeno un caso per dominio.
-- Dopo fase 7: repo vecchio raggiungibile ma archiviato, README rimanda ai nuovi repo.
+- Dopo fase 7: repo vecchio raggiungibile ma archiviato, README rimanda ai nuovi repo. — Non applicabile: fase 7 annullata il 2026-09-21 (il README di redirect resta, l'archiviazione no).
