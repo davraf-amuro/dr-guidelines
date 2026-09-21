@@ -52,14 +52,16 @@ Push eseguiti il 2026-09-16: `dr-guidelines` `0d16e73`; `dr-dotnet-backend` `099
 
 ## Problemi emersi, fuori perimetro (non corretti)
 
-- Job CI `catalog-guard` fallito da `aee84a4`: legge ancora `$Script:PackageRegistry`
-- L'installer non copia `.github/copilot-instructions.md` negli host, ma la sezione `CLAUDE.md` iniettata lo richiama
-- `/dr-scaffold-solution` potrebbe bloccarsi su cartella con il core già installato (regola "Cartella di destinazione già popolata → STOP")
-- Header degli installer: aggiornamento, `-Package` e `-Global` documentati solo con `irm` (404 su Private)
-- `/dr-segnala-miglioria`: la skill non usa i modelli `ISSUE_TEMPLATE`, il prompt Copilot sì; nessuno dei due applica le label
-- Dipendenze implicite non dichiarate nel catalogo (`dr-efdb`, `dr-fe`, `dr-devops` rimandano a file di `dr-minimalapi`)
-- Rimandi a un'implementazione di riferimento inesistente (`src/test-guideline.api/`) in `dr-efdb` e `dr-minimalapi`
-- `card-worker-service.prompt.md` non allineato a `windows-service.instructions.md`; esempio Serilog su `HostApplicationBuilder` probabilmente non compilabile
+Esito registrato il 2026-09-22 dal piano `2026-09-21-fix-ci-e-issue-riscrittura-doc`.
+
+- Job CI `catalog-guard` fallito da `aee84a4`: legge ancora `$Script:PackageRegistry` — **corretto**: guardia riscritta sul registry costruito dal catalogo del checkout
+- L'installer non copia `.github/copilot-instructions.md` negli host, ma la sezione `CLAUDE.md` iniettata lo richiama — **issue** `dr-guidelines#2`
+- `/dr-scaffold-solution` potrebbe bloccarsi su cartella con il core già installato (regola "Cartella di destinazione già popolata → STOP") — **issue** `dr-guidelines#3`
+- Header degli installer: aggiornamento, `-Package` e `-Global` documentati solo con `irm` (404 su Private) — **superato**: i 7 repo `dr-*` sono `PUBLIC`, `irm` risponde
+- `/dr-segnala-miglioria`: la skill non usa i modelli `ISSUE_TEMPLATE`, il prompt Copilot sì; nessuno dei due applica le label — **issue** `dr-guidelines#4` (in più: le label dei modelli non esistono nei repo)
+- Dipendenze implicite non dichiarate nel catalogo (`dr-efdb`, `dr-fe`, `dr-devops` rimandano a file di `dr-minimalapi`) — **issue** `dr-guidelines#5`
+- Rimandi a un'implementazione di riferimento inesistente (`src/test-guideline.api/`) in `dr-efdb` e `dr-minimalapi` — **issue** `dr-minimalapi#1` e `dr-efdb#1`
+- `card-worker-service.prompt.md` non allineato a `windows-service.instructions.md`; esempio Serilog su `HostApplicationBuilder` probabilmente non compilabile — **issue** `dr-winsvc#1` (esempio non compilabile confermato: `builder.Host` non esiste su `HostApplicationBuilder`)
 
 ## Criteri di verifica
 - [x] Ogni comando di installazione documentato funziona su repo Private (forma `gh api` presente)
