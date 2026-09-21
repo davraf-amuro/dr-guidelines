@@ -1,6 +1,6 @@
 # Piano: CI `catalog-guard` riparata + issue per i problemi aperti di `riscrittura-doc-dr`
 Data: 2026-09-21
-Stato: IN CORSO
+Stato: COMPLETATO
 
 ## Obiettivo
 Riportare verde la CI del core e trasformare in issue GitHub i 6 problemi ancora aperti elencati in `.ai/plans/2026-09-16-riscrittura-doc-dr/plan.md`, sezione "Problemi emersi, fuori perimetro".
@@ -70,6 +70,8 @@ Label: nei repo esistono solo le label di default (`bug`, `enhancement`, …); `
   | I5 | `davraf-amuro/dr-minimalapi#1` |
   | I6 | `davraf-amuro/dr-efdb#1` |
   | I7 | `davraf-amuro/dr-winsvc#1` |
+
+  URL: `https://github.com/<repo>/issues/<n>` — es. https://github.com/davraf-amuro/dr-guidelines/issues/2
 - **Precondizione**: testi approvati con questo piano (sezione "Testi delle issue")
 - **File**: nessuno (GitHub)
 - **Operazione**: CREATE
@@ -89,11 +91,11 @@ Label: nei repo esistono solo le label di default (`bug`, `enhancement`, …); `
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: commit e push
-- **Stato**: [ ]
+- **Stato**: [x] — gate di push: nessun target applicabile (`git ls-files` di solution, `.csproj`, `package.json`, `*.py` → 0), dichiarato. Commit `03d2095` fix(ci) (solo `ci.yml`) e `06dffd0` docs(plan) (i tre `plan.md`); push `c5794ab..06dffd0`, che ha portato anche i 5 commit di chiusura piani del 2026-09-21. CI sul nuovo `HEAD`: `success`, `catalog-guard=success`, `build-and-test=success`, log `Catalogo allineato: 7 pacchetti, 5 tipologie.`
 - **Precondizione**: Fasi 0-4 verificate
 - **File**: `ci.yml`, i tre `plan.md` di Scope, questo `plan.md`
 - **Operazione**: commit + push
-- **Azione**: un commit `fix(ci)` per `ci.yml`, un commit `docs(plan)` per i piani; gate di push: nessun comando di verifica applicabile (nessuna solution, nessun `package.json`, nessun sorgente Python) → dichiararlo; `git push origin main` (porta anche i 6 commit locali di oggi sui piani). **L'approvazione di questo piano vale come richiesta di push.**
+- **Azione**: un commit `fix(ci)` per `ci.yml`, un commit `docs(plan)` per i piani; gate di push: nessun comando di verifica applicabile (nessuna solution, nessun `package.json`, nessun sorgente Python) → dichiararlo; `git push origin main` (porta anche i commit locali di oggi sui piani — erano 5, non 6: corretto dopo la verifica). **L'approvazione di questo piano vale come richiesta di push.**
 - **Tool ammessi**: Bash (git), `gh run list`
 - **Verifica passo**: `git status --short` senza i file di Scope; run CI sul nuovo `HEAD` con `catalog-guard` verde
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
@@ -157,11 +159,21 @@ Contesto di installazione comune a tutte: *rilevato in revisione (piano `2026-09
 - **Atteso:** `builder.Services.AddSerilog((services, cfg) => cfg.ReadFrom.Configuration(builder.Configuration));` (pacchetto `Serilog.Extensions.Hosting`). Verificare inoltre l'allineamento di `card-worker-service.prompt.md` a `windows-service.instructions.md`, segnalato in revisione ma non ancora confrontato.
 
 ## Criteri di verifica finale
-- [ ] Piano 12 in `INTERROTTO` con motivo
-- [ ] `ci.yml` non contiene `$Script:PackageRegistry`; verifica sul catalogo del checkout, non sul `main` remoto
-- [ ] Guardia locale: verde sul catalogo reale, rossa sui 3 cataloghi alterati
-- [ ] 7 issue aperte, numeri registrati qui e nel piano 11
-- [ ] Piano 11: 8 problemi su 8 con esito
-- [ ] Push eseguito; CI verde sul nuovo `HEAD`, job `catalog-guard` compreso
-- [ ] Nessun file fuori Scope nei commit (`git show --stat`)
-- [ ] Verifica indipendente con `/dr-verify-plan`
+- [x] Piano 12 in `INTERROTTO` con motivo
+- [x] `ci.yml` non contiene `$Script:PackageRegistry`; verifica sul catalogo del checkout, non sul `main` remoto
+- [x] Guardia locale: verde sul catalogo reale, rossa sui 3 cataloghi alterati
+- [x] 7 issue aperte, numeri registrati qui e nel piano 11
+- [x] Piano 11: 8 problemi su 8 con esito
+- [x] Push eseguito; CI verde sul nuovo `HEAD`, job `catalog-guard` compreso
+- [x] Nessun file fuori Scope nei commit (`git show --stat`)
+- [x] Verifica indipendente con `/dr-verify-plan`
+
+## Verifica finale
+
+Eseguita il 2026-09-22 con `/dr-verify-plan` (sub-agente Explore, contesto isolato, solo piano + file su disco). Esito: 3 file di Scope su 3 `CORRISPONDE`, issue `CORRISPONDE` per repo, titolo, stato e assenza di label; criteri 1-7 `SODDISFATTO`. Il sub-agente ha rieseguito la guardia estratta da `ci.yml` con i cataloghi alterati in memoria: stessi 4 esiti della Fase 2. CI su `06dffd0` (run `35661154389`): `success`.
+
+Limiti della verifica, dichiarati: l'utente ha rifiutato al sub-agente `gh issue view` (corpi delle issue I4-I7) e `git status` nei repo `dr-minimalapi`, `dr-efdb`, `dr-winsvc` (perimetro negativo). I corpi sono stati scritti da file approvati con il piano; il perimetro sui repo sorelle non ha criterio dedicato.
+
+Correzioni scaturite: testo della Fase 5 ("6 commit" → erano 5) e URL delle issue aggiunti alla Fase 3. Osservazione non corretta, accettata: nel caso "owner estraneo" la guardia fallisce con l'eccezione della lib invece che nell'elenco `Catalogo NON allineato`; il problema è comunque nominato ed è l'exit code a far fallire il job.
+
+**Piano fix-ci-e-issue-riscrittura-doc verificato. Tutti i criteri soddisfatti.**
