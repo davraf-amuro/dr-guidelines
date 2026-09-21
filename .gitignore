@@ -438,3 +438,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Log locale richieste di permesso agente
+.ai/permessi-richiesti.md
