@@ -221,7 +221,7 @@ Per il frontend: lo script `lint` generato da `create-vue` usa `--fix` (corregge
 **9. Passi finali:**
 
 - Se tra i pacchetti c'è `dr-efdb`, **proponi** di registrare il server MCP `db-schema` in `.mcp.json`: senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
-- Genera `launch.json`/`tasks.json` seguendo `dr-CreateLaunchProfiles` (o la procedura equivalente), non a mano qui.
+- Genera `launch.json`/`tasks.json` seguendo `dr-create-launch-profiles` (o la procedura equivalente), non a mano qui.
 - Se è stato creato un `.code-workspace`, ricorda di aprirlo: le istruzioni e le skill installate vengono caricate all'apertura.
 
 ### A.5 Verifica

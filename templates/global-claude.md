@@ -91,7 +91,7 @@ Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/dr-warro
 |-----------------------------------|--------|
 | "scrivi la doc", "aggiorna README", "documenta gli endpoint", "genera scheda progetto" | `/dr-professor` |
 | "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/dr-warroom` |
-| "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-tattico` |
+| "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-prompt-engineer` |
 | "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker" | `/dr-tech` |
 | "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/dr-promote-to` |
 | "audit backend", "analizza le API", "cerca dead code", "controlla il codice backend" | `/dr-audit-api` |
@@ -99,7 +99,7 @@ Solo se non trovato in nessuna fonte: proponi la creazione e ingaggia `/dr-warro
 | "aggiorna le linee guida", "aggiorna davraf-guidelines", "get-latest" | `/dr-get-latest` |
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione" | `/dr-professor` |
 | "aggiorna snapshot", "rigenera il riassunto", "snapshot del progetto" | `/dr-snapshot` |
-| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-create-launch-profiles` |
 | "crea una nuova solution", "parti da zero", "scaffolding", "nuovo progetto", "crea il workspace" | `/dr-scaffold` |
 | "aggiungi un progetto", "aggiungi una minimal api", "aggiungi un worker", "aggiungi il frontend" | `/dr-scaffold-project` |
 | "installa le linee guida qui", "aggiungi i pacchetti dr-*", "quali pacchetti mi servono" | `/dr-scaffold-guidelines` |

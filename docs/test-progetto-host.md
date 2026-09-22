@@ -139,7 +139,7 @@ git status --short
 | `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
 | `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
 | `.github/instructions/` | 11 file `*.instructions.md` |
-| `.github/prompts/` | 8 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-segnala-miglioria`, `dr-pianifica-issue` |
+| `.github/prompts/` | 8 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
 | `.claude/skills/` | 17 cartelle skill `dr-*` |
 | `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-scaffolding-catalog.json` | Presente: è `scaffolding-catalog.json` del core, copiato con questo nome |

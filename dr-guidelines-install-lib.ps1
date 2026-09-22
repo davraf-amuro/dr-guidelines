@@ -81,10 +81,11 @@ function Get-DrPackageRegistry {
         }
 
         $registry[$p.name] = @{
-            Repo         = $p.repo
-            IsCore       = [bool]$p.isCore
-            Dependencies = @($p.dependencies | Where-Object { $_ })
-            RootFiles    = @($p.rootFiles    | Where-Object { $_ })
+            Repo              = $p.repo
+            IsCore            = [bool]$p.isCore
+            Dependencies      = @($p.dependencies      | Where-Object { $_ })
+            RootFiles         = @($p.rootFiles         | Where-Object { $_ })
+            ObsoleteArtifacts = @($p.obsoleteArtifacts | Where-Object { $_ })
         }
     }
 
@@ -152,6 +153,40 @@ function Copy-Skills {
         Copy-Item -Path (Join-Path $dir.FullName "*") -Destination $destSkillDir -Recurse -Force
         $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
         Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
+    }
+}
+
+function Remove-ObsoleteArtifacts {
+    param([string]$HostRoot, [string[]]$Artifacts)
+
+    # Skill e prompt rinominati a monte: la copia installa il nome nuovo ma non rimuove il vecchio.
+    # Senza questa pulizia l'host si ritrova due skill attive con la stessa descrizione e l'agente
+    # non sa quale invocare. Si esegue solo con -Update: una prima installazione non ha nulla da togliere.
+    if (-not $Artifacts -or $Artifacts.Count -eq 0) { return }
+
+    $removed = @()
+    foreach ($relative in $Artifacts) {
+        # Il catalogo e' un file di dati: un percorso fuori dalle due cartelle gestite e' un errore,
+        # non una rimozione da tentare comunque.
+        $normalized = $relative -replace '\\', '/'
+        if ($normalized -match '(^|/)\.\.(/|$)' -or [System.IO.Path]::IsPathRooted($normalized)) {
+            throw "obsoleteArtifacts: percorso non relativo o con risalita '$relative'."
+        }
+        if ($normalized -notmatch '^(\.claude/skills/|\.github/)') {
+            throw "obsoleteArtifacts: '$relative' e' fuori da .claude/skills/ e .github/."
+        }
+
+        # String.Replace, non -replace: l'operatore e' regex e il separatore di Windows e' un escape
+        $target = Join-Path $HostRoot $normalized.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+        if (Test-Path $target) {
+            Remove-Item -Path $target -Recurse -Force
+            $removed += $normalized
+        }
+    }
+
+    if ($removed.Count -gt 0) {
+        Write-Host "  Artefatti obsoleti rimossi:" -ForegroundColor White
+        $removed | ForEach-Object { Write-Host "  [DEL]  $_" -ForegroundColor Yellow }
     }
 }
 
@@ -444,6 +479,10 @@ function Install-DrPackage {
 
         Copy-InstructionsAndPrompts -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
         Copy-Skills -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+
+        if ($Update -and $pkg.ObsoleteArtifacts) {
+            Remove-ObsoleteArtifacts -HostRoot $hostRoot -Artifacts $pkg.ObsoleteArtifacts
+        }
 
         if ($pkg.RootFiles) {
             Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -Update:$Update

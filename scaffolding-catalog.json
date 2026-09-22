@@ -74,9 +74,9 @@
   ],
   "fallback": {
     "behavior": "dichiara-e-proponi",
-    "description": "Nessun dominio corrisponde all'intento dell'utente: non procedere assumendo uno stack. Dichiara che nessun pacchetto dr-* copre il dominio richiesto, proponi di proseguire con il solo core generico, e offri di aprire una issue di richiesta nuovo pacchetto sul repo dr-guidelines delegando a dr-segnala-miglioria. Nessuna issue viene creata senza conferma esplicita dell'utente.",
+    "description": "Nessun dominio corrisponde all'intento dell'utente: non procedere assumendo uno stack. Dichiara che nessun pacchetto dr-* copre il dominio richiesto, proponi di proseguire con il solo core generico, e offri di aprire una issue di richiesta nuovo pacchetto sul repo dr-guidelines delegando a dr-file-feedback. Nessuna issue viene creata senza conferma esplicita dell'utente.",
     "issueRepo": "davraf-amuro/dr-guidelines",
-    "skill": "dr-segnala-miglioria"
+    "skill": "dr-file-feedback"
   },
   "projectTypes": [
     {
@@ -151,7 +151,15 @@
       "isCore": true,
       "dependencies": [],
       "appliesTo": ["any"],
-      "description": "Core: instructions e skill trasversali, file di configurazione radice, sezione CLAUDE.md."
+      "description": "Core: instructions e skill trasversali, file di configurazione radice, sezione CLAUDE.md.",
+      "obsoleteArtifacts": [
+        ".claude/skills/dr-pianifica-issue",
+        ".claude/skills/dr-segnala-miglioria",
+        ".claude/skills/dr-tattico",
+        ".claude/skills/dr-CreateLaunchProfiles",
+        ".github/prompts/dr-pianifica-issue.prompt.md",
+        ".github/prompts/dr-segnala-miglioria.prompt.md"
+      ]
     },
     {
       "name": "dr-dotnet-backend",

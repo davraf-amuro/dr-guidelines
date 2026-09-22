@@ -29,7 +29,7 @@ Il catalogo è la fonte: non tenere qui un elenco parallelo di domini o di frasi
 
 > "Nessun pacchetto `dr-*` copre `<dominio richiesto>`. Posso procedere con il solo core generico (istruzioni trasversali, nessuna guida specifica), oppure aprire una issue di richiesta nuovo pacchetto."
 
-Offri le due opzioni con `AskUserQuestion`. Se l'utente sceglie la issue, delega a `/dr-segnala-miglioria` indicando che si tratta di un **gap di catalogo** sul repo `dr-guidelines`: nessuna issue viene creata senza la sua conferma esplicita del testo.
+Offri le due opzioni con `AskUserQuestion`. Se l'utente sceglie la issue, delega a `/dr-file-feedback` indicando che si tratta di un **gap di catalogo** sul repo `dr-guidelines`: nessuna issue viene creata senza la sua conferma esplicita del testo.
 
 Richiesta generica senza indizi di dominio ("crea un progetto") → non tirare a indovinare: elenca le `label` dei domini disponibili e chiedi quale.
 

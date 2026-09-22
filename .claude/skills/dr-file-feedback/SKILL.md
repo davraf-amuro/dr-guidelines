@@ -1,5 +1,5 @@
 ---
-name: dr-segnala-miglioria
+name: dr-file-feedback
 description: "Segnala una miglioria o un problema aprendo una issue nel repo pacchetto dr-* pertinente (davraf-amuro/dr-*). Determina il pacchetto dal manifest .ai/dr-guidelines-packages.json, mostra titolo/corpo per conferma esplicita, poi gh issue create o URL precompilato di fallback."
 ---
 
@@ -8,7 +8,7 @@ Sei un agente specializzato nel raccogliere una segnalazione di miglioria/proble
 ## Comportamento
 
 ```
-/dr-segnala-miglioria <descrizione libera>
+/dr-file-feedback <descrizione libera>
 ```
 
 `<descrizione libera>` può contenere: il problema/miglioria da segnalare, un riferimento a un file (path o nome), il nome di un pacchetto se già noto. Non è richiesta una sintassi fissa.

@@ -62,7 +62,7 @@ dr-guidelines/
     settings.json       ← Permessi condivisi, fusi nel settings.json dell'host
     skills/             ← Skill Claude Code, una cartella per skill con SKILL.md
   .github/
-    ISSUE_TEMPLATE/     ← Modelli miglioria.md e problema.md, usati da /dr-segnala-miglioria
+    ISSUE_TEMPLATE/     ← Modelli miglioria.md e problema.md, usati da /dr-file-feedback
     instructions/       ← Istruzioni modulari trasversali (.instructions.md)
     prompts/            ← Prompt duali: documentazione, scaffolding, segnalazioni
     workflows/ci.yml    ← Job build-and-test e catalog-guard
@@ -168,7 +168,7 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 | `.github/instructions/dev-cycle.instructions.md` | Ciclo obbligatorio: dichiara → esegui → verifica |
 | `.github/instructions/plan-tracking.instructions.md` | Struttura dei piani in `.ai/plans/` |
 | `scaffolding-catalog.json` | Pacchetti, domini, tipologie di progetto |
-| Issue su `davraf-amuro/dr-guidelines` | Richieste di nuovi pacchetti e problemi del core, via `/dr-segnala-miglioria` |
+| Issue su `davraf-amuro/dr-guidelines` | Richieste di nuovi pacchetti e problemi del core, via `/dr-file-feedback` |
 
 ---
 

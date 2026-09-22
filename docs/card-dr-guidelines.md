@@ -11,7 +11,7 @@
 - **Versione Corrente:** Da verificare con il team (nessun tag di rilascio; gli host registrano il commit installato)
 - **Owner/Team:** davide 'davraf' raffagli
 - **Referente:** davide 'davraf' raffagli
-- **Contatto Supporto:** d.raffagli@gmail.com · issue sul repository, via `/dr-segnala-miglioria`
+- **Contatto Supporto:** d.raffagli@gmail.com · issue sul repository, via `/dr-file-feedback`
 
 ## Stack Tecnologico
 

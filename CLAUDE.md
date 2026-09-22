@@ -92,18 +92,18 @@ Intento utente corrisponde a skill disponibile → **invoca direttamente** senza
 |-----------------------------------|--------|
 | "vai professor", "scrivi la doc", "aggiorna il README", "genera la scheda del progetto", "documenta gli endpoint", "prepara l'onboarding" | `/dr-professor [richiesta]` |
 | "consulta il warroom", "sentiamo le opinioni", "apri il tavolo", "cosa ne pensano gli esperti", "discutiamo questa scelta" | `/dr-warroom [domanda o contesto]` |
-| "chiedi al tattico", "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-tattico [prompt o descrizione]` |
+| "chiedi al tattico", "rivedi questo prompt", "migliora il prompt", "scrivi un prompt per", "perché questo prompt non funziona" | `/dr-prompt-engineer [prompt o descrizione]` |
 | "pianifica il rilascio", "prepara l'ambiente", "come si deploya", "configura Docker", "procedura di deploy" | `/dr-tech [task]` |
 | "promote", "promuovi il branch", "crea la PR verso", "merge su", "porta su master/main/staging" | `/dr-promote-to [target-branch] [--merge] [--delete]` |
 | "audit api", "fai l'audit del backend", "analizza le api", "cerca dead code", "controlla il codice backend" | `/dr-audit-api [focus opzionale]` |
 | "audit frontend", "fai l'audit del fe", "analizza il frontend", "controlla i componenti" | `/dr-audit-fe [focus opzionale]` |
 | "aggiorna i pacchetti", "aggiorna le linee guida", "get-latest" | `/dr-get-latest` |
-| "segnala una miglioria", "apri una issue", "questa regola non va bene", "manca un pacchetto per" | `/dr-segnala-miglioria [descrizione]` |
-| "controlla le issue", "pianifica le issue", "crea i piani dalle issue", "cosa c'è nelle issue aperte" | `/dr-pianifica-issue [numeri] [--repo owner/nome] [--pacchetti]` |
+| "segnala una miglioria", "apri una issue", "questa regola non va bene", "manca un pacchetto per" | `/dr-file-feedback [descrizione]` |
+| "controlla le issue", "pianifica le issue", "crea i piani dalle issue", "cosa c'è nelle issue aperte" | `/dr-issues-to-plans [numeri] [--repo owner/nome] [--pacchetti]` |
 | "verifica il piano", "controlla che il piano sia stato rispettato", "verifica finale" | `/dr-verify-plan` |
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/dr-professor [richiesta]` |
 | "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/dr-snapshot` |
-| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-CreateLaunchProfiles [profili]` |
+| "genera i profili di avvio", "crea launch.json", "configura il debug VS Code", "launch profiles" | `/dr-create-launch-profiles [profili]` |
 | "crea una nuova solution", "parti da zero", "scaffolding", "nuovo progetto", "crea il workspace" | `/dr-scaffold [richiesta]` |
 | "aggiungi un progetto", "aggiungi una minimal api", "aggiungi un worker", "aggiungi il frontend" | `/dr-scaffold-project [tipologia e nome]` |
 | "installa le linee guida qui", "aggiungi i pacchetti dr-*", "quali pacchetti mi servono" | `/dr-scaffold-guidelines` |

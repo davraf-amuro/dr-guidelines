@@ -204,12 +204,12 @@ La skill esegue queste verifiche da sola e si ferma alla prima che fallisce. Puo
 
 | Vuoi… | Usa |
 |---|---|
-| Profili di avvio e debug in VS Code | `/dr-CreateLaunchProfiles` |
+| Profili di avvio e debug in VS Code | `/dr-create-launch-profiles` |
 | Aggiungere un progetto alla solution | `/dr-scaffold aggiungi un worker` |
 | Aggiornare le linee guida più avanti | `/dr-get-latest` |
 | Leggere la struttura interna di una Minimal API | [`scaffolding-minimal-api.md`](scaffolding-minimal-api.md) |
 | Leggere la struttura interna di un Windows Service | [`scaffolding-windows-service.md`](scaffolding-windows-service.md) |
-| Segnalare un errore nelle linee guida | `/dr-segnala-miglioria <descrizione>` |
+| Segnalare un errore nelle linee guida | `/dr-file-feedback <descrizione>` |
 
 Se hai scelto `dr-efdb`, la skill propone di registrare il server MCP `db-schema` in `.mcp.json`. Senza quel server lo scaffolding CRUD deve chiederti i campi della tabella a mano.
 

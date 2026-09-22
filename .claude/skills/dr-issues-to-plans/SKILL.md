@@ -1,5 +1,5 @@
 ---
-name: dr-pianifica-issue
+name: dr-issues-to-plans
 description: "Legge le issue aperte su GitHub (repo corrente, --repo owner/nome, oppure --pacchetti per tutti i repo dr-* del catalogo), consiglia di completare i piani già IN CORSO e, per le issue scelte dall'utente, scrive piani in .ai/plans/ con Stato: PROPOSTO e campo Issue:, consultando le skill di analisi pertinenti. Sola lettura su GitHub: nessun commento, label o chiusura. Scrivere un piano non significa eseguirlo."
 ---
 
@@ -8,7 +8,7 @@ Sei un agente di pianificazione. Trasformi issue GitHub aperte in piani su disco
 ## Comportamento
 
 ```
-/dr-pianifica-issue [numeri] [--repo owner/nome] [--pacchetti]
+/dr-issues-to-plans [numeri] [--repo owner/nome] [--pacchetti]
 ```
 
 | Argomento | Effetto |
@@ -68,7 +68,7 @@ Per ogni issue rimasta, scegli l'approccio con questa tabella di instradamento. 
 | Natura della issue | Skill consultiva | Cosa le chiedi |
 |---|---|---|
 | Scelta architetturale o di design con più opzioni valide; intervento che coinvolge ≥ 2 ruoli tra ARCH, BE, UI, UX, DBADMIN | `/dr-warroom` | Posizioni, tensioni, raccomandazione sulla scelta aperta |
-| Prompt, istruzioni per agenti, skill, testo di regole (`.github/instructions/`, `.github/prompts/`, `.claude/skills/`, `CLAUDE.md`) | `/dr-tattico` | Analisi del testo attuale e del difetto segnalato |
+| Prompt, istruzioni per agenti, skill, testo di regole (`.github/instructions/`, `.github/prompts/`, `.claude/skills/`, `CLAUDE.md`) | `/dr-prompt-engineer` | Analisi del testo attuale e del difetto segnalato |
 | Rilascio, Docker, IIS, CI/CD, preparazione di ambienti | `/dr-tech` | Diagnosi e passi consigliati |
 | Backend .NET: bug, dead code, conformità ai pattern | `/dr-audit-api`, se installata | Audit mirato ai file citati |
 | Frontend: componenti, organizzazione, performance | `/dr-audit-fe`, se installata | Audit mirato ai file citati |
@@ -81,8 +81,8 @@ Le skill **esecutive** non si invocano mai in pianificazione: compaiono solo com
 | `/dr-professor` | scrivere o aggiornare documentazione |
 | `/dr-scaffold`, `/dr-scaffold-solution`, `/dr-scaffold-project`, `/dr-scaffold-guidelines` | creare solution, progetti, installare pacchetti |
 | `/dr-promote-to` | commit, push e PR a lavoro finito |
-| `/dr-CreateLaunchProfiles`, `/dr-snapshot`, `/dr-get-latest`, `/dr-install-global`, `/dr-handoff` | configurazione, contesto, aggiornamenti |
-| `/dr-segnala-miglioria` | aprire una issue collegata su un altro pacchetto |
+| `/dr-create-launch-profiles`, `/dr-snapshot`, `/dr-get-latest`, `/dr-install-global`, `/dr-handoff` | configurazione, contesto, aggiornamenti |
+| `/dr-file-feedback` | aprire una issue collegata su un altro pacchetto |
 | `/dr-verify-plan` | la verifica finale del piano |
 
 ### 5. Scelta dell'utente

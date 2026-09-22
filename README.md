@@ -264,29 +264,29 @@ Installa o aggiorna la sezione linee guida in `~/.claude/CLAUDE.md`, caricato da
 /dr-install-global aggiorna
 ```
 
-### `/dr-segnala-miglioria` — Apri una Issue nel Pacchetto Corretto
+### `/dr-file-feedback` — Apri una Issue nel Pacchetto Corretto
 
 Individua il pacchetto `dr-*` pertinente (dal manifest o dal file citato), compone titolo e corpo, chiede conferma, poi apre la issue con `gh issue create`. Senza `gh` genera un URL precompilato.
 
 **Uso:**
 ```
-/dr-segnala-miglioria la soglia batch size in database-provider.instructions.md non è chiara
+/dr-file-feedback la soglia batch size in database-provider.instructions.md non è chiara
 ```
 
-> **Il pacchetto non si corregge nel progetto host.** Una modifica alla copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli: `miglioria.md` per una richiesta evolutiva, `problema.md` per un malfunzionamento. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-segnala-miglioria.prompt.md`](.github/prompts/dr-segnala-miglioria.prompt.md).
+> **Il pacchetto non si corregge nel progetto host.** Una modifica alla copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli: `miglioria.md` per una richiesta evolutiva, `problema.md` per un malfunzionamento. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-file-feedback.prompt.md`](.github/prompts/dr-file-feedback.prompt.md).
 
-### `/dr-pianifica-issue` — Piani dalle Issue Aperte
+### `/dr-issues-to-plans` — Piani dalle Issue Aperte
 
-Legge le issue aperte (del repository corrente, di un altro con `--repo`, o di tutti i pacchetti `dr-*` con `--pacchetti`), consiglia di completare i piani già `IN CORSO` e, per le issue che scegli, scrive un piano in `.ai/plans/` consultando le skill di analisi pertinenti (`/dr-warroom`, `/dr-tattico`, `/dr-tech`, audit). Su GitHub legge soltanto: nessun commento, label o chiusura.
+Legge le issue aperte (del repository corrente, di un altro con `--repo`, o di tutti i pacchetti `dr-*` con `--pacchetti`), consiglia di completare i piani già `IN CORSO` e, per le issue che scegli, scrive un piano in `.ai/plans/` consultando le skill di analisi pertinenti (`/dr-warroom`, `/dr-prompt-engineer`, `/dr-tech`, audit). Su GitHub legge soltanto: nessun commento, label o chiusura.
 
 **Uso:**
 ```
-/dr-pianifica-issue
-/dr-pianifica-issue 12 15
-/dr-pianifica-issue --pacchetti
+/dr-issues-to-plans
+/dr-issues-to-plans 12 15
+/dr-issues-to-plans --pacchetti
 ```
 
-> **Scrivere un piano non significa eseguirlo.** I piani nascono con `Stato: PROPOSTO` e il campo `Issue: <owner/repo>#<n>`: non ripartono all'avvio della sessione e diventano `IN CORSO` solo quando approvi quello da eseguire (`plan-tracking.instructions.md`, sezione "Piani proposti"). Su GitHub Copilot: [`.github/prompts/dr-pianifica-issue.prompt.md`](.github/prompts/dr-pianifica-issue.prompt.md).
+> **Scrivere un piano non significa eseguirlo.** I piani nascono con `Stato: PROPOSTO` e il campo `Issue: <owner/repo>#<n>`: non ripartono all'avvio della sessione e diventano `IN CORSO` solo quando approvi quello da eseguire (`plan-tracking.instructions.md`, sezione "Piani proposti"). Su GitHub Copilot: [`.github/prompts/dr-issues-to-plans.prompt.md`](.github/prompts/dr-issues-to-plans.prompt.md).
 
 ### `/dr-warroom` — Tavolo di Lavoro Multi-Agente
 
@@ -306,13 +306,13 @@ Crea, aggiorna e revisiona documentazione tecnica con linguaggio chiaro, rispett
 /dr-professor aggiorna la documentazione del progetto
 ```
 
-### `/dr-tattico` — Progettazione Prompt AI
+### `/dr-prompt-engineer` — Progettazione Prompt AI
 
 Crea o revisiona prompt per agenti e assistenti IA, analizza fallimenti e ambiguità.
 
 **Uso:**
 ```
-/dr-tattico rivedi il prompt di sistema dell'agente di onboarding
+/dr-prompt-engineer rivedi il prompt di sistema dell'agente di onboarding
 ```
 
 ### `/dr-tech` — Rilascio e Infrastruttura
@@ -343,14 +343,14 @@ Genera o aggiorna `.ai/context/snapshot.md`: riassunto denso del progetto, leggi
 /dr-snapshot
 ```
 
-### `/dr-CreateLaunchProfiles` — Profili di Avvio VS Code
+### `/dr-create-launch-profiles` — Profili di Avvio VS Code
 
 Genera o aggiorna `.vscode/launch.json` e `.vscode/tasks.json`. Rileva lo stack, chiede quali profili creare e applica solo quelli scelti, senza sovrascrivere l'esistente.
 
 **Uso:**
 ```
-/dr-CreateLaunchProfiles
-/dr-CreateLaunchProfiles vue + api
+/dr-create-launch-profiles
+/dr-create-launch-profiles vue + api
 ```
 
 ### `/dr-handoff` — Documentazione di Passaggio
