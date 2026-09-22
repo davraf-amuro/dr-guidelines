@@ -99,6 +99,7 @@ Intento utente corrisponde a skill disponibile → **invoca direttamente** senza
 | "audit frontend", "fai l'audit del fe", "analizza il frontend", "controlla i componenti" | `/dr-audit-fe [focus opzionale]` |
 | "aggiorna i pacchetti", "aggiorna le linee guida", "get-latest" | `/dr-get-latest` |
 | "segnala una miglioria", "apri una issue", "questa regola non va bene", "manca un pacchetto per" | `/dr-segnala-miglioria [descrizione]` |
+| "controlla le issue", "pianifica le issue", "crea i piani dalle issue", "cosa c'è nelle issue aperte" | `/dr-pianifica-issue [numeri] [--repo owner/nome] [--pacchetti]` |
 | "verifica il piano", "controlla che il piano sia stato rispettato", "verifica finale" | `/dr-verify-plan` |
 | "modifica testi", "aggiorna commenti", "riscrivi il testo", "correggi il testo", "migliora la descrizione", "aggiorna la descrizione", "modifica il commento" | `/dr-professor [richiesta]` |
 | "aggiorna snapshot", "refresh contesto", "rigenera il riassunto", "snapshot del progetto", "aggiorna il contesto del progetto" | `/dr-snapshot` |

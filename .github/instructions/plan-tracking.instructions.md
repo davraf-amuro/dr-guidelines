@@ -105,9 +105,36 @@ Piano `IN CORSO` esistente all'avvio sessione:
 1. Leggi `plan.md` per ricostruire il contesto
 2. Identifica ultima fase con `[x]` completata
 3. Riprendi dalla prima fase ancora `[ ]`
-4. Non aprire nuovo piano — continua quello esistente
+4. Non aprire nuovo piano — continua quello esistente (scrivere piani `PROPOSTO` resta consentito: vedi "Piani proposti")
 
 Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare prima di procedere.
+
+---
+
+## Piani proposti
+
+**Scrivere un piano non significa eseguirlo.** Un piano può nascere per essere valutato più tardi, per esempio da una issue aperta: in quel caso si scrive con `Stato: PROPOSTO`.
+
+| Regola | `PROPOSTO` |
+|---|---|
+| Significato | Piano scritto, non ancora approvato per l'esecuzione |
+| Avvio sessione | Non si riprende: la regola "Piano `IN CORSO` → riprendi" non vale. Al più, segnalalo all'utente |
+| Altri piani | Non blocca l'apertura di altri piani e può coesistere con un piano `IN CORSO` |
+| Esecuzione | Passa a `IN CORSO` solo su approvazione esplicita dell'utente per quel piano; da lì valgono tutte le regole di questo file |
+| File | Nessuna modifica fuori da `.ai/plans/` finché resta `PROPOSTO` |
+
+### Campo `Issue:`
+
+Campo opzionale d'intestazione, subito dopo `Stato:`, per i piani nati da una issue:
+
+```markdown
+# Piano: <titolo task>
+Data: <YYYY-MM-DD>
+Stato: PROPOSTO
+Issue: <owner/repo>#<n>
+```
+
+Prima di scrivere un piano da una issue, cerca `Issue: <owner/repo>#<n>` (anche nella forma `**Issue:**`) nei `plan.md` esistenti: se c'è già, in qualsiasi stato, la issue è pianificata e non va duplicata.
 
 ---
 
@@ -127,8 +154,8 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 
 - Piano su disco obbligatorio per ogni task con ≥ 2 operazioni
 - Non eliminare piani completati — sono traccia storica
-- Non aprire nuovo piano se esiste piano `IN CORSO` non completato
+- Non aprire in esecuzione un nuovo piano se esiste piano `IN CORSO` non completato. Scrivere piani `PROPOSTO` resta consentito (vedi "Piani proposti")
 
 ---
 
-*Istruzione v1.4 - Plan Tracking - 2026-09-16 — claude-opus-5 — Fase 4: punto 3 rimanda a dev-cycle Fase 4 (era duplicato), aggiunto punto 4 verifica in contesto isolato (skill `dr-verify-plan`); mantenuta l'eccezione /dr-promote-to su regola 6 esecutore*
+*Istruzione v1.5 - Plan Tracking - 2026-09-22 — claude-opus-5 — aggiunti lo stato `PROPOSTO`, il campo `Issue:` e il principio "scrivere un piano non significa eseguirlo"; chiarito che il divieto di nuovo piano riguarda l'apertura in esecuzione*

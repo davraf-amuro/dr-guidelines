@@ -275,6 +275,19 @@ Individua il pacchetto `dr-*` pertinente (dal manifest o dal file citato), compo
 
 > **Il pacchetto non si corregge nel progetto host.** Una modifica alla copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli: `miglioria.md` per una richiesta evolutiva, `problema.md` per un malfunzionamento. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-segnala-miglioria.prompt.md`](.github/prompts/dr-segnala-miglioria.prompt.md).
 
+### `/dr-pianifica-issue` — Piani dalle Issue Aperte
+
+Legge le issue aperte (del repository corrente, di un altro con `--repo`, o di tutti i pacchetti `dr-*` con `--pacchetti`), consiglia di completare i piani già `IN CORSO` e, per le issue che scegli, scrive un piano in `.ai/plans/` consultando le skill di analisi pertinenti (`/dr-warroom`, `/dr-tattico`, `/dr-tech`, audit). Su GitHub legge soltanto: nessun commento, label o chiusura.
+
+**Uso:**
+```
+/dr-pianifica-issue
+/dr-pianifica-issue 12 15
+/dr-pianifica-issue --pacchetti
+```
+
+> **Scrivere un piano non significa eseguirlo.** I piani nascono con `Stato: PROPOSTO` e il campo `Issue: <owner/repo>#<n>`: non ripartono all'avvio della sessione e diventano `IN CORSO` solo quando approvi quello da eseguire (`plan-tracking.instructions.md`, sezione "Piani proposti"). Su GitHub Copilot: [`.github/prompts/dr-pianifica-issue.prompt.md`](.github/prompts/dr-pianifica-issue.prompt.md).
+
 ### `/dr-warroom` — Tavolo di Lavoro Multi-Agente
 
 Cinque esperti in parallelo (ARCH, BE, UI, UX, DBADMIN) analizzano una domanda tecnica o di prodotto e producono posizioni, tensioni e una raccomandazione.
@@ -446,4 +459,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.3 — 2026-09-16 — claude-opus-5*
+*Documento aggiornato: Settembre 2026 — Revisione v3.4 — 2026-09-22 — claude-opus-5*

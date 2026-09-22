@@ -18,7 +18,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | Si installa il `main` remoto, non il clone locale | Modifica non pushata che non deve arrivare |
 | Skill caricate da Claude Code | `/dr-snapshot` e `/dr-get-latest` dal progetto di prova |
 
-> Questo collaudo **non** chiude il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`): quel gate richiede un progetto host reale. La cartella di prova valida il meccanismo, non sblocca il passaggio dei repo a Public.
+> Aggiornamento 2026-09-22: i 7 repo `dr-*` sono **pubblici** dal 2026-09-21 e il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`) è chiuso. Questo collaudo resta una prova del meccanismo su cartella sintetica, non su un progetto host reale.
 
 ---
 
@@ -130,7 +130,7 @@ Get-Content .ai\dr-guidelines-packages.json
 git status --short
 ```
 
-**Atteso** (conteggi del core al 2026-09-16):
+**Atteso** (conteggi del core al 2026-09-22):
 
 | Elemento | Atteso |
 |---|---|
@@ -139,8 +139,8 @@ git status --short
 | `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
 | `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
 | `.github/instructions/` | 11 file `*.instructions.md` |
-| `.github/prompts/` | 7 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-segnala-miglioria` |
-| `.claude/skills/` | 16 cartelle skill `dr-*` |
+| `.github/prompts/` | 8 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-segnala-miglioria`, `dr-pianifica-issue` |
+| `.claude/skills/` | 17 cartelle skill `dr-*` |
 | `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-scaffolding-catalog.json` | Presente: è `scaffolding-catalog.json` del core, copiato con questo nome |
 | `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>","commit":"<sha>"}]}` |
@@ -246,7 +246,7 @@ Atteso: **nessun risultato**. Dal clone locale l'installer prende solo la librer
 | 1 | Cartella di prova fuori dal workspace `dr-*`, aperta in finestra separata | ☐ |
 | 2 | Config radice del core presenti; `Directory.Build.props` e `global.json` solo dopo `dr-dotnet-backend` | ☐ |
 | 3 | `.mcp.json` generato e ignorato da git | ☐ |
-| 4 | 11 istruzioni, 7 prompt, 16 skill dopo il solo core | ☐ |
+| 4 | 11 istruzioni, 8 prompt, 17 skill dopo il solo core | ☐ |
 | 5 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
 | 6 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
 | 7 | `dr-dotnet-backend` installato in automatico | ☐ |
@@ -302,4 +302,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.0 — 2026-09-16 16:09 — claude-opus-5*
+*Revisione v2.1 — 2026-09-22 06:46 — claude-opus-5*
