@@ -212,6 +212,13 @@ function Copy-CoreConfigFiles {
         Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
     }
 
+    # copilot-instructions.md sta qui e non in Copy-InstructionsAndPrompts perche' e' contenuto
+    # del solo core: questa funzione e' invocata sotto IsCore, quella e' per-pacchetto e
+    # duplicherebbe il file a ogni pacchetto di dominio installato. Senza questa copia il
+    # riferimento @.github/copilot-instructions.md iniettato in CLAUDE.md punta al nulla.
+    $copilotInstructions = ".github\copilot-instructions.md"
+    Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $copilotInstructions) -DestFile (Join-Path $HostRoot $copilotInstructions) -Update:$Update
+
     # Directory.Build.props e global.json non stanno piu' nel core: sono contenuto .NET
     # e vivono in dr-dotnet-backend, che li installa quando il progetto e' davvero .NET.
 

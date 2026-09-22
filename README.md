@@ -126,14 +126,13 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `.gitignore` | copia | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
 | `.gitattributes` | copia | Normalizzazione dei fine riga |
 | `.mcp.json` | copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
+| `.github/copilot-instructions.md` | copia, sovrascritta con `-Update` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
 | `.github/instructions/`, `.github/prompts/` | copia file per file | Istruzioni e prompt del core, per Copilot e Claude Code |
 | `.claude/skills/` | copia cartella per cartella | Skill Claude Code del core (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) |
 | `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte |
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
 | `.ai/dr-scaffolding-catalog.json` | copia | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
 | `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati con il **commit** di provenienza: fa da lock file, e `-Update` lo usa per mostrare cosa è cambiato |
-
-> ⚠️ **Non viene copiato `.github/copilot-instructions.md`**, anche se la sezione `CLAUDE.md` iniettata lo richiama con `@.github/copilot-instructions.md`. Comportamento attuale di `dr-guidelines-install-lib.ps1`, da correggere. Nel frattempo il file va copiato a mano.
 
 I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/prompts/`, `.claude/skills/` e i **file di radice dichiarati nel catalogo** (campo `rootFiles`). Non toccano `CLAUDE.md` né la configurazione del core.
 
@@ -452,11 +451,13 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Sì. Dopo l'installazione di `dr-dotnet-backend`, modifica `Directory.Build.props` e `global.json` nel tuo progetto. Attenzione: un `-Update` di quel pacchetto li sovrascrive.
 
 ### Q: GitHub Copilot non segue le istruzioni
-**A:** Verifica che `.github/copilot-instructions.md` sia presente e committato, poi riavvia VS o VS Code. Attenzione: oggi l'installer **non** copia quel file nel progetto host (copia solo `.github/instructions/` e `.github/prompts/`), anche se la sezione `CLAUDE.md` iniettata lo richiama. Finché non viene corretto, copialo a mano da questo repository.
+**A:** Verifica che `.github/copilot-instructions.md` sia presente e committato, poi riavvia VS o VS Code. L'installer lo copia dal 2026-09-22: se manca, il progetto è stato installato con una versione precedente del core — basta rilanciare l'installer, che lo aggiunge con `[OK]` senza toccare il resto.
+
+> ⚠️ **Se avevi copiato quel file a mano** seguendo la versione precedente di questo README, e poi l'hai personalizzato: ora è gestito dall'installer e un `-Update` lo sovrascrive senza avvisare. Porta le tue modifiche in una istruzione modulare di `.github/instructions/`, oppure aprile come issue sul core.
 
 ### Q: L'installer fallisce a metà — come ripristino?
 **A:** Se il repository ha già un commit: `git clean -fd` e `git checkout -- .`, poi rilancia. L'installer è idempotente e salta i file già a posto.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.4 — 2026-09-22 — claude-opus-5*
+*Documento aggiornato: Settembre 2026 — Revisione v3.5 — 2026-09-22 — claude-opus-5 — l'installer copia `.github/copilot-instructions.md`: tolto il workaround manuale (issue #2)*

@@ -1,6 +1,6 @@
 # Piano: L'installer copia `.github/copilot-instructions.md` nel progetto host
 Data: 2026-09-22
-Stato: PROPOSTO
+Stato: COMPLETATO — verificato il 2026-09-22 in contesto isolato (vedi Consuntivo)
 Issue: davraf-amuro/dr-guidelines#2
 
 ## Obiettivo
@@ -30,14 +30,16 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 
 ## Decisioni aperte
 
-1. **Comportamento con `-Update` se l'host ha personalizzato il file.** `Copy-GuidelineFile -Update` sovrascrive senza chiedere, come per tutti i file di `.github/instructions/`. In alternativa si può dare a `copilot-instructions.md` il trattamento riservato a `.mcp.json`: confronto di hash e `[WARN]` invece della sovrascrittura. *Proposta:* sovrascrivere come gli altri file di istruzione — è contenuto del pacchetto, e chi lo personalizza nell'host perde comunque la modifica al primo `-Update`, esattamente come già accade per `.github/instructions/*.md`. Decisione dell'utente.
-2. **Dove elencare il file nell'output dell'installer.** Oggi `Copy-CoreConfigFiles` stampa l'intestazione "File di configurazione:". `copilot-instructions.md` è un'istruzione, non una configurazione. Serve un'intestazione separata o si accetta quella esistente? *Proposta:* accettare quella esistente, per non moltiplicare le sezioni di output.
+Entrambe risolte in Fase 0 il 2026-09-22, sulla proposta del piano, per delega esplicita dell'utente ("parti dal primo e procedi con tutti").
+
+1. ~~**Comportamento con `-Update` se l'host ha personalizzato il file.**~~ **RISOLTA: sovrascrive**, con `Copy-GuidelineFile -Update`, come per tutti i file di `.github/instructions/`. È contenuto del pacchetto, e chi lo personalizza nell'host perde comunque la modifica al primo `-Update`, esattamente come già accade per le istruzioni modulari. Scartato il trattamento riservato a `.mcp.json` (confronto di hash e `[WARN]`), che serve a proteggere un file in cui l'host aggiunge roba propria — non è questo il caso.
+2. ~~**Dove elencare il file nell'output dell'installer.**~~ **RISOLTA: resta sotto l'intestazione esistente** "File di configurazione:", per non moltiplicare le sezioni di output per un solo file.
 
 ## Scope
 
 ### File da modificare
-- [ ] `dr-guidelines-install-lib.ps1` — aggiungere la copia di `.github/copilot-instructions.md` in `Copy-CoreConfigFiles`
-- [ ] `README.md` — rimuovere il workaround "copialo a mano" (righe 136 e 455)
+- [x] `dr-guidelines-install-lib.ps1` — aggiungere la copia di `.github/copilot-instructions.md` in `Copy-CoreConfigFiles`
+- [x] `README.md` — rimuovere il workaround "copialo a mano" (righe 136 e 455), più la riga di tabella che documenta il file ora copiato e la riga di versione
 
 ### Perimetro negativo
 - Non toccherò: `dr-guidelines-install.ps1` (l'entry point non contiene logica di copia)
@@ -50,7 +52,7 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 ## Fasi (formato atomico — obbligatorio)
 
 ### Fase 1: Copia di `copilot-instructions.md` nell'installer
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: in `dr-guidelines-install-lib.ps1` esiste la funzione `Copy-CoreConfigFiles`, e al suo interno il ciclo `foreach` su `@(".editorconfig", ".gitignore", ".gitattributes")`
 - **File**: `dr-guidelines-install-lib.ps1`
 - **Operazione**: EDIT
@@ -60,7 +62,7 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1: <cosa>` in plan.md, non procedere
 
 ### Fase 2: Verifica di sintassi dello script
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1 completata
 - **File**: `dr-guidelines-install-lib.ps1`
 - **Operazione**: nessuna modifica — sola verifica
@@ -70,7 +72,7 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 2: <cosa>` in plan.md, non procedere
 
 ### Fase 3: Prova di installazione in una cartella usa e getta
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 2 completata; `git` e PowerShell 7+ disponibili
 - **File**: nessuno del repository — si opera in una cartella temporanea fuori dal progetto
 - **Operazione**: nessuna modifica al repository
@@ -79,9 +81,10 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - **Verifica passo**: il file `.github/copilot-instructions.md` esiste nella cartella di prova ed è identico al sorgente del repository; l'output mostra `[OK]` alla prima esecuzione e `[UPD]` alla seconda
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
 - **Nota**: l'installer clona da GitHub. Finché la correzione non è pushata, il clone porta la versione vecchia della libreria: in quel caso eseguire la prova invocando la libreria locale, oppure rimandare questa fase a dopo la push e dichiararlo qui nel piano.
+- **Esito 2026-09-22**: eseguita **sulla libreria locale**, come previsto dalla nota, perché la correzione non è ancora pushata e il clone avrebbe portato la versione vecchia. `Copy-CoreConfigFiles` invocata con `TempRoot` = radice del repository e `HostRoot` = cartella usa e getta nello scratchpad. Output: `[OK] copilot-instructions.md` alla prima esecuzione, `[UPD] copilot-instructions.md` con `-Update`, `.github/` creata automaticamente da `Copy-GuidelineFile`, hash del file di destinazione identico al sorgente. `.mcp.json` si è comportato come prima (`[OK]` poi `[SKIP] identico`). Cartella di prova cancellata. Resta da fare, dopo la push, una prova con il clone reale.
 
 ### Fase 4: Rimozione del workaround dal README
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 3 completata o esplicitamente rimandata
 - **File**: `README.md`
 - **Operazione**: EDIT
@@ -91,7 +94,7 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: Aggiornamento della versione del documento
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 4 completata
 - **File**: `README.md`
 - **Operazione**: EDIT
@@ -101,7 +104,7 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
 ### Fase 6: Verifica finale in contesto isolato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1-5 completate
 - **File**: tutti quelli elencati in "Scope"
 - **Operazione**: nessuna modifica — sola verifica
@@ -117,4 +120,21 @@ Far copiare al core `.github/copilot-instructions.md` nell'host, così che il ri
 - [ ] `README.md` non contiene più il workaround "copialo a mano" (righe 136 e 455)
 - [ ] `README.md` riga 192 è invariata
 - [ ] La logica di `.mcp.json` è invariata
-- [ ] Nessun file fuori da "Scope" è stato modificato
+- [x] Nessun file fuori da "Scope" è stato modificato
+
+## Consuntivo
+
+**Verifica finale**: eseguita il 2026-09-22 con `/dr-verify-plan`, sub-agente in sola lettura, senza accesso alla conversazione di implementazione. Esito: tutte le fasi CORRISPONDONO, tutti e sette i criteri SODDISFATTI. Il revisore ha confermato con letture proprie che `Copy-CoreConfigFiles` è invocata in un solo punto, dentro `if ($pkg.IsCore)`, che il parser PowerShell non dà errori, che la riga di tabella "Quando usarlo" è byte-identica, che il blocco `.mcp.json` è integro, e che i sei repository fratelli sono puliti. Il criterio 3 è stato confermato per ispezione statica: il revisore, vincolato alla sola lettura, non ha rieseguito la prova runtime, ma ha verificato che la semantica di `Copy-GuidelineFile` rende l'esito descritto l'unico possibile.
+
+**Due correzioni applicate dopo la verifica**, entrambe dentro `README.md`, cioè nel perimetro di Scope, su rilievo del revisore:
+
+1. La FAQ consigliava `-Update` per recuperare il file mancante. Sbagliato: `Copy-GuidelineFile` stampa `[OK]` quando la destinazione non esiste, quindi basta un rilancio normale. `-Update` avrebbe sovrascritto *tutti* gli altri file del core per recuperarne uno. Ora la FAQ dice di rilanciare l'installer senza opzioni.
+2. Mancava l'avviso a chi aveva copiato il file a mano seguendo il README precedente e poi l'aveva personalizzato: con la Decisione 1 quel file ora viene sovrascritto senza preavviso. Aggiunto un riquadro che lo dichiara e indica dove spostare le personalizzazioni.
+
+**Rilievi del revisore non applicati, con motivo:**
+
+- **Fallimento silenzioso se il sorgente sparisce.** `Copy-GuidelineFile` esce senza stampare nulla se il file sorgente non esiste (`if (-not (Test-Path $SrcFile)) { return }`). Se un domani `.github/copilot-instructions.md` venisse rinominato nel core, l'host tornerebbe ad avere il riferimento penzolante — lo stesso bug appena corretto, ma invisibile. Per confronto `Merge-ClaudeSettings` emette un `[WARN]` nello stesso caso. È comportamento pre-esistente della funzione, fuori dal perimetro di questo piano, ma ora fa da unica guardia sull'invariante che il piano garantisce: **candidato a issue separata**, insieme al guard in CI.
+- **Formato della riga di versione.** Il piano citava `doc-versioning.instructions.md` per la Fase 5, ma quell'istruzione ha `applyTo: "docs/**/*.md"` e non copre il `README.md` di radice, che ha una convenzione propria. È stata mantenuta la convenzione del README. Il riferimento normativo nel testo della Fase 5 era impreciso.
+- **Prefisso di percorso nell'output.** `Copy-GuidelineFile` stampa solo il nome del file, quindi nel log compare `copilot-instructions.md` senza `.github/`: è l'unico file della sezione che finisce in una sottocartella. Cosmetico, coerente con la Decisione 2 e con il resto della funzione.
+
+**Resta pendente**: la prova end-to-end con il clone reale da GitHub, possibile solo dopo la push. Finché il commit non è su `main`, la frase del README "L'installer lo copia dal 2026-09-22" descrive un fatto non ancora vero per chi installa da remoto.
