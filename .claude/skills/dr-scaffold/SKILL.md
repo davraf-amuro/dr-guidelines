@@ -80,7 +80,7 @@ Leggi, nell'ordine, senza scrivere nulla:
 
 | Stato rilevato | Delega a |
 |---|---|
-| Cartella vuota, o con soli file di appoggio (README, .gitignore, LICENSE) | `dr-scaffold-solution` |
+| Cartella vuota, o con soli file di appoggio (README, .gitignore, LICENSE) o file del core già installati (`.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, config radice) | `dr-scaffold-solution` |
 | Esiste una solution (`*.slnx`/`*.sln`) e l'utente vuole aggiungere un progetto | `dr-scaffold-project` |
 | Esistono `*.csproj` sciolti ma **nessuna solution** | `dr-scaffold-solution` — dopo aver detto quali progetti hai trovato e che verranno agganciati alla solution nuova |
 | Esiste solo `package.json` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi `dr-scaffold-solution` in modalità multi-repo |
@@ -88,7 +88,7 @@ Leggi, nell'ordine, senza scrivere nulla:
 | Esiste tutto (solution + progetti + manifest completo) | Nessuna delega: elenca cosa c'è e chiedi cosa manca |
 | **Qualsiasi altro stato senza solution** — cartella non vuota, nessun `*.csproj`, nessun `package.json` (es. repo di docs o tooling) | `dr-scaffold-solution` |
 
-L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare.
+L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare. La prima riga copre già il caso più comune — il core installato in una cartella altrimenti vuota — che quindi arriva a `dr-scaffold-solution` per la porta principale, non per la rete.
 
 **La tabella qui sopra vale per i `kind` `dotnet` e `node`**, gli unici che hanno un contenitore di progetto (solution, `package.json`). Per gli altri:
 

@@ -18,12 +18,15 @@ Questo prompt è l'equivalente portabile delle skill `dr-scaffold*`. Il flusso, 
 
 | Stato della cartella corrente | Vai a |
 |---|---|
-| Vuota, o solo README/.gitignore/LICENSE | **Sezione A** — solution da zero |
+| Vuota, o con soli file di appoggio (README, .gitignore, LICENSE) o file del core già installati (`.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, config radice) | **Sezione A** — solution da zero |
 | Contiene già `*.slnx` o `*.sln` | **Sezione B** — aggiungi un progetto |
 | Contiene `*.csproj` sciolti ma **nessuna solution** | **Sezione A**, dopo aver detto quali progetti hai trovato e che verranno agganciati alla solution nuova |
 | Contiene solo `package.json` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi **Sezione A** in modalità multi-repo |
 | Contiene progetti ma manca il manifest `.ai/dr-guidelines-packages.json` (o è incompleto) | **Sezione C** — installa i pacchetti |
 | Contiene tutto | Elenca cosa c'è e chiedi cosa manca. Non procedere per inerzia |
+| **Qualsiasi altro stato senza solution** — cartella non vuota, nessun `*.slnx`/`*.sln`, nessun `*.csproj`, nessun `package.json` (es. repo di docs o tooling) | **Sezione A**, che in A.3 elenca il contenuto inatteso e chiede prima di scrivere |
+
+L'ultima riga è la rete: nessuno stato resta scoperto, quindi non c'è niente da improvvisare.
 
 **Prerequisito mancante non è un vicolo cieco.** Se l'utente chiede una tipologia specifica ("aggiungi un worker", "crea una minimal api") e manca il contenitore che la regge — la solution, o il repository — non rispondere che serve un'altra procedura: **proponi di creare anche il contenitore**. Se accetta, prosegui nella sezione indicata portandoti dietro la tipologia già scelta, così l'utente non la ripete. Se rifiuta, allora fermati.
 
@@ -120,7 +123,7 @@ Per ogni repository che nascerà, proponi come pre-selezionati il core `dr-guide
 
 Mostra l'albero completo, i comandi in ordine e i pacchetti per repo. Poi **una sola** domanda di conferma. Dopo la conferma non chiedere più nulla, salvo divergenze reali.
 
-Percorso di destinazione già esistente e non vuoto → STOP. Non sovrascrivere, non fondere.
+Due livelli, con regole diverse. **Root del repository**: i file del core già installati (`.git/`, `.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.vscode/`, un `*.code-workspace`, config radice dei pacchetti `dr-*`) sono attesi — lasciali intatti e prosegui. **Cartelle di progetto** (`src/<nome>`, `test/<nome>`, frontend): devono non esistere; se esistono, anche vuote → STOP, non sovrascrivere, non fondere. I contenitori `src/` e `test/` possono esistere. Altro contenuto nella root (sorgenti, cartelle sconosciute, un `*.slnx`/`*.sln` già presente) → elenca cosa hai trovato e chiedi: una solution nella root significa Sezione B, non Sezione A.
 
 ### A.4 Esecuzione, in questo ordine
 
@@ -257,7 +260,7 @@ Verifica fallita → fermati e riportala, non proseguire.
 
 2. Leggi `dotnet sln <solution> list` per sapere cosa c'è già.
 3. Chiedi **tipologia** (lista da `projectTypes[]`) e **nome** (default `<solution><defaultNameSuffix>`), validando il nome con il pattern del catalogo.
-4. Dry-run + una conferma. Cartella di destinazione già esistente → STOP.
+4. Dry-run + una conferma. La cartella del nuovo progetto (`<targetPath>\<nome>`) deve non esistere: se esiste, anche vuota → STOP, mai `--force` su `dotnet new`. Il resto del repository qui è popolato per definizione — c'è una solution: non è un motivo per fermarsi.
 5. Esegui:
 
 ```powershell
@@ -343,7 +346,7 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - Non inventare nomi di solution o progetti.
 - Non modificare a mano `.ai/dr-guidelines-packages.json` né `dr-guidelines-install-lib.ps1`.
 - Non duplicare i `docs/scaffolding-*.md`: per la struttura interna dei progetti (Dto, Endpoints, Workers, Validators) rimanda a quei documenti.
-- Percorso di destinazione già popolato → STOP, mai sovrascrivere, mai `--force` su `dotnet new`.
+- Root del repository: i file del core (`.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, config radice) sono attesi e si lasciano intatti. Cartella di progetto (`src/<nome>`, `test/<nome>`, frontend) già esistente, anche vuota → STOP, mai sovrascrivere, mai `--force` su `dotnet new`. Contenuto inatteso nella root → elenca e chiedi.
 
 ## ✅ Checklist Post-Generazione
 
@@ -355,4 +358,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `dotnet format` eseguito dopo l'install del core
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Template v1.2 — 2026-08-09 — claude-opus-5*
+*Template v1.3 — 2026-09-22 — claude-opus-5 — root del repository distinta dalle cartelle di progetto (issue #3)*

@@ -96,7 +96,7 @@ ordini.slnx  (esistente, verrà modificato)
   src\test.api\              [nuovo]  dotnet new web --framework net10.0
 ```
 
-Poi una sola conferma. Se la cartella di destinazione esiste già: **STOP**, non sovrascrivere e non fondere.
+Poi una sola conferma. La cartella del nuovo progetto (`<targetPath>\<nome>`) deve **non esistere**: se esiste, anche se vuota, **STOP** — non sovrascrivere e non fondere. La regola riguarda la cartella del singolo progetto: i contenitori `src/` e `test/`, i file del core e il resto del repository possono benissimo essere popolati, e non sono un motivo per fermarsi.
 
 ---
 
@@ -208,7 +208,7 @@ Rimuovere la cartella con `Remove-Item -Recurse -Force` è irreversibile: verifi
 - Non creare solution né workspace con le tue mani: se manca, apri la finestra della Fase 0-bis e deleghi a `/dr-scaffold-solution`. Se l'utente sceglie "senza solution", il progetto si crea lo stesso — sciolto — e la solution non la crei comunque.
 - Non installare pacchetti: quello è `/dr-scaffold-guidelines`.
 - Nessun `git commit`, nessun `git push`.
-- Progetto o cartella già esistente → STOP. Mai `--force` su `dotnet new`.
+- Cartella del progetto (`src/<nome>`, `test/<nome>`, frontend) già esistente, anche vuota → STOP. Mai `--force` su `dotnet new`. Che il resto del repository sia popolato — solution, file del core, altri progetti — non è un motivo per fermarsi.
 - Per la struttura interna del progetto (Dto, Endpoints, Workers, Validators) rimanda ai `docs/scaffolding-*.md`: non duplicarne il contenuto qui.
 
 ## Perimetro non negoziabile

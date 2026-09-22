@@ -92,7 +92,12 @@ E:\Davide\Progetti\ordini\                 (cartella corrente)
 
 Poi **una sola domanda di conferma**. Da questo momento in poi non chiedere più nulla, salvo divergenze reali.
 
-Se un percorso di destinazione **esiste già** e non è vuoto: fermati e dillo. Non sovrascrivere, non "fondere".
+**Cosa deve essere vuoto, e cosa no.** Due livelli, con regole diverse:
+
+- **Root del repository** — ci si aspetta di trovarci i file del core già installati: `.git/`, `.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.vscode/`, un `*.code-workspace` e i file di configurazione radice portati dai pacchetti `dr-*`. Lasciali intatti e **prosegui**: "installa il core, poi `/dr-scaffold`" è il flusso consigliato, non un conflitto.
+- **Cartelle di progetto** — `src/<nome>`, `test/<nome>` e la cartella del frontend devono **non esistere**. Se una esiste, anche se vuota: fermati e dillo. Non sovrascrivere, non "fondere", mai `--force` su `dotnet new`. La regola riguarda la cartella del singolo progetto: i contenitori `src/` e `test/` possono esistere.
+
+Nella root trovi altro — sorgenti, cartelle sconosciute, un `*.slnx`/`*.sln` già presente: **elenca cosa hai trovato e chiedi** prima di scrivere. Un file solution nella root significa che il caso è "aggiungi un progetto", non "solution da zero".
 
 ---
 
@@ -256,7 +261,7 @@ Per annullare il workspace: rimuovi la voce `{ "path": "..." }` dall'array `fold
 - Non inventare nomi: se il nome non è ricavabile dal contesto o dalla risposta dell'utente, fermati e chiedi. Mai `MyApi`, `WebApi`, `Progetto1`.
 - Non toccare `dr-guidelines-install-lib.ps1` né il manifest a mano: al manifest ci pensa l'installer.
 - Non duplicare il contenuto dei `docs/scaffolding-*.md`: per la struttura interna dei file di un progetto (Dto, Endpoints, Workers, Validators) rimanda a quei documenti.
-- Cartella di destinazione già popolata → STOP, mai sovrascrivere.
+- Root del repository: i file del core (`.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, config radice) sono attesi, si lasciano stare. Cartella di progetto (`src/<nome>`, `test/<nome>`, frontend) già esistente, anche vuota → STOP, mai sovrascrivere. Altro contenuto inatteso nella root → elenca e chiedi.
 
 ## Perimetro non negoziabile
 

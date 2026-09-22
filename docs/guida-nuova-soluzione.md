@@ -272,10 +272,10 @@ Questa guida unisce passaggi eseguiti davvero e passaggi descritti a partire dal
 | 6 — Verifiche finali | ☐ Da verificare |
 | Workspace multi-repo partendo da una cartella con il core | ☐ Da verificare: il core resta anche nella cartella che contiene il `.code-workspace` |
 | Frontend Vue con il core già installato nella cartella | ☐ Da verificare: vedi la nota sul frontend al passo 5 |
-| `/dr-scaffold-solution` su una cartella che contiene già il core | ☐ Da verificare: la skill si ferma se una cartella di destinazione è già popolata. Va confermato che i file del core non facciano scattare il blocco |
+| `/dr-scaffold-solution` su una cartella che contiene già il core | ☐ Da verificare sul campo. Dal 2026-09-22 la regola distingue la **root del repository**, dove i file del core sono attesi e non fermano niente, dalle **cartelle di progetto** (`src/<nome>`, `test/<nome>`, frontend), che devono non esistere: il blocco non dovrebbe più scattare in questo scenario (issue #3) |
 
 Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazione.md`](bozza-manuale-installazione.md).
 
 ---
 
-*Revisione v1.0 — 2026-09-16 16:12 — claude-opus-5*
+*Revisione v1.1 — 2026-09-22 18:40 — claude-opus-5*
