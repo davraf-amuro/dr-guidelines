@@ -1,6 +1,6 @@
 # Piano: Il canale di feedback usa i modelli `ISSUE_TEMPLATE` e applica una label che esiste
 Data: 2026-09-22
-Stato: PROPOSTO
+Stato: COMPLETATO — verificato il 2026-09-23 in contesto isolato (vedi Consuntivo)
 Issue: davraf-amuro/dr-guidelines#4
 
 ## Obiettivo
@@ -49,21 +49,23 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 
 ## Decisioni aperte
 
-1. **Label**: A (italiane, da creare nei sette repo), B (nessuna label) o C (default `bug` ed `enhancement`). La consultazione raccomanda C. Il testo delle fasi assume C; con A basta sostituire i nomi nelle tabelle e nel front matter, più una fase di predisposizione delle label.
-2. **Se C: `bug` o `documentation`** per `problema.md`. `documentation` è più preciso per "regola ambigua", `bug` più leggibile a colpo d'occhio.
-3. **Terzo modello `nuovo-pacchetto.md`** in `dr-guidelines`: sì o no.
-4. **Ambito di propagazione**: i modelli si toccano in tutti e sette i repo (sette commit separati, sono repository distinti) o solo in `dr-guidelines` in questo giro, rimandando gli altri sei?
-5. **Se A**: aggiungere la predisposizione delle label a uno script di manutenzione, o accettare i comandi manuali a ogni repo nuovo?
+Tutte risolte in Fase 0 il 2026-09-22. Le decisioni 1, 3 e 4 le ha prese l'utente; la 2 e la 5 discendono da quelle.
+
+1. ~~**Label.**~~ **RISOLTA dall'utente: opzione C, mappatura sulle label di default GitHub.** `problema.md` usa `bug`, `miglioria.md` usa `enhancement`. Sono le uniche che esistono già in tutti e sette i repo e che esisteranno in ogni repo futuro, perché le crea GitHub: `--label` funziona da subito e non c'è niente da tenere sincronizzato a mano. Scartata l'opzione A (creare `problema` e `miglioria` nei sette repo) perché sposterebbe il difetto invece di chiuderlo: nessuno script le predispone, quindi al primo repo nuovo mancherebbero di nuovo. Scartata la B (nessuna label) perché toglierebbe ogni filtro per tipo.
+2. ~~**`bug` o `documentation` per `problema.md`.**~~ **RISOLTA: `bug`.** `documentation` sarebbe più preciso per il caso "regola ambigua", ma il modello copre anche i malfunzionamenti veri e `bug` si legge a colpo d'occhio nella lista delle issue.
+3. ~~**Terzo modello `nuovo-pacchetto.md`.**~~ **RISOLTA dall'utente: sì, e solo in `dr-guidelines`.** Il gap di catalogo ha destinazione fissa lì, come dichiara `fallback.issueRepo` nel catalogo, quindi negli altri sei repo il modello non servirebbe. Chi apre la issue dal selettore web trova la guida giusta invece di compilare a braccio un modello che non c'entra.
+4. ~~**Ambito di propagazione.**~~ **RISOLTA dall'utente: tutti e sette i repo.** I modelli sono byte-identici fra loro e devono restarlo. Sette commit separati, uno per repository. Il terzo modello non si propaga.
+5. ~~**Predisposizione delle label.**~~ **NON APPLICABILE**: era condizionata all'opzione A. Con la C non c'è niente da predisporre.
 
 ## Scope
 
 ### File da modificare
-- [ ] `.github/ISSUE_TEMPLATE/problema.md` e `miglioria.md` — front matter `labels:` allineato alla decisione 1
-- [ ] `.github/ISSUE_TEMPLATE/nuovo-pacchetto.md` — CREATE, solo se la decisione 3 è sì
-- [ ] `.claude/skills/dr-file-feedback/SKILL.md` — passo 3 (struttura del corpo), passo 5 (`--label`), regole inviolabili, casi limite
-- [ ] `.github/prompts/dr-file-feedback.prompt.md` — passo 3, passo 5, regole, footer di versione
-- [ ] `README.md` e `docs/onboarding.md` — solo se la decisione 3 aggiunge un terzo modello: entrambi citano "due modelli"
-- [ ] Gli altri sei repository `dr-*`, file `.github/ISSUE_TEMPLATE/miglioria.md` e `problema.md` — solo se la decisione 4 include la propagazione
+- [x] `.github/ISSUE_TEMPLATE/problema.md` e `miglioria.md` — front matter `labels:` allineato alla decisione 1
+- [x] `.github/ISSUE_TEMPLATE/nuovo-pacchetto.md` — CREATE, solo in `dr-guidelines`
+- [x] `.claude/skills/dr-file-feedback/SKILL.md` — passo 3 (struttura del corpo), passo 5 (`--label`), regole inviolabili, casi limite
+- [x] `.github/prompts/dr-file-feedback.prompt.md` — passo 3, passo 5, regole, footer di versione
+- [x] `README.md` e `docs/onboarding.md` — solo se la decisione 3 aggiunge un terzo modello: entrambi citano "due modelli"
+- [x] Gli altri sei repository `dr-*`, file `.github/ISSUE_TEMPLATE/miglioria.md` e `problema.md` — solo se la decisione 4 include la propagazione
 
 ### Perimetro negativo
 - Non toccherò: il guard della skill che vieta `gh issue create` senza conferma esplicita di titolo e corpo — resta invariato
@@ -76,7 +78,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 ## Fasi (formato atomico — obbligatorio)
 
 ### Fase 0: Decisioni bloccanti
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: il piano è stato approvato per l'esecuzione
 - **File**: questo `plan.md`
 - **Operazione**: EDIT
@@ -86,7 +88,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 0: <cosa>` in plan.md, non procedere
 
 ### Fase 1: Front matter dei modelli
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 0 completata, decisione 1 presa
 - **File**: `.github/ISSUE_TEMPLATE/problema.md`, `.github/ISSUE_TEMPLATE/miglioria.md`
 - **Operazione**: EDIT
@@ -96,7 +98,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1: <cosa>` in plan.md, non procedere
 
 ### Fase 2 *(condizionata alla decisione 3)*: Terzo modello
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: la decisione 3 è "sì"
 - **File**: `.github/ISSUE_TEMPLATE/nuovo-pacchetto.md`
 - **Operazione**: CREATE
@@ -106,7 +108,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 2: <cosa>` in plan.md, non procedere
 
 ### Fase 3: Struttura del corpo nella skill
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1 e 2 completate o saltate
 - **File**: `.claude/skills/dr-file-feedback/SKILL.md`
 - **Operazione**: EDIT
@@ -116,7 +118,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
 
 ### Fase 4: Struttura del corpo nel prompt Copilot
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 3 completata
 - **File**: `.github/prompts/dr-file-feedback.prompt.md`
 - **Operazione**: EDIT
@@ -126,7 +128,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: Applicazione della label nei comandi
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 3 e 4 completate; la decisione 1 non è B
 - **File**: `.claude/skills/dr-file-feedback/SKILL.md`, `.github/prompts/dr-file-feedback.prompt.md`
 - **Operazione**: EDIT
@@ -136,7 +138,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
 ### Fase 6: Regole inviolabili e casi limite
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 5 completata o saltata
 - **File**: `.claude/skills/dr-file-feedback/SKILL.md`, `.github/prompts/dr-file-feedback.prompt.md`
 - **Operazione**: EDIT
@@ -146,7 +148,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
 
 ### Fase 7 *(condizionata alla decisione 3)*: Documentazione allineata
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: la Fase 2 ha aggiunto un terzo modello
 - **File**: `README.md`, `docs/onboarding.md`
 - **Operazione**: EDIT
@@ -156,7 +158,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ### Fase 8 *(condizionata alla decisione 4)*: Propagazione agli altri sei repository
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: la decisione 4 include la propagazione; Fase 1 completata
 - **File**: `.github/ISSUE_TEMPLATE/miglioria.md` e `problema.md` in `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-dotnet-backend`
 - **Operazione**: EDIT
@@ -166,7 +168,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
 
 ### Fase 9 *(condizionata: solo se la decisione 1 è A)*: Predisposizione delle label
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: la decisione 1 ha scelto le label italiane
 - **File**: nessuno — operazione su GitHub
 - **Operazione**: nessuna modifica a file
@@ -176,7 +178,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
 
 ### Fase 10: Prova a secco del canale
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 3-6 completate
 - **File**: nessuno
 - **Operazione**: nessuna modifica
@@ -186,7 +188,7 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 10: <cosa>` in plan.md, non procedere
 
 ### Fase 11: Verifica finale in contesto isolato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 0-10 completate o saltate con nota
 - **File**: tutti quelli elencati in "Scope"
 - **Operazione**: nessuna modifica — sola verifica
@@ -196,11 +198,31 @@ La consultazione raccomanda **C**, perché è l'unica che elimina la classe di d
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 11: <cosa>` in plan.md, non procedere
 
 ## Criteri di verifica finale
-- [ ] Le due superfici compongono il corpo sulle stesse sezioni, nello stesso ordine, con gli stessi titoli
-- [ ] Nessuna delle due superfici rimanda più a un modello da cercare su disco nel progetto host
-- [ ] Nessun front matter dichiara una label che non esiste nel repository
-- [ ] Se la decisione 1 non è B: entrambe le superfici passano la label nel comando e nell'URL di ripiego, e gestiscono il fallimento senza creare label
-- [ ] Il guard "mai aprire una issue senza conferma esplicita di titolo e corpo" è invariato
-- [ ] La variante "nuovo pacchetto" ha una struttura propria e non usa sezioni prive di senso per un pacchetto inesistente
-- [ ] Nessun costrutto esclusivo di un tool nei file condivisi: compatibilità duale rispettata
-- [ ] Nessun file fuori da "Scope" è stato modificato, e nessuna issue è stata creata durante l'esecuzione del piano
+- [x] Le due superfici compongono il corpo sulle stesse sezioni, nello stesso ordine, con gli stessi titoli
+- [x] Nessuna delle due superfici rimanda più a un modello da cercare su disco nel progetto host
+- [x] Nessun front matter dichiara una label che non esiste nel repository
+- [x] Se la decisione 1 non è B: entrambe le superfici passano la label nel comando e nell'URL di ripiego, e gestiscono il fallimento senza creare label
+- [x] Il guard "mai aprire una issue senza conferma esplicita di titolo e corpo" è invariato
+- [x] La variante "nuovo pacchetto" ha una struttura propria e non usa sezioni prive di senso per un pacchetto inesistente
+- [x] Nessun costrutto esclusivo di un tool nei file condivisi: compatibilità duale rispettata
+- [x] Nessun file fuori da "Scope" è stato modificato, e nessuna issue è stata creata durante l'esecuzione del piano
+
+## Consuntivo
+
+**Verifica finale**: eseguita il 2026-09-23 con `/dr-verify-plan`, sub-agente in sola lettura, senza accesso alla conversazione di implementazione e con divieto esplicito di eseguire comandi `gh` di scrittura. Esito: **tutti e sette i punti di Scope CORRISPONDONO, tutti e otto i criteri SODDISFATTI**, perimetro negativo rispettato.
+
+Il controllo più utile è stato il confronto sezione per sezione: il revisore ha estratto i titoli `##` dalle tre fonti — struttura dichiarata nella skill, struttura dichiarata nel prompt, contenuto reale del modello — e li ha messi a fianco per tutti e tre i modelli. **Diciotto titoli su diciotto coincidono**, accenti e apostrofi inclusi, e coincidono anche i campi elenco delle sezioni strutturate. Confermata inoltre l'identità byte a byte dei due modelli condivisi nei sette repo (stesso SHA-256) e l'assenza del terzo modello negli altri sei.
+
+**Prova a secco del canale** (Fase 10), eseguita dal revisore su un caso di `dr-efdb` e fermata prima di qualunque apertura: la skill sceglie `problema.md` e la label `bug`, produce sei sezioni nell'ordine giusto, nessuna sezione vuota, nessun commento segnaposto residuo. La regola "dato non disponibile → `Non disponibile`" ha funzionato proprio nel caso che la stimola, cioè manifest assente.
+
+**Due correzioni applicate dopo la verifica:**
+
+1. **`any` mancava dall'elenco dei `kind`.** Il catalogo ne registra cinque — `dotnet`, `node`, `embedded`, `content`, `any` — e il testo ne elencava quattro, omettendo proprio quello con i prerequisiti minimi, che è il candidato più naturale per un pacchetto trasversale. Corretto nei tre punti: modello, skill e prompt. Questa era una divergenza reale rispetto alla Fase 2 del piano, che scriveva "`dotnet`, `node`, `any` o nuovo", e andava annotata al momento invece che scoperta in verifica.
+2. **"Progetto host" non aveva una sorgente.** Entrambe le superfici imponevano di compilare il "Contesto di installazione" dal manifest e di non inventare, ma il manifest quel campo non ce l'ha: l'agente restava fra il dedurlo contro la regola e scrivere sempre `Non disponibile`. Aggiunto come ricavarlo dai file presenti nella root.
+
+**Rilievi non applicati:**
+
+- **Il prompt Copilot dichiara `tools: ['search/codebase']` ma prescrive comandi `gh`.** Se su VS Code quel front matter non concede il terminale, il passo 5 cade sempre sull'URL di ripiego, che diventa l'unico percorso reale. È preesistente — la v1.0 aveva già gli stessi comandi — e i comandi `gh` erano fuori dal perimetro di questa issue, ma vale la pena verificarlo sul campo: **candidato a issue separata**.
+- **README, "due modelli".** La Fase 7 chiedeva che i documenti non affermassero più che i modelli sono due. La parola resta, ma l'affermazione è diventata vera: ogni repository ne ha due, `dr-guidelines` ne ha un terzo in più. Nessuno scostamento reale.
+
+**Resta pendente**: il push. Finché i sette repository non sono pushati, il selettore web di GitHub — l'unico posto dove il front matter `labels:` conta davvero — continua a servire i modelli con le label inesistenti. Il lavoro è completo sul disco, non ancora sul remoto.

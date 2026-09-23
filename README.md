@@ -272,7 +272,7 @@ Individua il pacchetto `dr-*` pertinente (dal manifest o dal file citato), compo
 /dr-file-feedback la soglia batch size in database-provider.instructions.md non è chiara
 ```
 
-> **Il pacchetto non si corregge nel progetto host.** Una modifica alla copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli: `miglioria.md` per una richiesta evolutiva, `problema.md` per un malfunzionamento. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-file-feedback.prompt.md`](.github/prompts/dr-file-feedback.prompt.md).
+> **Il pacchetto non si corregge nel progetto host.** Una modifica alla copia locale si perde al primo `-Update`. Ogni repository `dr-*` ha `.github/ISSUE_TEMPLATE/` con due modelli: `miglioria.md` per una richiesta evolutiva (label `enhancement`), `problema.md` per un malfunzionamento (label `bug`). In `dr-guidelines` ce n'è un terzo, `nuovo-pacchetto.md`, per quando nessun pacchetto copre il dominio che ti serve. Su GitHub Copilot lo stesso canale è [`.github/prompts/dr-file-feedback.prompt.md`](.github/prompts/dr-file-feedback.prompt.md).
 
 ### `/dr-issues-to-plans` — Piani dalle Issue Aperte
 
@@ -460,4 +460,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.5 — 2026-09-22 — claude-opus-5 — l'installer copia `.github/copilot-instructions.md`: tolto il workaround manuale (issue #2)*
+*Documento aggiornato: Settembre 2026 — Revisione v3.6 — 2026-09-23 — claude-opus-5 — terzo modello di issue in `dr-guidelines` e label allineate a quelle esistenti (issue #4)*

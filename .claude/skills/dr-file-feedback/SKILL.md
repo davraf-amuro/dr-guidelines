@@ -33,15 +33,54 @@ Leggi `.ai/dr-guidelines-packages.json` dalla root del progetto corrente per ott
 
 ⛔ **Non indovinare in silenzio**: se non riesci a determinare il pacchetto con certezza, chiedi. Aprire una issue nel repo sbagliato è peggio che chiedere.
 
-### 3. Componi titolo e corpo
+### 3. Scegli il modello e componi titolo e corpo
 
-- **Titolo**: sintetico, imperativo (es. "Chiarire soglia batch size in database-provider.instructions.md").
-- **Corpo**: contesto (in quale progetto/situazione è emersa la necessità), descrizione del problema/miglioria, riferimento a file/riga se disponibile.
+Ogni repo `dr-*` espone gli stessi modelli in `.github/ISSUE_TEMPLATE/`. Il corpo della issue riproduce **sempre** la struttura del modello pertinente: stesse sezioni, stesso ordine, stessi titoli di livello `##`.
 
-**Variante "nuovo pacchetto"** (gap di catalogo, dal passo 2):
+⛔ I modelli vivono nel repo di destinazione e **non** sono installati nel progetto host: non cercarli su disco e non leggerli via rete. La struttura autorevole per comporre il corpo è quella riportata qui sotto.
 
-- **Titolo**: `Nuovo pacchetto: <dominio richiesto>`
-- **Corpo**: cosa voleva fare l'utente con le sue parole, perché nessun pacchetto esistente copre il caso, quale `kind` sembra appropriato (`dotnet`, `node`, `embedded`, `content`, o nuovo), e quali guide/skill dovrebbe contenere il pacchetto. Se il dominio somiglia a un pacchetto esistente, dillo: può essere un'estensione invece di un repo nuovo.
+| Segnalazione | Modello di riferimento | Label |
+|---|---|---|
+| Una regola è sbagliata, ambigua o porta l'agente fuori strada | `problema.md` | `bug` |
+| Serve una regola nuova, una precisazione, un'estensione | `miglioria.md` | `enhancement` |
+| Nessun pacchetto copre il dominio (gap di catalogo, dal passo 2) | `nuovo-pacchetto.md`, solo in `dr-guidelines` | `enhancement` |
+
+**Titolo**: sintetico e imperativo — es. "Chiarire la soglia di batch size in `database-provider.instructions.md`". Per il gap di catalogo: `Nuovo pacchetto: <dominio richiesto>`.
+
+**Corpo — `problema.md`**, in quest'ordine:
+
+```
+## Cosa è andato storto
+<il problema in una o due frasi>
+
+## Pacchetto e file interessati
+- Pacchetto: <es. dr-efdb>
+- File: <path e sezione o riga>
+
+## Comportamento osservato
+<cosa ha fatto l'agente; se l'output è disponibile, incollalo>
+
+## Comportamento atteso
+<cosa avrebbe dovuto fare>
+
+## Come riprodurlo
+<la richiesta fatta all'agente e lo stato del progetto>
+
+## Contesto di installazione
+- Progetto host: <tipo di progetto>
+- Pacchetti installati: <elenco dal manifest letto al passo 1>
+- Agente usato: Claude Code
+```
+
+**Corpo — `miglioria.md`**, in quest'ordine: `## Cosa proponi`, `## Da dove nasce`, `## Pacchetto e file interessati`, `## Come si comporta oggi l'agente`, `## Come dovrebbe comportarsi`, `## Contesto di installazione`. Le due sezioni in comune con `problema.md` hanno gli stessi campi elenco.
+
+**Corpo — `nuovo-pacchetto.md`** (destinazione fissa `dr-guidelines`), in quest'ordine: `## Dominio richiesto`, `## Cosa volevi fare` (le parole dell'utente, non parafrasate), `## Perché i pacchetti esistenti non bastano` (se il dominio somiglia a un pacchetto esistente, dillo: può essere un'estensione invece di un repo nuovo), `## Kind proposto` (`dotnet`, `node`, `embedded`, `content`, `any` o nuovo, con una riga di motivazione: sono i `kinds` del catalogo, e `any` è quello con i prerequisiti minimi), `## Cosa dovrebbe contenere il pacchetto`, `## Contesto di installazione`.
+
+**Regole di compilazione, valide per tutti e tre i modelli:**
+
+- "Contesto di installazione" si compila dal manifest letto al passo 1 — mai inventato. "Progetto host" nel manifest non c'è: ricavalo dai file di progetto presenti nella root (`*.slnx`/`*.sln` e `*.csproj` → backend .NET; `package.json` → frontend; solo markdown → repository di documenti), altrimenti `Non disponibile`.
+- Nessuna sezione resta vuota e nessun commento `<!-- ... -->` segnaposto finisce nel corpo: se un dato non è disponibile, scrivi `Non disponibile`.
+- Nessuna sezione in più rispetto al modello, nessuna rinominata.
 
 ### 4. Conferma esplicita — mai invio automatico
 
@@ -53,12 +92,13 @@ Dopo conferma:
 
 - Verifica `gh auth status`. Se autenticato:
   ```bash
-  gh issue create --repo davraf-amuro/<pacchetto> --title "<titolo>" --body "<corpo>"
+  gh issue create --repo davraf-amuro/<pacchetto> --title "<titolo>" --body "<corpo>" --label <label>
   ```
-  Mostra l'URL della issue creata.
+  `<label>` è quella della tabella del passo 3. Mostra l'URL della issue creata.
+- Se il comando fallisce perché la label non esiste nel repo, **non crearla**: ripeti una sola volta il comando senza `--label` e segnala all'utente che la issue è stata aperta senza label.
 - Se `gh` assente o non autenticato: genera un URL precompilato (titolo e corpo URL-encoded) e mostralo, invitando l'utente ad aprirlo manualmente nel browser:
   ```
-  https://github.com/davraf-amuro/<pacchetto>/issues/new?title=<titolo-encoded>&body=<corpo-encoded>
+  https://github.com/davraf-amuro/<pacchetto>/issues/new?title=<titolo-encoded>&body=<corpo-encoded>&labels=<label>
   ```
 
 ---
@@ -67,6 +107,8 @@ Dopo conferma:
 
 - **MAI** eseguire `gh issue create` senza aver mostrato titolo/corpo per conferma esplicita al passo 4.
 - **MAI** indovinare il pacchetto di destinazione se ambiguo — chiedi (passo 2).
+- **MAI** comporre il corpo in forma libera: la struttura del modello scelto al passo 3 è vincolante.
+- **MAI** creare label, milestone o altri oggetti nel repo di destinazione: questa skill apre issue, nient'altro.
 - Questa skill **legge soltanto**: non modifica alcun file del progetto corrente né dei repo pacchetto.
 
 ## Casi limite
@@ -79,7 +121,9 @@ Dopo conferma:
 | `gh` non autenticato | URL precompilato di fallback, nessun errore bloccante |
 | Utente non conferma titolo/corpo al passo 4 | Nessuna issue creata, nessuna azione ulteriore |
 | Issue simile già esistente (se rilevabile) | Segnalala e chiedi se procedere comunque prima di aprirne una nuova |
-| Nessun pacchetto copre il dominio (delega da `/dr-scaffold`) | Destinazione fissa `dr-guidelines`, corpo in variante "nuovo pacchetto"; la conferma del passo 4 resta obbligatoria |
+| Nessun pacchetto copre il dominio (delega da `/dr-scaffold`) | Destinazione fissa `dr-guidelines`, corpo sul modello `nuovo-pacchetto.md`; la conferma del passo 4 resta obbligatoria |
+| Label del passo 3 inesistente nel repo | Riprova una volta senza `--label`, dichiaralo all'utente, non creare la label |
+| Modello non deducibile (né problema né miglioria) | Chiedi all'utente quale dei due: non scegliere per lui |
 
 ---
 
