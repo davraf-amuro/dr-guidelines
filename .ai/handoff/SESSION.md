@@ -1,78 +1,73 @@
-# Cronologia sessione corrente
+# Sessione 2026-09-22 → 2026-09-24
 
-Sessione 2026-08-08, repo `dr-guidelines`, branch `main`.
+## 1. Lettura delle issue aperte
 
-- Cosa fatto: ricognizione del repo e della modalità di test del meccanismo pacchetti (`install.ps1`, `install-lib.ps1`, `docs/test-progetto-host.md`, contenuto dei 6 pacchetti dominio locali).
-  Perché: l'utente chiedeva come provare il progetto, partendo dall'ipotesi che non si potesse scaricare da git.
-  Risultato: premessa corretta — `gh auth status` autenticato come `davraf-amuro` con scope `repo` e `git ls-remote` funzionante, quindi il `git clone` dell'installer funziona; ciò che non funziona è il bootstrap `irm ... | iex` (raw 404 su repo Private).
+- **Cosa**: `/dr-issues-to-plans` sul repository corrente. `gh` autenticato come `davraf-amuro`. Lette 5 issue aperte, verificato che nessun piano esistente avesse il campo `Issue:` e che nessun piano fosse `IN CORSO`.
+- **Perché**: la skill impone di non duplicare issue già pianificate e di consigliare il completamento dei piani in corso prima di aprirne altri.
+- **Risultato**: 5 issue tutte pianificabili.
 
-- Cosa fatto: install reale del core e di `dr-minimalapi` in un progetto host usa-e-getta nello scratchpad, più un secondo run.
-  Perché: verificare sul campo invece di descrivere la procedura.
-  Risultato: core installato (10 instructions, 4 prompt, 10 skill, 5 config, `.mcp.json`, `CLAUDE.md`); dipendenza `dr-dotnet-backend` installata automaticamente prima di `dr-minimalapi`; manifest con 3 pacchetti; secondo run tutti `[SKIP]`.
+## 2. Verifica dei file citati dalle issue
 
-- Cosa fatto: rilevata e segnalata una nota errata in `docs/test-progetto-host.md:149` ("il core non ha `.github/prompts/`").
-  Perché: l'output reale dell'installer mostrava 4 prompt copiati.
-  Risultato: correzione applicata più tardi nella sessione (Fase 13 del piano).
+- **Cosa**: letti i file, le righe e le funzioni che ciascuna issue nomina.
+- **Perché**: la skill impone di verificare che quanto la issue riporta esista ancora e dica quello che afferma.
+- **Risultato**: tre discrepanze, tutte annotate nei piani. `Copy-CoreConfigFiles` è a riga 207, non 176. Il secondo punto del README è a riga 455, non 442. I punti da correggere nel prompt Copilot sono tre, non uno. La issue #4 cita `dr-segnala-miglioria`, skill rinominata in `dr-file-feedback` dal commit `4bc6f71`.
 
-- Cosa fatto: constatato che lo scaffolding di una solution non esiste: solo la specifica in `TODO/01-install-scaffholding.md`, più `CreateNewSolution.ps1` e `setup.ps1` dell'era submodule.
-  Perché: l'utente chiedeva come partire da zero con una solution.
-  Risultato: perimetro del lavoro successivo definito.
+## 3. Consultazioni
 
-- Cosa fatto: invocato `/dr-warroom` sulla progettazione del sistema di scaffolding (5 agenti in parallelo: ARCH, BE, UI, UX, DBADMIN).
-  Perché: richiesta esplicita dell'utente e decisione con più opzioni valide.
-  Risultato: convergenza su tre pezzi, catalogo dati unico, una sola conferma dopo dry-run, legacy rimosso. Segnalazioni tecniche puntuali: `(Get-Location).Path` come host root richiede `Push-Location`; validazione regex dei nomi; verdict DBADMIN "nessun intervento database necessario".
+- **Cosa**: 4 sub-agenti in parallelo — `/dr-warroom` per le issue #1 e #5, `/dr-prompt-engineer` per le #3 e #4 — con divieto esplicito di scrivere file.
+- **Perché**: instradamento previsto dalla tabella al passo 4 di `/dr-issues-to-plans`.
+- **Risultato**: tre fatti che le issue non conoscevano e che hanno cambiato la soluzione. Gli `ISSUE_TEMPLATE` non vengono distribuiti negli host. L'installer risolve le dipendenze senza leggere `appliesTo`. `doc-versioning.instructions.md` cattura `docs/**/*.md`, il che esclude `docs/` come sede dei brief.
 
-- Cosa fatto: invocato `/dr-tech` per il runbook operativo, con verifiche eseguite sulla macchina (`dotnet new sln --help`, creazione solution + progetti, build, `create-vue`, `dotnet format`).
-  Perché: richiesta esplicita dell'utente; servivano comandi esatti, non ipotesi.
-  Risultato: `dotnet new sln` ha default `slnx` su SDK 10.0.302; `dotnet sln add` genera le solution folder; build 0 warning/0 errori con `Directory.Build.props` del core; flag di `create-vue` booleani puri; `dotnet format --verify-no-changes` esce `2` su solution vergine per BOM vs `charset = utf-8`.
+## 4. Scrittura dei 5 piani
 
-- Cosa fatto: interruzione utente su un `dotnet format` in scrittura.
-  Risultato: comando non eseguito in quel punto; la verifica del rimedio è stata rifatta più tardi su un progetto isolato.
+- **Cosa**: un `plan.md` per issue in `.ai/plans/`, stato `PROPOSTO`, campo `Issue:`, fasi atomiche e criteri misurabili.
+- **Perché**: `plan-tracking.instructions.md`, sezione "Piani proposti": scrivere un piano non significa eseguirlo.
+- **Risultato**: commit `821c738`.
 
-- Cosa fatto: raccolte 4 decisioni con `AskUserQuestion` (punti d'ingresso, superficie duale, config .NET nei repo frontend, gestione del catalogo).
-  Perché: ognuna cambiava materialmente il lavoro da produrre.
-  Risultato: orchestratore + due sotto-skill; skill + prompt duale; config condizionale nell'installer; `catalog.json` con guardia CI.
+## 5. Scelta del nome della cartella per la issue #1
 
-- Cosa fatto: scritto il piano su disco (`.ai/plans/2026-08-08-scaffolding-skills/plan.md`), `EnterPlanMode`, `ExitPlanMode`.
-  Perché: convenzione di progetto per task con ≥ 2 operazioni.
-  Risultato: piano approvato dall'utente.
+- **Cosa**: proposti 4 nomi con pro e contro; l'utente ha scelto `briefs/`.
+- **Perché**: la issue parlava di "specifiche", ma l'utente ha precisato che il contenuto sono le richieste che scrive lui, da trasformare in piani.
+- **Risultato**: piano riscritto con la terminologia corretta e rinominata la cartella in `2026-09-22-issue-1-cartella-briefs`. La distinzione è sostanziale: una specifica descrive il comportamento di un sistema, un brief esprime un bisogno, e il modello del documento cambia di conseguenza.
 
-- Cosa fatto: creato `scaffolding-catalog.json` (5 tipologie, 7 pacchetti) e confrontato con `$Script:PackageRegistry`.
-  Risultato: chiavi identiche, nessuna divergenza su `repo`/`isCore`/`dependencies`.
+## 6. Esecuzione del piano della issue #2
 
-- Cosa fatto: modificato `install-lib.ps1` — `Test-DotnetHost` + copia condizionale di `Directory.Build.props`/`global.json`, e `Copy-ScaffoldingCatalog` per distribuire il catalogo in `.ai/dr-scaffolding-catalog.json`.
-  Risultato: testato su due host di prova — host .NET riceve i due file, host con solo `package.json` mostra `[SKIP] ... (host non .NET)`; catalogo copiato in entrambi.
+- **Cosa**: aggiunta la copia di `.github/copilot-instructions.md` in `Copy-CoreConfigFiles`; rimosso il workaround dal README.
+- **Perché**: il `CLAUDE.md` iniettato negli host richiamava un file che l'installer non copiava.
+- **Risultato**: commit `6457a3c`. Verifica isolata: tutti i criteri soddisfatti. Due correzioni dopo la verifica: la FAQ consigliava `-Update` dove basta un rilancio normale, e mancava l'avviso a chi aveva copiato il file a mano.
 
-- Cosa fatto: aggiunto il job `catalog-guard` a `.github/workflows/ci.yml` e provato lo stesso script in locale.
-  Risultato: YAML valido (`jobs: ['build-and-test', 'catalog-guard']`); exit `0` sul catalogo reale, exit `1` alterando due nomi pacchetto.
+## 7. Esecuzione del piano della issue #3
 
-- Cosa fatto: create le 4 skill `dr-scaffold`, `dr-scaffold-solution`, `dr-scaffold-project`, `dr-scaffold-guidelines`.
-  Risultato: frontmatter valido, blocco `INPUT_UTENTE` e perimetro non negoziabile presenti in tutte; registrate e visibili nella lista skill della sessione.
+- **Cosa**: riscritta la regola di STOP su 10 posizioni in 4 file.
+- **Perché**: la regola si fermava su qualsiasi cartella non vuota, quindi anche nel flusso consigliato dalla documentazione, dove il core è già installato.
+- **Risultato**: commit `a3e0f2c`. Verifica isolata: 10 punti su 10. Tre correzioni dopo la verifica, fra cui l'aggiunta al prompt Copilot della riga-rete che il router Claude Code aveva già: senza, le due superfici documentavano modelli mentali diversi.
 
-- Cosa fatto: creato `.github/prompts/dr-scaffold.prompt.md` (sezioni A/B/C, liste numerate con default espliciti).
-  Perché: obbligo di compatibilità duale su `.github/prompts/`.
-  Risultato: grep di `$ARGUMENTS`, `AskUserQuestion`, `EnterPlanMode`, `subagent`, `INPUT_UTENTE` → nessuna occorrenza.
+## 8. Esecuzione del piano della issue #4
 
-- Cosa fatto: verificata la precondizione della fase di rimozione legacy.
-  Risultato: divergenza — i riferimenti a `CreateNewSolution` erano in 4 file, non solo `README.md`; 3 erano nel perimetro negativo, incluso `readme-structure.instructions.md:47` che *prescriveva* quello script al README. Divergenza registrata nel piano e portata all'utente.
+- **Cosa**: struttura dei modelli scritta inline nelle due superfici, label mappate su `bug`/`enhancement`, terzo modello `nuovo-pacchetto.md`, propagazione ai 7 repo.
+- **Perché**: i modelli non arrivano negli host, e il front matter `labels:` non si applica con `gh issue create`.
+- **Risultato**: commit `77541d7` più 6 commit nei repo pacchetto. Verifica isolata: 18 titoli di sezione su 18 coincidono fra skill, prompt e modelli reali. Due correzioni dopo la verifica: mancava `any` fra i `kind`, e "Progetto host" non aveva una sorgente dichiarata.
 
-- Cosa fatto: chiesto all'utente come procedere sullo scope.
-  Risultato: scope esteso ai 3 file, approvato.
+## 9. Esecuzione del piano della issue #5
 
-- Cosa fatto: eliminato `CreateNewSolution.ps1`; aggiornati `README.md`, `.github/instructions/readme-structure.instructions.md`, `docs/card-davraf-guidelines.md`, `docs/onboarding.md`; aggiunte 3 righe alla tabella di invocazione in `CLAUDE.md`; corretta e versionata `docs/test-progetto-host.md`.
-  Risultato: `grep -c CreateNewSolution README.md` → `0`; nessun riferimento residuo nel repo (esclusi `.ai/` e `.git/`); `setup.ps1` e `templates/global-claude.md` intatti; footer aggiornati (card v2.3, onboarding v2.4, test-progetto-host v1.1, readme-structure v2.1).
+- **Cosa**: nuova istruzione `cross-package-references.instructions.md`; i tre rimandi di `dr-efdb`, `dr-fe`, `dr-devops` resi condizionali al manifest.
+- **Perché**: i tre pacchetti citavano una regola di `dr-minimalapi` senza dichiararlo come dipendenza, e il rimando si rompeva in silenzio.
+- **Risultato**: commit `176afb1` più 3 commit nei repo pacchetto. Verifica isolata: 9 voci di scope su 9. Quattro correzioni dopo la verifica, fra cui una notevole: i tre blocchi appena scritti citavano la nuova convenzione con un rimando **incondizionato**, cioè violando la regola che la convenzione stessa introduce.
 
-- Cosa fatto: verifica end-to-end — installer reale su host .NET e host non-.NET, secondo run per l'idempotenza, guardia CI in locale.
-  Risultato: tutti gli esiti conformi. `[WARN] scaffolding-catalog.json non trovato nel pacchetto core` su entrambi gli host, atteso: l'installer clona `origin/main`, dove il catalogo non è ancora presente.
+## 10. Issue di follow-up
 
-- Cosa fatto: verificato su un progetto xunit isolato il rimedio all'errore CHARSET.
-  Perché: le skill affermano che `dotnet format` risolve; l'affermazione non era ancora provata.
-  Risultato: prima BOM `239,187,191` ed exit `2`; dopo `dotnet format` BOM rimosso ed exit `0`.
+- **Cosa**: aperte `dr-guidelines#6`, `dr-guidelines#7`, `dr-minimalapi#2`, composte sui modelli appena introdotti e con `--label`.
+- **Perché**: tre rilievi emersi in consultazione erano fuori dal perimetro della issue #5; l'utente ha scelto di tracciarli.
+- **Risultato**: primo uso reale del canale di feedback dopo la correzione, riuscito.
 
-- Cosa fatto: chiuso il piano con `Stato: COMPLETATO`, consuntivo per fase, limite noto e lavoro residuo.
+## 11. Verifica dei processi di installazione
 
-- Cosa fatto: rilevati `AGENTS.md` (`# Linee guida per Codex`) e `.agents/skills/` con 14 sottocartelle che rispecchiano `.claude/skills/`, inclusi i 4 `dr-scaffold*`, timestamp 14:30.
-  Risultato: segnalati all'utente come non prodotti da azioni dichiarate in sessione; non modificati. Origine: Sconosciuto.
+- **Cosa**: parser PowerShell sui due script, `catalog-guard` della CI eseguito in locale, simulazione della copia con libreria locale.
+- **Perché**: richiesta esplicita dell'utente prima del push.
+- **Risultato**: 0 errori, 0 problemi, tutti i file dei quattro piani presenti nell'host simulato.
 
-- Cosa fatto: nessun `git add`, `git commit` o `git push` in tutta la sessione.
-  Risultato: tutte le modifiche restano nel working tree.
+## 12. Push e prova end-to-end
+
+- **Cosa**: dichiarata l'assenza di un target di lint applicabile (repository di documenti più due script PowerShell), pushati i 7 repository, poi installazione reale in cartella vuota con clone da GitHub.
+- **Perché**: la prova end-to-end era l'ultimo punto in sospeso del piano #2 ed era impossibile prima del push, perché l'installer clona il remoto.
+- **Risultato**: `[OK]` alla prima installazione, `[SKIP]` al rilancio, `[UPD]` con `-Update`. Nessun riferimento penzolante nel `CLAUDE.md` dell'host. CI verde. Issue #2, #3, #4, #5 chiuse da GitHub tramite `Closes`. Commit `fe9dee9`.

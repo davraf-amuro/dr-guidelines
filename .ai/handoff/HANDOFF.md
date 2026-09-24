@@ -2,171 +2,157 @@
 
 `dr-guidelines` — pacchetto core della suite `dr-*`: linee guida, istruzioni modulari, prompt e skill per Claude Code e GitHub Copilot, distribuiti come pacchetti installabili via PowerShell.
 
-Repo: `davraf-amuro/dr-guidelines` (Private). Workspace locale: `E:\Davide\Progetti\dr-guidelines-workspace\` con i 7 repo `dr-*` come sottocartelle sorelle.
+Repo: `davraf-amuro/dr-guidelines`. Workspace locale: `E:\Davide\Progetti\dr-guidelines-workspace\` con i 7 repo `dr-*` come sottocartelle sorelle.
 
 ---
 
 # Obiettivo
 
-Obiettivo della sessione corrente: implementare `TODO/01-install-scaffholding.md` — un sistema di scaffolding guidato (workspace VS Code → solution .NET 10 → progetti → pacchetti `dr-*`) realizzato come **prompt per l'agente AI**, non come script PowerShell.
-
-Obiettivo di progetto in corso (piano precedente): completare lo split multi-repo avviato in `.ai/plans/2026-07-22-dr-guidelines-split/plan.md`.
+Chiudere le issue aperte sui repository `dr-*` passando per piani su disco: ogni issue diventa un piano in `.ai/plans/`, il piano si esegue, un revisore indipendente lo verifica, poi si committa.
 
 ---
 
 # Stato corrente
 
-- Sistema di scaffolding **implementato e verificato**: 4 skill, 1 prompt duale, 1 catalogo dati, 1 guardia CI, 2 modifiche all'installer. Piano `.ai/plans/2026-08-08-scaffolding-skills/plan.md` con `Stato: COMPLETATO`.
-- Tutte le modifiche sono **non committate** (`git status` in sessione: 8 file modificati/eliminati, 6 percorsi untracked pertinenti).
-- I 7 repo `dr-*` sono ancora **Private**: il bootstrap `irm ... | iex` risponde 404. L'unica modalità funzionante è l'invocazione da path locale (`& <workspace>\dr-<pkg>\install.ps1`), verificata in sessione.
-- `scaffolding-catalog.json` non è ancora su `origin/main`: l'installer, che clona il remoto, stampa `[WARN] scaffolding-catalog.json non trovato nel pacchetto core` e prosegue.
-- Stato dello split (piano 2026-07-22): fasi 1-5 risultano concluse (commit `4e079dd` installer, `f0435cd` rinomina skill `dr-`, skill `dr-segnala-miglioria` presente). Fase 6 (README) modificata in sessione ma non committata. Fasi 7-8 e gate 2b (Private → Public) aperti.
+- Le 5 issue aperte al 2026-09-22 sono state trasformate in altrettanti piani (commit `821c738`).
+- 4 piani su 5 sono `COMPLETATO`, verificati in contesto isolato e pushati. Le issue `#2`, `#3`, `#4`, `#5` risultano `CLOSED` su GitHub.
+- Il piano della issue `#1` è `PROPOSTO`: nessun file di prodotto è stato toccato per quella issue.
+- Tutti e 7 i repository hanno working tree pulito e 0 commit da pushare.
+- CI di `dr-guidelines` verde sugli ultimi due commit (`176afb1`, `fe9dee9`).
+- 3 issue di follow-up aperte: `dr-guidelines#6`, `dr-guidelines#7`, `dr-minimalapi#2`.
 
 ---
 
 # Componenti completati
 
-- `scaffolding-catalog.json` — 5 tipologie di progetto, 7 pacchetti con `repo`/`isCore`/`dependencies`/`appliesTo`, blocco `defaults` (framework `net10.0`, formato solution `slnx`, pattern nomi)
-- `.claude/skills/dr-scaffold/SKILL.md` — router: gate prerequisiti, rilevamento stato cartella, delega
-- `.claude/skills/dr-scaffold-solution/SKILL.md` — flusso completo da cartella vuota
-- `.claude/skills/dr-scaffold-project/SKILL.md` — aggiunta progetto a solution esistente
-- `.claude/skills/dr-scaffold-guidelines/SKILL.md` — installazione pacchetti su repo esistente
-- `.github/prompts/dr-scaffold.prompt.md` — equivalente per GitHub Copilot, sezioni A/B/C
-- `install-lib.ps1` — funzione `Test-DotnetHost` + copia condizionale di `Directory.Build.props`/`global.json`; funzione `Copy-ScaffoldingCatalog` che distribuisce il catalogo in `.ai/dr-scaffolding-catalog.json`
-- `.github/workflows/ci.yml` — job `catalog-guard`
-- `CreateNewSolution.ps1` eliminato; riferimenti aggiornati in `README.md`, `.github/instructions/readme-structure.instructions.md`, `docs/card-davraf-guidelines.md`, `docs/onboarding.md`
-- `CLAUDE.md` — 3 righe di invocazione automatica per le nuove skill
-- `docs/test-progetto-host.md` — procedura di test end-to-end del meccanismo pacchetti (untracked)
+- **Issue #2** — `Copy-CoreConfigFiles` in `dr-guidelines-install-lib.ps1` copia `.github/copilot-instructions.md` nell'host, con semantica `[OK]`/`[SKIP]`/`[UPD]`. Verificato end-to-end con clone reale da GitHub: nell'host prodotto nessun riferimento `@<file>.md` del `CLAUDE.md` iniettato è penzolante.
+- **Issue #3** — regola di STOP dello scaffolding riscritta su due livelli: root del repository (file del core attesi, si prosegue) contro cartella del singolo progetto (deve non esistere, nemmeno vuota). Allineate 10 posizioni su 4 file: `dr-scaffold-solution/SKILL.md`, `dr-scaffold/SKILL.md`, `dr-scaffold-project/SKILL.md`, `dr-scaffold.prompt.md`.
+- **Issue #4** — struttura dei modelli `ISSUE_TEMPLATE` scritta inline in `dr-file-feedback` (skill e prompt), perché i modelli non vengono distribuiti negli host. Label mappate su `bug`/`enhancement`, passate con `--label` e `&labels=`. Aggiunto `nuovo-pacchetto.md`, solo in `dr-guidelines`. Modelli condivisi propagati byte-identici ai 7 repo.
+- **Issue #5** — nuova istruzione `cross-package-references.instructions.md`: un rimando a una regola di un altro pacchetto è sempre condizionale al manifest, con ripiego che dice *cosa* serve senza spiegare *come*, e obbligo di dichiarare nell'output quale ramo si è applicato. Applicata ai tre rimandi di `dr-efdb`, `dr-fe`, `dr-devops`.
 
 ---
 
 # Componenti in lavorazione
 
-Nessuno.
+Nessuno. Nessun piano è in stato `IN CORSO`.
 
 ---
 
 # Componenti mancanti
 
-- Commit e push del lavoro della sessione (nessun commit eseguito)
-- Dogfooding di `/dr-scaffold` su una cartella vuota reale: i singoli comandi sono verificati, il flusso completo dell'orchestratore no
-- Migrazione di `setup.ps1 -GlobalInstall`/`-GlobalUpdate` a `install.ps1` (TODO preesistente)
-- Riscrittura di `docs/onboarding.md`: le sezioni 3-4 descrivono ancora il modello a submodule `davraf-guidelines`
-- Fase 7 dello split: deprecazione/archiviazione del repo `davraf-guidelines`
-- Fase 8 dello split: piano di migrazione dei progetti host esistenti
-- Gate 2b: test dell'installer su un progetto host reale esistente, poi flip Private → Public
+- **Cartella `briefs/`** (issue #1): posto convenzionale dove l'utente scrive le richieste che diventeranno piani. Piano scritto in `.ai/plans/2026-09-22-issue-1-cartella-briefs/plan.md`, stato `PROPOSTO`, 18 fasi, 11 decisioni aperte su 13. Il nome `briefs/` in radice è deciso; il resto no.
+- I tre punti delle issue di follow-up `#6`, `#7`, `dr-minimalapi#2`.
 
 ---
 
 # File modificati
 
+## `dr-guidelines`
+
 | Percorso | Motivo |
 |---|---|
-| `scaffolding-catalog.json` | Nuovo: catalogo tipologie progetto + pacchetti, fonte per skill e prompt |
-| `.claude/skills/dr-scaffold/SKILL.md` | Nuovo: router dello scaffolding |
-| `.claude/skills/dr-scaffold-solution/SKILL.md` | Nuovo: creazione workspace/solution/progetti/pacchetti |
-| `.claude/skills/dr-scaffold-project/SKILL.md` | Nuovo: aggiunta progetto a solution esistente |
-| `.claude/skills/dr-scaffold-guidelines/SKILL.md` | Nuovo: installazione pacchetti su repo esistente |
-| `.github/prompts/dr-scaffold.prompt.md` | Nuovo: equivalente duale per Copilot |
-| `install-lib.ps1` | Copia condizionale dei file .NET; distribuzione del catalogo in `.ai/` |
-| `.github/workflows/ci.yml` | Job `catalog-guard`: allineamento catalogo ↔ `$Script:PackageRegistry` |
-| `README.md` | Sezione "Avvio Rapido" riscritta su `/dr-scaffold`; 4 nuove skill documentate; FAQ sul fallback ZIP corretta |
-| `CLAUDE.md` | 3 righe nella tabella di invocazione automatica |
-| `.github/instructions/readme-structure.instructions.md` | Sezione 3 riscritta: prescriveva `CreateNewSolution.ps1` al README |
-| `docs/card-davraf-guidelines.md` | Entrypoint e riga CDN aggiornati; footer v2.3 |
-| `docs/onboarding.md` | Blocco "Nuovo progetto" e albero file aggiornati; footer v2.4 |
-| `docs/test-progetto-host.md` | Nota errata su `.github/prompts/` corretta; note su catalogo e copia condizionale; footer v1.1 |
-| `CreateNewSolution.ps1` | **Eliminato**: script era submodule, puntava al repo legacy `davraf-guidelines` |
-| `.ai/plans/2026-08-08-scaffolding-skills/plan.md` | Nuovo: piano di sessione, `Stato: COMPLETATO` |
+| `dr-guidelines-install-lib.ps1` | Copia di `.github/copilot-instructions.md` in `Copy-CoreConfigFiles` (issue #2) |
+| `README.md` | Rimosso il workaround "copialo a mano"; riga di tabella per il file ora copiato; terzo modello di issue; riga per la nuova istruzione modulare |
+| `.claude/skills/dr-scaffold-solution/SKILL.md` | Regola root contro cartella di progetto (issue #3) |
+| `.claude/skills/dr-scaffold/SKILL.md` | Tabella di instradamento estesa ai file del core (issue #3) |
+| `.claude/skills/dr-scaffold-project/SKILL.md` | Soglia allineata: cartella del progetto assente (issue #3) |
+| `.github/prompts/dr-scaffold.prompt.md` | Specchio Copilot della regola, più la riga-rete che mancava (issue #3) |
+| `.claude/skills/dr-file-feedback/SKILL.md` | Struttura dei modelli inline, `--label`, regole e casi limite (issue #4) |
+| `.github/prompts/dr-file-feedback.prompt.md` | Stessi interventi sulla superficie Copilot (issue #4) |
+| `.github/ISSUE_TEMPLATE/problema.md`, `miglioria.md` | Front matter `labels:` su `bug` / `enhancement` (issue #4) |
+| `.github/ISSUE_TEMPLATE/nuovo-pacchetto.md` | Nuovo, per il gap di catalogo (issue #4) |
+| `.github/instructions/cross-package-references.instructions.md` | Nuovo, convenzione sui rimandi fra pacchetti (issue #5) |
+| `docs/guida-nuova-soluzione.md` | La riga sullo scenario "cartella col core" affermava il comportamento vecchio |
+| `docs/onboarding.md` | Elenco dei modelli di issue |
+| `docs/bozza-manuale-installazione.md` | Sezione sul comportamento dell'installer con le dipendenze |
+| `.ai/plans/2026-09-22-issue-*/plan.md` | 5 piani: tracciamento, decisioni risolte, consuntivi |
+
+## `dr-efdb`, `dr-fe`, `dr-devops`
+
+| Percorso | Motivo |
+|---|---|
+| `.github/instructions/<file>.instructions.md` | Rimando a `dr-minimalapi` reso condizionale al manifest, con ripiego (issue #5) |
+| `README.md` | Riga "Rimandi ad altri pacchetti" allineata, con la motivazione della non-dipendenza |
+| `.github/ISSUE_TEMPLATE/miglioria.md`, `problema.md` | Label allineate (issue #4) |
+
+## `dr-minimalapi`, `dr-winsvc`, `dr-dotnet-backend`
+
+| Percorso | Motivo |
+|---|---|
+| `.github/ISSUE_TEMPLATE/miglioria.md`, `problema.md` | Label allineate (issue #4) |
 
 ---
 
 # Decisioni progettuali
 
-Dettaglio completo in `DECISIONI.md`. Elenco sintetico delle decisioni prese in questa sessione:
+Elenco completo con contesto e conseguenze in `DECISIONI.md`. In sintesi:
 
-- Scaffolding diviso in orchestratore + 3 pezzi — motivazione: cicli di vita e punti d'ingresso diversi; chi ha già una solution non attraversa rami morti
-- Skill Claude Code **e** prompt Copilot — motivazione: rispetto della regola di compatibilità duale del progetto senza rinunciare ai widget su Claude Code
-- Catalogo come file dati + guardia CI (registry PowerShell non refactorizzato) — motivazione: nessuna deriva silenziosa senza toccare un installer funzionante
-- Copia condizionale di `Directory.Build.props`/`global.json` — motivazione: in un repo frontend sarebbero file inerti
-- Unità di installazione = repository, non progetto — motivazione: gli artefatti del core sono letti solo dalla root
-- Eliminato `CreateNewSolution.ps1`, conservato `setup.ps1` — motivazione: `-GlobalInstall` è una feature viva e non migrata
-- Scope esteso a 3 file fuori piano — motivazione: `readme-structure.instructions.md` prescriveva lo script eliminato
+| Decisione | Motivazione |
+|---|---|
+| Cartella delle richieste utente chiamata `briefs/`, in radice | Non collide con nessuna convenzione di stack; in radice non eredita `doc-versioning`, che cattura `docs/**/*.md` |
+| Cartella del singolo progetto: deve non esistere, nemmeno vuota | Una cartella vuota è spesso il residuo di un tentativo precedente |
+| Label mappate su `bug` / `enhancement`, non create nuove | Le label di default esistono in ogni repo presente e futuro, perché le crea GitHub: niente da tenere sincronizzato a mano |
+| Struttura dei modelli di issue scritta inline nelle superfici agente | I modelli non vengono distribuiti negli host: un rimando a una risorsa non garantita viene aggirato in silenzio |
+| `dr-efdb` cita `dr-minimalapi` con rimando condizionale, non con dipendenza | Il pacchetto si installa sull'intenzione "mi serve un database", ortogonale al tipo di host: vale anche per un Worker |
+| Rimandi fra pacchetti ancorati al manifest, con dichiarazione del ramo applicato | Senza la dichiarazione non c'è modo di sapere se la regola è stata seguita o aggirata |
+| Ripiego di un rimando: dice il "cosa", mai il "come" | Un ripiego che entra nel dettaglio diventa una seconda fonte, e due fonti sulla stessa regola divergono |
 
 ---
 
 # Problemi aperti
 
-- **Limitazione**: repo Private → `irm ... | iex` risponde 404. Solo invocazione da path locale funziona. Blocca anche `/dr-get-latest`, che usa `Invoke-RestMethod` senza fallback locale.
-- **Attività incompleta**: `scaffolding-catalog.json` non è su `origin/main` → l'installer stampa `[WARN] scaffolding-catalog.json non trovato nel pacchetto core`. Le skill ripiegano sul secondo percorso del fallback (root del clone `dr-guidelines`).
-- **Attività incompleta**: nessun commit eseguito. Tutto il lavoro della sessione è nel working tree.
-- **Debito tecnico**: `docs/onboarding.md` sezioni 3-4 descrivono il modello a submodule `davraf-guidelines`, superato. Corretti in sessione solo i riferimenti a `CreateNewSolution.ps1`.
-- **Debito tecnico**: `.claude/skills/dr-handoff/` contiene `skill.md` e `skill.md.original.md` in minuscolo, mentre le altre 13 skill usano `SKILL.md`.
-- **Debito tecnico**: `.ai/plans/` contiene 3 piani ereditati dal repo originale (`2026-06-17-global-install`, `2026-07-01-audit-agent-fixes`, `2026-07-01-audit-fixes`) non pertinenti a questo repo.
-- **Attività incompleta**: gate 2b dello split (test su progetto host reale) aperto; `docs/test-progetto-host.md` dichiara esplicitamente che un progetto di test sintetico **non** lo chiude.
-- **Sconosciuto**: `AGENTS.md` (5948 byte, `# Linee guida per Codex`) e `.agents/skills/` con 14 sottocartelle che rispecchiano `.claude/skills/` — inclusi i 4 `dr-scaffold*` creati in questa sessione. Timestamp 2026-08-08 14:30. Non prodotti da azioni dichiarate in questa sessione; origine e meccanismo di generazione non verificati. Entrambi untracked.
+| Problema | Tipo | Dove |
+|---|---|---|
+| L'installer risolve le dipendenze in automatico e ricorsivamente, senza conferma e senza leggere `appliesTo` | Debito tecnico | `dr-guidelines#6` |
+| Il catalogo non ha un campo per i rimandi non vincolanti: la relazione fra pacchetti che si citano è invisibile agli strumenti | Limitazione | `dr-guidelines#7` |
+| `PersistKeysToDbContext` in scale-out: la tabella deve esistere prima delle repliche concorrenti, non documentato | Limitazione | `dr-minimalapi#2` |
+| `dr-file-feedback.prompt.md` dichiara `tools: ['search/codebase']` ma prescrive comandi `gh`: su VS Code il passo potrebbe cadere sempre sul ripiego via URL | Debito tecnico, preesistente | Non tracciato |
+| `dr-efdb` è internamente ambiguo: il catalogo lo offre ai Worker, i suoi due file di istruzione sono scritti per una Minimal API | Debito tecnico | Non tracciato |
+| `dr-scaffold-solution` esegue `git init` incondizionato, pur avendo ora `.git/` fra i contenuti attesi della root | Debito tecnico | Non tracciato |
+| `dr-scaffold-solution` reinstalla il core anche quando il manifest lo contiene già | Debito tecnico | Non tracciato |
+| `Copy-GuidelineFile` esce in silenzio se il file sorgente non esiste: se un file del core venisse rinominato, l'host tornerebbe ad avere un riferimento penzolante senza alcun avviso | Debito tecnico | Non tracciato |
+| Piano issue #1 fermo con 11 decisioni aperte | Attività incompleta | `dr-guidelines#1` |
 
 ---
 
 # TODO
 
-1. Committare il lavoro della sessione (16 percorsi elencati in "File modificati") e pushare su `origin/main`, così il catalogo arriva ai progetti host e il `[WARN]` sparisce
-2. Verificare che il job CI `catalog-guard` passi sul remoto dopo il push
-3. Eseguire `/dr-scaffold` su una cartella vuota reale in una **sessione nuova** (le skill si caricano all'avvio) e registrare l'esito
-4. Chiarire l'origine di `AGENTS.md` e `.agents/skills/`: decidere se committarli, ignorarli o rimuoverli
-5. Eseguire il gate 2b: installare i pacchetti su un progetto host reale esistente seguendo `docs/test-progetto-host.md`, poi valutare il flip Private → Public
-6. Riscrivere `docs/onboarding.md` sezioni 3-4 sul modello a pacchetti (`/dr-professor`)
-7. Migrare `setup.ps1 -GlobalInstall`/`-GlobalUpdate` a `install.ps1`
-8. Decidere su `.claude/skills/dr-handoff/skill.md.original.md` e sui 3 piani ereditati in `.ai/plans/`
-9. Fasi 7-8 dello split: archiviazione di `davraf-guidelines`, migrazione progetti host
+1. Rispondere alle 11 decisioni aperte del piano `2026-09-22-issue-1-cartella-briefs` (Fase 0 del piano), a partire dalla 3 (percorso fisso nel testo o parametro nel catalogo) e dalla 4 (sezioni obbligatorie del modello).
+2. Eseguire il piano della issue #1 dopo l'approvazione, seguendo le sue 18 fasi.
+3. Valutare i 4 debiti tecnici "Non tracciato" della tabella qui sopra: aprire una issue per quelli che si vogliono affrontare, con `/dr-file-feedback`.
+4. Affrontare `dr-guidelines#6`: è il più rilevante dei tre follow-up, perché riguarda un comportamento dell'installer che oggi non fa danni solo per assenza di casi.
 
 ---
 
 # Validazione
 
-Il repo contiene documentazione, catalogo JSON, workflow e script PowerShell: non ha una build applicativa né una suite di test propria.
+Esiti osservati in sessione, sui comandi effettivamente eseguiti:
 
-- Build: Sconosciuto per il repo. In sessione è stata eseguita una build di verifica su una solution usa-e-getta nello scratchpad (`dotnet build demo.slnx`): `Avvisi: 0  Errori: 0`
-- Test: Sconosciuto (nessun test automatico nel repo)
-- Lint: Sconosciuto per il repo. In sessione `dotnet format --verify-no-changes` è stato eseguito su progetti di prova, non sul repo
+- **Parser PowerShell** su `dr-guidelines-install.ps1` e `dr-guidelines-install-lib.ps1`: 0 errori.
+- **`catalog-guard` della CI, eseguito in locale**: nessun problema. Verifica pacchetti duplicati, dipendenze risolvibili, `appliesTo` esistenti, domini, `intentMap`, tipologie.
+- **Installazione end-to-end** in cartella vuota, con clone reale da GitHub al commit `176afb1`: prima esecuzione `[OK]` su tutti i file, rilancio senza opzioni `[SKIP]`, rilancio con `-Update` `[UPD]`. 12 istruzioni modulari, 8 prompt, 17 skill, `copilot-instructions.md`, catalogo e manifest. `.github/ISSUE_TEMPLATE/` correttamente non distribuito.
+- **CI GitHub Actions** su `dr-guidelines`: `success` su `176afb1` e `fe9dee9`.
+- **Verifica dei piani in contesto isolato**: 4 sub-agenti indipendenti, uno per piano, senza accesso alla conversazione di implementazione. Tutti i criteri soddisfatti; le correzioni emerse sono state applicate e sono descritte nei consuntivi dei rispettivi `plan.md`.
 
-Verifiche osservate in sessione (output visibile in conversazione):
-
-- Catalogo ↔ registry: chiavi identiche (`identici: True`), nessuna divergenza su `repo`/`isCore`/`dependencies`
-- Script della guardia CI eseguito in locale: exit `0` sul catalogo reale, exit `1` alterando due nomi pacchetto, con messaggi puntuali
-- `ci.yml` validato con parser YAML: `jobs: ['build-and-test', 'catalog-guard']`, 2 step nel nuovo job
-- Installer reale su host .NET di prova: `[OK]` su tutti i file, `Directory.Build.props` e `global.json` copiati, `CLAUDE.md` creato, manifest scritto
-- Installer reale su host non-.NET di prova: `[SKIP] Directory.Build.props, global.json (host non .NET)`, i due file assenti su disco
-- Secondo run dell'installer: tutti `[SKIP]`, `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md`, manifest con una sola voce
-- `dotnet new sln` su SDK `10.0.302`: default `slnx` (opzione `-f, --format <sln|slnx>`, "Impostazione predefinita: slnx")
-- `dotnet sln <file>.slnx add`: progetti aggiunti, solution folder `/src/` e `/test/` generate automaticamente
-- `create-vue@3.23.0`: `--vitest=false` fallisce con `ERR_PARSE_ARGS_INVALID_OPTION_VALUE`; con soli flag booleani lo scaffold riesce e produce `.editorconfig`/`.gitignore`/`.gitattributes` propri
-- `dotnet format`: prima BOM `239,187,191` e `error CHARSET` con exit `2`; dopo il format in scrittura BOM rimosso e `--verify-no-changes` exit `0`
-- Grep sul prompt duale: nessuna occorrenza di `$ARGUMENTS`, `AskUserQuestion`, `EnterPlanMode`, `subagent`, `INPUT_UTENTE`
-- Grep su `CreateNewSolution` (esclusi `.ai/` e `.git/`): nessun riferimento residuo
-- Ambiente: `dotnet 10.0.302`, `node v26.5.0`, `npm 10.7.0`, `git 2.46.2.windows.1`, `pwsh 7.6.3`, `gh 2.89.0` autenticato come `davraf-amuro` con scope `repo`
+Build e test applicativi: non applicabili, il repository non contiene progetti .NET o Node.
 
 ---
 
 # Rischi
 
-- Il lavoro non è committato: una perdita del working tree annullerebbe la sessione. `CreateNewSolution.ps1` è eliminato solo nel working tree (recuperabile con `git checkout -- CreateNewSolution.ps1` finché la cancellazione non è committata)
-- Finché il catalogo non è su `origin/main`, ogni installazione su progetto host non lo riceve e le skill dipendono dal fallback sul clone locale di `dr-guidelines`
-- Il job `catalog-guard` non è mai stato eseguito su GitHub Actions: verificato solo in locale con `pwsh`. Il dot-source di `install-lib.ps1` su runner Linux non è stato provato
-- `AGENTS.md` e `.agents/skills/` di origine non verificata: se un meccanismo li rigenera automaticamente, potrebbe sovrascrivere modifiche manuali
-- Il flusso completo di `/dr-scaffold` non è stato eseguito end-to-end: eventuali errori di orchestrazione emergeranno al primo uso reale
-- I repo Private mantengono `/dr-get-latest` non funzionante: gli aggiornamenti richiedono la sequenza manuale `install.ps1 -Update` da path locale
+- Il ripiego scritto in `dr-fe` e quello in `dr-devops` sono copie ridotte di regole che vivono in `dr-minimalapi`. Se la fonte cambia, nessun controllo automatico se ne accorge. La convenzione impone che il ripiego resti al "cosa" proprio per limitare questa deriva, ma non la elimina.
+- La convenzione `cross-package-references` è nuova e ha un solo insieme di casi d'uso: i tre rimandi sistemati. Un quarto caso con caratteristiche diverse potrebbe non essere coperto.
+- `TODO/` in `dr-guidelines` è una cartella locale non tracciata e non va committata.
 
 ---
 
 # Prossimo passo consigliato
 
-Committare il lavoro della sessione e pushare su `origin/main`, così `scaffolding-catalog.json` diventa disponibile ai progetti host e il job `catalog-guard` viene eseguito per la prima volta su GitHub Actions.
+Rispondere alle 11 decisioni aperte nella sezione "Decisioni aperte" di `.ai/plans/2026-09-22-issue-1-cartella-briefs/plan.md`. Finché restano aperte, quel piano non è eseguibile: la sua Fase 0 è esattamente questa raccolta.
 
 ---
 
 # Informazioni mancanti
 
-- Origine e meccanismo di generazione di `AGENTS.md` e `.agents/skills/`
-- Se esiste un progetto host reale già individuato per il gate 2b
-- Se i 7 repo devono passare a Public e con quale tempistica
+- Se e quando i debiti tecnici elencati come "Non tracciato" vadano trasformati in issue.
+- Per l'issue #1: se la cartella `briefs/` debba essere creata dall'installer in ogni host o solo su richiesta esplicita (decisione aperta 7 del piano).
