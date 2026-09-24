@@ -262,6 +262,20 @@ Punti che la futura linea guida dovrebbe fissare:
 
 ---
 
+## 🧩 Come si comportano le dipendenze fra pacchetti
+
+Scoperto leggendo `dr-guidelines-install-lib.ps1` durante il lavoro sulla issue #5, il 2026-09-24. Riguarda chi installa, quindi vale la pena saperlo prima di scegliere i pacchetti.
+
+**Le dipendenze si risolvono da sole, e non si possono rifiutare.** `Install-DrPackage` legge il manifest dell'host e, per ogni dipendenza non ancora installata, stampa `Dipendenza mancante: <nome> -> installazione automatica` e richiama sé stesso. È ricorsivo: la dipendenza di una dipendenza arriva comunque. Nessuna conferma viene chiesta. `-Update` invece non si propaga: riguarda solo il pacchetto chiesto esplicitamente.
+
+**Il filtro per stack non esiste in questa fase.** `Get-DrPackageRegistry` costruisce il registro con `Repo`, `IsCore`, `Dependencies`, `RootFiles` e `ObsoleteArtifacts`: **`appliesTo` non viene letto affatto dall'installer**. Quel campo è consumato solo da `/dr-scaffold-guidelines`, dal prompt di scaffolding e dal guard di catalogo in CI, cioè quando si *propone* un pacchetto — non quando lo si installa.
+
+Conseguenza pratica: una dipendenza dichiarata da un pacchetto `node` o `any` verso un pacchetto `dotnet` porterebbe i file di progetto .NET (`Directory.Build.props`, `global.json`, che arrivano con `dr-dotnet-backend`) nella radice di un host che .NET non è, senza che nessuno lo chieda. È il motivo per cui `dr-fe` e `dr-devops` citano `dr-minimalapi` con un rimando condizionale invece che con una dipendenza.
+
+**La convenzione che ne è nata**: `cross-package-references.instructions.md`. Un rimando a una regola di un altro pacchetto si scrive sempre condizionale al manifest `.ai/dr-guidelines-packages.json`, con un ripiego che dice *cosa* serve senza spiegare *come* si fa, e con l'obbligo per l'agente di dichiarare nell'output quale dei due rami ha applicato. Senza quella dichiarazione non c'è modo di sapere se la regola è stata seguita o aggirata.
+
+---
+
 ## 🔗 Riferimenti
 
 | Documento | Contenuto |
@@ -274,4 +288,4 @@ Punti che la futura linea guida dovrebbe fissare:
 
 ---
 
-*Revisione v1.5 — 2026-09-21 21:23 — claude-opus-5*
+*Revisione v1.6 — 2026-09-24 10:30 — claude-opus-5*

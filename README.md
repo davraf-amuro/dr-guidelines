@@ -200,6 +200,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
 | `mcp-tool-readme.instructions.md` | README per MCP server (`tools/**/README.md`) |
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione di MCP server: cerca prima di creare |
+| `cross-package-references.instructions.md` | Come si cita una regola che vive in un altro pacchetto `dr-*`: rimando condizionale al manifest, mai secco |
 
 ---
 
@@ -460,4 +461,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.6 — 2026-09-23 — claude-opus-5 — terzo modello di issue in `dr-guidelines` e label allineate a quelle esistenti (issue #4)*
+*Documento aggiornato: Settembre 2026 — Revisione v3.7 — 2026-09-24 — claude-opus-5 — nuova istruzione `cross-package-references` sui rimandi fra pacchetti (issue #5)*

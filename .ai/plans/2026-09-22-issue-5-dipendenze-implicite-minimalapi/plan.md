@@ -1,6 +1,6 @@
 # Piano: Dipendenze implicite da `dr-minimalapi` non dichiarate nel catalogo
 Data: 2026-09-22
-Stato: PROPOSTO
+Stato: COMPLETATO — verificato il 2026-09-24 in contesto isolato (vedi Consuntivo)
 Issue: davraf-amuro/dr-guidelines#5
 
 ## Obiettivo
@@ -56,28 +56,31 @@ Conseguenza: dichiarare `dr-minimalapi` come dipendenza di `dr-fe` o `dr-devops`
 
 ## Decisioni aperte
 
-1. **`dr-efdb`: dipendenza dichiarata o rimando condizionale?** È l'unica vera divergenza del tavolo, e dipende da una domanda a monte: `dr-efdb` deve restare installabile con `dr-winsvc` senza `dr-minimalapi`, com'è oggi nel catalogo, oppure si accetta che sia di fatto un pacchetto per Minimal API? Se resta valido per i Worker, rimando condizionale; se è per API, dipendenza.
-2. **Accogliere la proposta di ARCH** di spostare la regola sul Service layer da `dr-minimalapi` a `dr-dotnet-backend`? Risolverebbe il rimando alla radice — `dr-efdb` dipenderebbe da un pacchetto .NET di base — ma tocca il contenuto di due repository in più e imporrebbe la regola anche ai Worker, che oggi non ce l'hanno. Decisione di merito architetturale, che il tavolo non può prendere.
-3. **Grado di dettaglio del riassunto in `dr-devops`**: solo il "cosa" (serve un portachiavi condiviso, la fiducia va limitata al proxy noto) o anche il "come"? Qualunque scelta oltre il "cosa" richiede di riscrivere la riga "fonte unica, non duplicare qui", altrimenti il file si contraddice.
-4. **Forma del condizionale**: testo puro, oppure ancorato al manifest `.ai/dr-guidelines-packages.json` con obbligo di dichiarare il ramo applicato. La seconda è più robusta ma va verificata per compatibilità duale — è un'istruzione in `.github/instructions/`, quindi deve funzionare anche con GitHub Copilot, che non ha garanzia di leggere quel file.
-5. **Schema del catalogo**: introdurre un campo per i rimandi non vincolanti (`suggests`, `optionalDependencies` o simile)? Risolverebbe la classe di problema per tutti i casi futuri, ma comporta una nuova `schemaVersion`, l'aggiornamento del guard di catalogo in CI e della skill `dr-scaffold-guidelines`. Fuori dal perimetro di questa issue se la si vuole tenere piccola.
-6. **Il comportamento dell'installer va cambiato?** Oggi risolve le dipendenze in automatico, ricorsivamente, senza filtro per `appliesTo` e senza conferma. È un problema autonomo che questa issue rivela ma non copre: probabilmente merita una issue separata.
-7. **Il rilievo su `DataProtectionKeys`** sollevato da DBADMIN — in scale-out la tabella deve esistere prima dell'avvio di repliche concorrenti, per evitare una corsa sulla creazione — è un miglioramento di contenuto per `dr-minimalapi`, estraneo a questa issue. Tenerlo o scartarlo esplicitamente.
+Risolte in Fase 0 il 2026-09-24. Le decisioni 1, 3, 4 e 5-7 le ha prese l'utente; la 2 discende dalla 1.
+
+1. ~~**`dr-efdb`: dipendenza dichiarata o rimando condizionale?**~~ **RISOLTA dall'utente: rimando condizionale.** Motivazione data: «il pacchetto viene installato solo se viene richiesto l'uso di un database, quindi deve esserci l'intenzione di allacciarsi ad un database». L'intenzione che fa installare `dr-efdb` è quindi *mi serve un database*, che è ortogonale al tipo di host: vale per un Worker quanto per una Minimal API. Una dipendenza dura trascinerebbe l'architettura Minimal API in un progetto Worker, dove il partner naturale è `dr-winsvc` — coerente con il catalogo, che offre `dr-efdb` fra gli `optionalPackages` sia di `minimal-api` sia di `worker-service`. Il catalogo **non si tocca**.
+2. ~~**Spostare la regola sul Service layer in `dr-dotnet-backend`.**~~ **NON APPLICABILE in questo piano.** Era l'alternativa (c) proposta da ARCH, subordinata alla decisione 1. Con il rimando condizionale il problema si chiude senza toccare il contenuto di altri due repository né imporre la regola ai Worker, che oggi non ce l'hanno. Resta una questione architetturale aperta, indipendente da questa issue.
+3. ~~**Grado di dettaglio del riassunto in `dr-devops`.**~~ **RISOLTA dall'utente: solo il "cosa".** Il riassunto dice che in scale-out serve un portachiavi condiviso fra le repliche e che la fiducia va limitata al proxy noto; non entra nei metodi concreti. Così la riga "fonte unica, non duplicare qui la configurazione" resta vera e non nasce una seconda fonte destinata a divergere.
+4. ~~**Forma del condizionale.**~~ **RISOLTA dall'utente: ancorato al manifest.** L'agente controlla `.ai/dr-guidelines-packages.json` e **dichiara nell'output** quale ramo ha applicato. Più verboso di un "se è installato, seguilo", ma verificabile: senza la dichiarazione non si saprebbe se la regola è stata seguita o aggirata in silenzio. Da scrivere una volta sola come convenzione riusabile (Fase 7), non ripetuta a mano in tre file, e con verifica di compatibilità duale prima di scrivere.
+5. ~~**Campo di catalogo per i rimandi non vincolanti.**~~ **RISOLTA dall'utente: issue separata.** Fuori dal perimetro di questa.
+6. ~~**Comportamento dell'installer sulle dipendenze.**~~ **RISOLTA dall'utente: issue separata.** È il difetto che questa issue rivela ma non copre: risoluzione automatica e ricorsiva, nessun filtro per `appliesTo`, nessuna conferma.
+7. ~~**Rilievo su `DataProtectionKeys`.**~~ **RISOLTA dall'utente: issue separata**, su `dr-minimalapi`.
 
 ## Scope
 
 Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle in `e:\Davide\Progetti\dr-guidelines-workspace\`. Commit e push sono separati per repository. Il gate di push per questi repository è "assenza di target di verifica dichiarata" — sono repository di soli documenti — e va dichiarata esplicitamente, come prescrive `copilot-instructions.md`.
 
 ### File da modificare
-- [ ] `dr-guidelines/scaffolding-catalog.json` — solo se la decisione 1 sceglie la dipendenza dichiarata
-- [ ] `dr-efdb/.github/instructions/database-provider.instructions.md` — solo se la decisione 1 sceglie il rimando condizionale
-- [ ] `dr-efdb/README.md` — la frase sui rimandi va allineata in entrambi gli esiti
-- [ ] `dr-fe/.github/instructions/frontend-organization.instructions.md` — rimando condizionale più riassunto minimo, nella regola e nella checklist
-- [ ] `dr-fe/README.md` — frase sui rimandi
-- [ ] `dr-devops/.github/instructions/docker-swarm-compose.instructions.md` — rimando condizionale, riassunto al livello deciso, e riscrittura coerente della riga "fonte unica"
-- [ ] `dr-devops/README.md` — frase sui rimandi
-- [ ] `dr-guidelines/docs/bozza-manuale-installazione.md` — annotare la convenzione decisa
-- [ ] *(condizionato alla decisione 4)* una sede unica per la convenzione del condizionale, in `dr-guidelines/.github/instructions/`
+- [x] `dr-guidelines/scaffolding-catalog.json` — **non toccato**: la decisione 1 ha scelto il rimando condizionale
+- [x] `dr-efdb/.github/instructions/database-provider.instructions.md`
+- [x] `dr-efdb/README.md` — la frase sui rimandi va allineata in entrambi gli esiti
+- [x] `dr-fe/.github/instructions/frontend-organization.instructions.md` — rimando condizionale più riassunto minimo, nella regola e nella checklist
+- [x] `dr-fe/README.md` — frase sui rimandi
+- [x] `dr-devops/.github/instructions/docker-swarm-compose.instructions.md` — rimando condizionale, riassunto al livello deciso, e riscrittura coerente della riga "fonte unica"
+- [x] `dr-devops/README.md` — frase sui rimandi
+- [x] `dr-guidelines/docs/bozza-manuale-installazione.md` — annotare la convenzione decisa
+- [x] `dr-guidelines/README.md` — riga nella tabella delle istruzioni modulari (aggiunta in verifica: `readme-structure.instructions.md` la impone)
+- [x] `dr-guidelines/.github/instructions/cross-package-references.instructions.md` — CREATE, la convenzione scritta una volta sola (decisione 4)
 
 ### Perimetro negativo
 - Non toccherò: `dr-minimalapi` e il contenuto di `minimal-api-architecture.instructions.md`, a meno che la decisione 2 non accolga lo spostamento della regola sul Service layer
@@ -91,7 +94,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 ## Fasi (formato atomico — obbligatorio)
 
 ### Fase 0: Decisioni bloccanti
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: il piano è stato approvato per l'esecuzione
 - **File**: questo `plan.md`
 - **Operazione**: EDIT
@@ -100,8 +103,9 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Verifica passo**: ogni decisione aperta ha una risposta scritta in questo file
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 0: <cosa>` in plan.md, non procedere
 
-### Fase 1a *(se la decisione 1 sceglie la dipendenza dichiarata)*: Catalogo
-- **Stato**: [ ]
+### Fase 1a: ~~Catalogo~~ — NON ESEGUITA
+- **Stato**: [x] non applicabile
+- **Motivo**: la decisione 1 ha scelto il rimando condizionale, quindi `scaffolding-catalog.json` resta invariato.
 - **Precondizione**: Fase 0 completata, decisione 1 = dipendenza dichiarata
 - **File**: `dr-guidelines/scaffolding-catalog.json`
 - **Operazione**: EDIT
@@ -111,7 +115,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1a: <cosa>` in plan.md, non procedere
 
 ### Fase 1b *(se la decisione 1 sceglie il rimando condizionale)*: Testo di `dr-efdb`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 0 completata, decisione 1 = rimando condizionale
 - **File**: `dr-efdb/.github/instructions/database-provider.instructions.md`
 - **Operazione**: EDIT
@@ -121,7 +125,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1b: <cosa>` in plan.md, non procedere
 
 ### Fase 2: README di `dr-efdb`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1a o 1b completata
 - **File**: `dr-efdb/README.md`
 - **Operazione**: EDIT
@@ -131,7 +135,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 2: <cosa>` in plan.md, non procedere
 
 ### Fase 3: Testo di `dr-fe`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 0 completata; decisione 4 presa
 - **File**: `dr-fe/.github/instructions/frontend-organization.instructions.md`
 - **Operazione**: EDIT
@@ -141,7 +145,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
 
 ### Fase 4: README di `dr-fe`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 3 completata
 - **File**: `dr-fe/README.md`
 - **Operazione**: EDIT
@@ -151,7 +155,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: Testo di `dr-devops`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 0 completata; decisioni 3 e 4 prese
 - **File**: `dr-devops/.github/instructions/docker-swarm-compose.instructions.md`
 - **Operazione**: EDIT
@@ -161,7 +165,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
 ### Fase 6: README di `dr-devops`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 5 completata
 - **File**: `dr-devops/README.md`
 - **Operazione**: EDIT
@@ -171,7 +175,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
 
 ### Fase 7 *(condizionata alla decisione 4)*: Convenzione scritta una volta sola
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: la decisione 4 ha scelto la forma ancorata al manifest
 - **File**: una sede unica in `dr-guidelines/.github/instructions/`
 - **Operazione**: CREATE o EDIT
@@ -181,7 +185,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ### Fase 8: Controllo incrociato dei rimandi residui
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1-7 completate o saltate con nota
 - **File**: nessuna modifica — sola verifica sui tre repository
 - **Operazione**: nessuna modifica
@@ -191,7 +195,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
 
 ### Fase 9: Documento vivo aggiornato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 8 completata
 - **File**: `dr-guidelines/docs/bozza-manuale-installazione.md`
 - **Operazione**: EDIT
@@ -201,7 +205,7 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
 
 ### Fase 10: Verifica finale in contesto isolato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 0-9 completate o saltate con nota
 - **File**: tutti quelli elencati in "Scope", nei quattro repository
 - **Operazione**: nessuna modifica — sola verifica
@@ -211,11 +215,26 @@ Il piano tocca quattro repository distinti, tutti presenti come cartelle sorelle
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 10: <cosa>` in plan.md, non procedere
 
 ## Criteri di verifica finale
-- [ ] Nessuno dei tre pacchetti contiene più un rimando a `minimal-api-architecture.instructions.md` che si rompe in silenzio: ogni rimando è condizionale o coperto da una dipendenza dichiarata
-- [ ] Nessuna dipendenza dichiarata trascina pacchetti .NET in un host che .NET non è — in particolare `dr-fe` (`node`) e `dr-devops` (`any`) restano senza dipendenze .NET
-- [ ] `dr-devops` non contiene più una riga che contraddice il proprio contenuto sul punto "fonte unica"
-- [ ] I tre README descrivono il comportamento effettivo dopo le modifiche
-- [ ] Se è stata dichiarata una dipendenza nel catalogo: il file è JSON valido e il guard di catalogo in CI passa
-- [ ] Nessun costrutto esclusivo di un tool nei file condivisi: compatibilità duale rispettata
-- [ ] Nessun `git push` è avvenuto senza la dichiarazione esplicita di assenza di target di verifica
-- [ ] Nessun file fuori da "Scope" è stato modificato in nessuno dei quattro repository
+- [x] Nessuno dei tre pacchetti contiene più un rimando a `minimal-api-architecture.instructions.md` che si rompe in silenzio: ogni rimando è condizionale o coperto da una dipendenza dichiarata
+- [x] Nessuna dipendenza dichiarata trascina pacchetti .NET in un host che .NET non è — in particolare `dr-fe` (`node`) e `dr-devops` (`any`) restano senza dipendenze .NET
+- [x] `dr-devops` non contiene più una riga che contraddice il proprio contenuto sul punto "fonte unica"
+- [x] I tre README descrivono il comportamento effettivo dopo le modifiche
+- [x] Se è stata dichiarata una dipendenza nel catalogo: il file è JSON valido e il guard di catalogo in CI passa
+- [x] Nessun costrutto esclusivo di un tool nei file condivisi: compatibilità duale rispettata
+- [x] Nessun `git push` è avvenuto senza la dichiarazione esplicita di assenza di target di verifica
+- [x] Nessun file fuori da "Scope" è stato modificato in nessuno dei quattro repository
+
+## Consuntivo
+
+**Verifica finale**: eseguita il 2026-09-24 con `/dr-verify-plan`, sub-agente in sola lettura, senza accesso alla conversazione di implementazione. Esito: **9 voci di Scope su 9 CORRISPONDONO, tutti e sei i criteri SODDISFATTI**, perimetro negativo intatto in tutti e sette i repository del workspace — catalogo invariato, `dr-minimalapi` non toccato, `dr-guidelines-install-lib.ps1` non toccato.
+
+Il controllo di merito ha smontato i tre rimandi nei quattro elementi che la convenzione impone — condizione sul manifest, ramo pieno con la fonte citata, ripiego che dice il "cosa", dichiarazione del ramo applicato — e li ha trovati tutti e quattro presenti in tutti e tre. `dr-devops` è il caso migliore: due requisiti senza stack e nessuna traccia dei metodi .NET. Le simulazioni su un host con `dr-fe` senza `dr-minimalapi` (aggiunta di una login) e con `dr-devops` (alzare le repliche) mostrano che l'agente applica il ripiego, lo dichiara, e nel secondo caso intercetta il guasto intermittente che la issue voleva prevenire.
+
+**Quattro correzioni applicate dopo la verifica:**
+
+1. **Il primo esempio d'uso della convenzione violava la convenzione.** I tre blocchi riscritti chiudevano con "Vedi `cross-package-references.instructions.md`" — un rimando **incondizionato** a un file di un altro pacchetto, cioè esattamente ciò che la regola di perimetro numero 1 vieta. Il core non è dipendenza dichiarata di nessun pacchetto e l'installer non lo impone, quindi in un host con il solo `dr-fe` quel file non c'è. Reso condizionale in tutti e tre.
+2. **Il README del core non elencava la nuova istruzione.** `readme-structure.instructions.md` lo impone due volte, e `docs/onboarding.md` lo elenca come secondo dei tre passi per aggiungere un'istruzione trasversale. Era un buco dello Scope, non una violazione del perimetro: lo Scope semplicemente non prevedeva `README.md`. Riga aggiunta, footer incrementato.
+3. **Il ripiego di `dr-fe` ricalcava la classificazione della fonte.** Riproduceva tre righe della matrice a cinque di `dr-minimalapi`, omettendo fra l'altro il caso "entrambi i tipi di client", che è il più frequente. Senza i pacchetti e i metodi .NET, quindi formalmente conforme alla Fase 3, ma la classificazione **è** il cuore della decisione: se a monte la matrice cambia, quel ripiego non se ne accorge e nessun controllo se ne accorgerebbe. Riformulato come due requisiti lato client — il token non passa dal frontend quando può non passarci, e se ci passa sta in memoria — più l'istruzione di **chiedere all'API** quale schema ha adottato invece di sceglierlo. Rimossa anche la contraddizione con la riga soprastante, che diceva "lo schema non si decide qui" per poi assegnarne uno per scenario.
+4. **Il caso "manifest assente" non era coperto.** La convenzione diceva "se elenca / se non elenca", lasciando scoperto l'host che il manifest non ce l'ha. Aggiunta la riga: manifest assente o illeggibile equivale a pacchetto non installato.
+
+**Rilievo non applicato:** in `dr-efdb` il titolo della sezione ("Uso negli Endpoint") e la riga che la apre restano formulati per una API, con la cartella `Services/<Entity>Service.cs`, mentre il blocco che segue avverte di non dare per scontato di essere in una API. È una frizione di tono, non un rimando rotto, e riscrivere la sezione intera andava oltre il perimetro di questa issue. `dr-efdb` è già internamente ambiguo su questo punto — l'altro suo file, `database-startup-resilience.instructions.md`, dichiara in apertura di applicarsi a una Minimal API — e la questione va affrontata per intero o non affrontata.
