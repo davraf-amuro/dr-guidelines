@@ -137,4 +137,12 @@ Entrambe risolte in Fase 0 il 2026-09-22, sulla proposta del piano, per delega e
 - **Formato della riga di versione.** Il piano citava `doc-versioning.instructions.md` per la Fase 5, ma quell'istruzione ha `applyTo: "docs/**/*.md"` e non copre il `README.md` di radice, che ha una convenzione propria. È stata mantenuta la convenzione del README. Il riferimento normativo nel testo della Fase 5 era impreciso.
 - **Prefisso di percorso nell'output.** `Copy-GuidelineFile` stampa solo il nome del file, quindi nel log compare `copilot-instructions.md` senza `.github/`: è l'unico file della sezione che finisce in una sottocartella. Cosmetico, coerente con la Decisione 2 e con il resto della funzione.
 
-**Resta pendente**: la prova end-to-end con il clone reale da GitHub, possibile solo dopo la push. Finché il commit non è su `main`, la frase del README "L'installer lo copia dal 2026-09-22" descrive un fatto non ancora vero per chi installa da remoto.
+**Prova end-to-end eseguita il 2026-09-24, dopo la push.** Era l'ultimo punto in sospeso. `dr-guidelines-install.ps1` lanciato in una cartella vuota, con clone reale da GitHub al commit `176afb1`:
+
+- prima installazione → `[OK] copilot-instructions.md`;
+- rilancio senza opzioni → `[SKIP]`, come tutti gli altri file già presenti;
+- rilancio con `-Update` → `[UPD]`, coerente con la Decisione 1.
+
+Controllo decisivo sull'host prodotto: tutti i riferimenti `@<file>.md` contenuti nel `CLAUDE.md` iniettato puntano a file che esistono davvero — `.github/copilot-instructions.md` e `.github/instructions/mcp-server-discovery.instructions.md`. Nessun riferimento penzolante. Il difetto della issue è chiuso lungo tutto il percorso, non solo nel codice.
+
+Verificato nella stessa prova che `.github/ISSUE_TEMPLATE/` **non** viene distribuito nell'host, il che conferma la premessa su cui poggia la correzione della issue #4.
