@@ -18,7 +18,7 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 
 Le dipendenze si installano da sole: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca. È il comportamento dell'installer, non ancora provato sul campo: vedi [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
-> **I 7 repo sono Private.** Per usarli non serve renderli pubblici: basta `gh` autenticato con scope `repo`. I comandi di questo README sono in forma `gh api`, che funziona sia a repo Private che Public. Le forme brevi `irm` compaiono solo come alternativa per quando i repo saranno Public.
+> **I 7 repo sono Public** (dal 2026-09-21). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo`. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
 ### Aggiungere un dominio nuovo
 
@@ -424,8 +424,8 @@ Poi riavvia Claude Code per caricare il server.
 ### Q: Devo rendere pubblici i repo `dr-*` per usarli o testarli?
 **A:** No. Basta `gh` autenticato con scope `repo` (`gh auth status`). Usa la forma `gh api` dei comandi: funziona su repo Private e Public. Solo `irm https://raw.githubusercontent.com/... | iex` richiede repo Public.
 
-### Q: I repo sono Private — `irm ... | iex` funziona lo stesso?
-**A:** No: `raw.githubusercontent.com` risponde `404` sui repo Private. Usa la forma `gh api`, che è autenticata e scarica lo stesso da GitHub, senza clone locale. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
+### Q: `irm ... | iex` funziona?
+**A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata e scarica lo stesso da GitHub, senza clone locale. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
 
 ### Q: Creo prima la solution e poi installo le guidelines?
 **A:** No, al contrario. Prima il core in una cartella vuota, poi ricarichi la finestra, poi `/dr-scaffold` crea la solution. Vedi [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md).

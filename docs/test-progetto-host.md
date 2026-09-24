@@ -33,7 +33,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | VS Code con Claude Code | Per il passo 8 |
 | Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
-**Non serve che i repo siano Public.** L'installer si scarica con `gh api`, che legge i repo Private. La forma `irm https://raw.githubusercontent.com/... | iex` risponde `404` finché restano Private.
+**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. I repo sono Public dal 2026-09-21: anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
 
 **Il workspace `dr-*` clonato serve solo ai passi 7 e 8.4.** Tutti gli altri comandi scaricano da GitHub.
 

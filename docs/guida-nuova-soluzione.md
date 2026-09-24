@@ -60,7 +60,7 @@ npm --version        # solo se ci sarà un frontend
 |---|---|---|
 | git | una versione qualsiasi | Installalo: l'installer scarica i pacchetti con `git clone` |
 | PowerShell 7+ | `7.*` | Installalo: gli installer girano su `pwsh` |
-| `gh` autenticato | `Logged in to github.com` | Esegui `gh auth login` con scope `repo`: i repo `dr-*` sono **Private** |
+| `gh` autenticato | `Logged in to github.com` | Esegui `gh auth login` con scope `repo`: la forma `gh api` del passo 3 lo richiede |
 | .NET SDK 10 | almeno una riga `10.*` | Solo per progetti .NET: senza, nessun progetto .NET è creabile |
 | node + npm | una versione qualsiasi | Solo per il frontend: il resto del progetto procede lo stesso |
 
@@ -126,7 +126,7 @@ Esiste una forma più corta:
 irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
 ```
 
-Funziona solo se i repo sono **Public**. Oggi i repo `dr-*` sono Private e quell'indirizzo risponde `404`. La forma `gh api` funziona in entrambi i casi: usa sempre quella.
+Funziona solo se i repo sono **Public**. Dal 2026-09-21 i repo `dr-*` lo sono, ma questa forma non è ancora stata provata sul campo. La forma `gh api` è provata e funziona anche se i repo tornassero Private: usa quella.
 
 ---
 

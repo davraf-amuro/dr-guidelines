@@ -35,7 +35,7 @@ Questo repository non si avvia: si installa in un altro progetto.
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-I repo `dr-*` sono **Private**: `irm https://raw.githubusercontent.com/... | iex` risponde `404`. La forma `gh api` funziona in entrambi i casi.
+I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent.com/... | iex` funziona, ma su un repo Private risponderebbe `404`. La forma `gh api` funziona in entrambi i casi.
 
 **Flag dell'installer:**
 

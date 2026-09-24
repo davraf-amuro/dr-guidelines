@@ -5,7 +5,7 @@
 - **Progetto:** dr-guidelines — pacchetto **core** e catalogo della suite `dr-*`
 - **Solution:** —
 - **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, con i 7 repo `dr-*` come cartelle sorelle
-- **Repository:** https://github.com/davraf-amuro/dr-guidelines (Private)
+- **Repository:** https://github.com/davraf-amuro/dr-guidelines (Public)
 - **Tipo Applicazione:** Repository di linee guida e configurazioni, distribuito come pacchetto installabile con `dr-guidelines-install.ps1`
 - **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code, catalogo JSON come fonte unica dei pacchetti
 - **Versione Corrente:** Da verificare con il team (nessun tag di rilascio; gli host registrano il commit installato)
@@ -45,7 +45,7 @@
 | Tipo | Nome/Endpoint | Protocollo | Autenticazione | Scopo/Descrizione |
 |------|---------------|------------|----------------|-------------------|
 | API | GitHub REST API (`gh api repos/.../contents/...`) | HTTPS | Token di `gh auth login` (scope `repo`) | Download di installer, libreria e catalogo su repo Private |
-| CDN | `raw.githubusercontent.com` | HTTPS | — | Stesso download via `irm`. Primo tentativo dell'installer; risponde `404` finché i repo sono Private |
+| CDN | `raw.githubusercontent.com` | HTTPS | — | Stesso download via `irm`. Primo tentativo dell'installer; risponderebbe `404` se i repo tornassero Private |
 | VCS | GitHub | HTTPS | Credential manager di git, o `gh auth setup-git` | `git clone --depth 1` del `main` di ogni pacchetto in `%TEMP%` |
 
 ## Configurazione e Hosting
