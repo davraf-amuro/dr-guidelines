@@ -319,6 +319,21 @@ function Copy-ScaffoldingCatalog {
     Copy-GuidelineFile -SrcFile $src -DestFile (Join-Path $HostRoot ".ai\dr-scaffolding-catalog.json") -Update:$Update
 }
 
+function New-BriefsFolder {
+    param([string]$HostRoot)
+
+    # briefs\ e' dell'utente: ci scrive le richieste da indicare all'agente, che ne ricava un piano.
+    # L'installer crea solo la cartella, vuota; il contenuto non si legge ne' si tocca, nemmeno con -Update.
+    $dest = Join-Path $HostRoot "briefs"
+    Write-Host "  Cartella brief:" -ForegroundColor White
+    if (Test-Path $dest) {
+        Write-Host "  [SKIP] briefs\ gia presente" -ForegroundColor DarkGray
+        return
+    }
+    New-Item -ItemType Directory -Path $dest | Out-Null
+    Write-Host "  [OK]   briefs\" -ForegroundColor Green
+}
+
 function Merge-ClaudeMdSection {
     param(
         [string]$SrcClaudeMd,
@@ -499,6 +514,7 @@ function Install-DrPackage {
             Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             Merge-ClaudeSettings -TempRoot $tempDir -HostRoot $hostRoot
             Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+            New-BriefsFolder -HostRoot $hostRoot
             Write-Host "  CLAUDE.md:" -ForegroundColor White
             Merge-ClaudeMdSection -SrcClaudeMd (Join-Path $tempDir "CLAUDE.md") -DestClaudeMd (Join-Path $hostRoot "CLAUDE.md") -PackageName $PackageName -Update:$Update
         }

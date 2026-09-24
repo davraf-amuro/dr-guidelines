@@ -156,6 +156,7 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | `CLAUDE.md` | Sì | Contiene i marker `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-guidelines-packages.json` | Sì | Manifest dei pacchetti installati |
 | `.ai/dr-scaffolding-catalog.json` | Sì | Catalogo tipologie/pacchetti, letto dalle skill `dr-scaffold*` |
+| `briefs/` | Sì | Cartella vuota per le richieste dell'utente, creata solo se assente. Qui ci scrivi i brief e li indichi all'agente, che ne ricava un piano da approvare. ⚠️ Introdotta il 2026-09-24 (issue #1): da verificare su `dr-postman`. Git non versiona le cartelle vuote: finché resta vuota non compare nei commit |
 
 ---
 
@@ -188,6 +189,7 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 10 | Nome del catalogo dopo la copia: nel repo sorgente il file sta in root e si chiama `scaffolding-catalog.json`; `test-progetto-host.md` lo dà per `.ai/dr-scaffolding-catalog.json` nell'host. Rinomina prevista o discrepanza? | 🟡 Rinomina prevista nel codice: `Copy-ScaffoldingCatalog` in `dr-guidelines-install-lib.ps1` copia il file come `.ai\dr-scaffolding-catalog.json`. ☐ Conferma sul campo con `Get-ChildItem .ai` nella cartella host |
 | 11 | Il test prova sempre il `main` **remoto**: `Install-DrPackage` fa `git clone --depth 1` da `github.com` anche se l'installer è lanciato da path locale. Modifiche non pushate non vengono installate | ☐ Da provare: modifica locale non pushata → assente nella cartella host |
 | 12 | Passi 1 e 2 di questo taccuino dopo la riscrittura della libreria (`aee84a4`, 2026-09-16: catalogo come fonte dei pacchetti, `rootFiles`, nessun rilevamento dello stack). Le prove del 2026-08-12 riguardano la versione precedente | ☐ Da riverificare in una cartella vuota |
+| 13 | Guida per non programmatori [`installazione-semplice.md`](installazione-semplice.md): percorso completo su un PC senza Git, con `winget install` di Git e PowerShell 7, forma `irm ... \| iex`, e verifica che PowerShell 5.1 preinstallato basti o no | ☐ Da provare con un utente non tecnico |
 
 ---
 
@@ -288,4 +290,4 @@ Conseguenza pratica: una dipendenza dichiarata da un pacchetto `node` o `any` ve
 
 ---
 
-*Revisione v1.6 — 2026-09-24 10:30 — claude-opus-5*
+*Revisione v1.8 — 2026-09-24 — claude-opus-5-5 — `briefs/` fra i risultati attesi del Passo 2*

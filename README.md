@@ -2,6 +2,8 @@
 
 Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversali, skill Claude Code e installer, per progetti di qualsiasi stack seguiti con GitHub Copilot e Claude Code.
 
+> 🙋 **Non sei un programmatore?** Segui [`docs/installazione-semplice.md`](docs/installazione-semplice.md): sei passi, un comando da copiare, cosa vedrai a schermo e cosa fare se va storto. Il resto di questo README è per chi sviluppa.
+
 ## 🧩 Pacchetti dr-* disponibili
 
 `dr-guidelines` (questo repo) è il **catalogo** della suite. Dice quali pacchetti esistono, a quale dominio servono, dove stanno e come si installano. Porta anche le istruzioni valide per qualsiasi progetto. Le regole di un dominio specifico vivono nei pacchetti, installabili uno per uno.
@@ -82,7 +84,7 @@ Set-Location <root-del-progetto>
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-Il comando breve funziona solo quando i repo sono Public. Oggi risponde `404`:
+Il comando breve funziona perché i repo sono Public (dal 2026-09-21). Non richiede `gh`, ma non è ancora stato provato sul campo. Su un repo Private risponderebbe `404`:
 
 ```powershell
 irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
@@ -133,6 +135,9 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
 | `.ai/dr-scaffolding-catalog.json` | copia | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
 | `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati con il **commit** di provenienza: fa da lock file, e `-Update` lo usa per mostrare cosa è cambiato |
+| `briefs/` | creata vuota, solo se assente | Le tue richieste per l'agente, in Markdown, con nome e forma liberi. L'installer non ne legge né tocca mai il contenuto, nemmeno con `-Update` |
+
+**Come si usa `briefs/`.** Scrivi la richiesta in un file, per esempio `briefs/export-contatti.md`, poi indicalo all'agente nel prompt: *"crea il piano da `briefs/export-contatti.md`"*. L'agente legge il brief e, se trova lacune, ti fa domande. Poi scrive sempre un piano in `.ai/plans/` con il link al brief sotto il titolo e aspetta la tua approvazione prima di eseguirlo. Vale anche quando passi il brief come argomento di una skill. La cartella non viene esplorata: l'agente usa solo il brief che gli indichi.
 
 I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/prompts/`, `.claude/skills/` e i **file di radice dichiarati nel catalogo** (campo `rootFiles`). Non toccano `CLAUDE.md` né la configurazione del core.
 
@@ -406,7 +411,8 @@ Poi riavvia Claude Code per caricare il server.
 
 | File | Contenuto |
 |------|-----------|
-| [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md) | **Da qui si parte.** Dalla cartella vuota alla solution: prerequisiti, installazione del core, `/dr-scaffold`, errori comuni |
+| [`docs/installazione-semplice.md`](docs/installazione-semplice.md) | **Per chi non programma.** Installazione del core in sei passi: prerequisiti, comando, verifica, errori comuni, rimozione |
+| [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md) | **Da qui si parte** (programmatori). Dalla cartella vuota alla solution: prerequisiti, installazione del core, `/dr-scaffold`, errori comuni |
 | [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md) | Taccuino delle prove sul campo: passaggi verificati, da verificare, correzioni emerse |
 | [`docs/test-progetto-host.md`](docs/test-progetto-host.md) | Collaudo dell'installer su un progetto di prova: dipendenze, idempotenza, `-Update`, skill |
 | [`docs/onboarding.md`](docs/onboarding.md) | Onboarding per chi sviluppa questo repository |
@@ -426,6 +432,9 @@ Poi riavvia Claude Code per caricare il server.
 
 ### Q: `irm ... | iex` funziona?
 **A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata e scarica lo stesso da GitHub, senza clone locale. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
+
+### Q: Non sono un programmatore: posso installare le guidelines?
+**A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7, installabili con due comandi `winget`. Non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md).
 
 ### Q: Creo prima la solution e poi installo le guidelines?
 **A:** No, al contrario. Prima il core in una cartella vuota, poi ricarichi la finestra, poi `/dr-scaffold` crea la solution. Vedi [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md).
@@ -461,4 +470,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.7 — 2026-09-24 — claude-opus-5 — nuova istruzione `cross-package-references` sui rimandi fra pacchetti (issue #5)*
+*Documento aggiornato: Settembre 2026 — Revisione v3.9 — 2026-09-24 — claude-opus-5-5 — cartella `briefs/` e flusso brief → piano (issue #1)*

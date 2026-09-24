@@ -1,6 +1,6 @@
 # Piano: TODO/ fuori dal versionamento e documenti allineati ai repo Public
 Data: 2026-09-24
-Stato: IN CORSO
+Stato: IN CORSO — esecuzione conclusa, in attesa di /dr-verify-plan
 
 ## Obiettivo
 1. Togliere `TODO/01-revisione.md` dal repository (committato per errore in `e98848d`) senza cancellarlo dal disco, e impedire che succeda di nuovo.
@@ -45,11 +45,11 @@ Stato: IN CORSO
 - **Verifica passo**: nessun README di dominio afferma che i repo sono Private
 
 ### Fase 4: Gate di push e push
-- **Stato**: [ ]
+- **Stato**: [x] — nessun target di lint, dichiarato. Commit `bb5e3f7` (dr-guidelines), `6f66968` dr-fe, `bb3d7df` dr-devops, `fdc9030` dr-efdb, `e92bd3e` dr-minimalapi, `ea4fb55` dr-winsvc, `3c12474` dr-dotnet-backend. CI dr-guidelines `success`
 - **Verifica passo**: nessun target di lint applicabile, dichiarato. Parser PowerShell non necessario (nessun `.ps1` toccato). `catalog-guard` non necessario (catalogo non toccato). Commit e push nei 7 repo, CI di `dr-guidelines` verde
 
 ## Criteri di verifica finale
-- [ ] `TODO/01-revisione.md` non tracciato, presente su disco, ignorato
-- [ ] Nessun testo afferma che i repo sono oggi Private
-- [ ] Nessun `.ps1` e nessuna logica di skill o prompt modificati
-- [ ] Working tree pulito e 0 commit da pushare in tutti e 7 i repo
+- [x] `TODO/01-revisione.md` non tracciato, presente su disco, ignorato
+- [x] Nessun testo afferma che i repo sono oggi Private
+- [x] Nessun `.ps1` e nessuna logica di skill o prompt modificati
+- [x] Working tree pulito e 0 commit da pushare in tutti e 7 i repo

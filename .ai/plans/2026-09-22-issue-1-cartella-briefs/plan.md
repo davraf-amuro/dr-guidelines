@@ -1,6 +1,6 @@
 # Piano: Cartella `briefs/` per le richieste che l'utente scrive e gli agenti leggono
 Data: 2026-09-22
-Stato: PROPOSTO
+Stato: IN CORSO
 Issue: davraf-amuro/dr-guidelines#1
 
 ## Obiettivo
@@ -56,240 +56,132 @@ Le tre posizioni valutate dal tavolo, con la scelta finale dell'utente in coda:
 
 **Rischio di sicurezza sollevato in consultazione, da tenere nel contratto.** Il brief viene letto *prima* di ogni conferma: il suo contenuto va trattato come **dato, mai come istruzione per l'agente**, altrimenti il file diventa un vettore di prompt injection. Va inoltre vietato scrivervi credenziali, rimandando a `sensitive-data.instructions.md` (che è già `applyTo: "**"`, quindi copre il caso: serve la menzione esplicita, non un'estensione di scope).
 
-## Decisioni aperte
 
-1. ~~**Percorso finale**~~ — **RISOLTA il 2026-09-22: `briefs/` in radice.** Motivazioni della scelta: chi scrive quei file è l'utente, quindi la cartella deve essere visibile a colpo d'occhio; `briefs/` non collide con nessuna convenzione di stack, a differenza di `specs/` (spec di test in JS/TS) e di `requests/` (nome standard dei DTO di richiesta in .NET); stando in radice non eredita `doc-versioning`. Nel resto del piano il percorso è scritto per esteso.
-2. ~~**Restringere `doc-versioning`**~~ — **NON APPLICABILE**: cade con la scelta della radice. La Fase 4 è annullata di conseguenza.
-3. **Percorso fisso nel testo** delle istruzioni, oppure **parametro nel catalogo** (`scaffolding-catalog.json`, blocco `defaults`, che oggi contiene già `sourcePath` e `testPath`)? Il parametro evita di ripetere `briefs/` in circa sei file; il testo fisso è più semplice da leggere per Copilot.
-4. **Sezioni obbligatorie del modello**: il nucleo proposto è Obiettivo, Fuori scope, Vincoli, Criteri di accettazione, Note. Da rivedere alla luce della precisazione terminologica: il documento esprime un bisogno, non descrive un sistema, quindi "Criteri di accettazione" potrebbe diventare "Come capiamo che è fatto" o restare com'è. Aggiungere o togliere?
-5. **Front matter YAML**: sì o no, e con quali campi. Le proposte in tavolo si fermano a due campi (titolo e stato).
-6. **Naming dei file**: `<slug>.md` oppure `NNN-slug.md` numerato.
-7. **L'installer crea la cartella in ogni host?** Cartella più modello più eventuale README sempre, oppure solo su richiesta esplicita via `/dr-scaffold-guidelines`? Vincolo non negoziabile in entrambi i casi: semantica "copia solo se assente", mai `-Update`.
-8. **Indice o manifest** nella cartella: sì o no, e chi lo aggiorna — l'utente a mano o la skill che tocca i brief.
-9. **Comportamento quando non c'è nessun brief**: silenzio e domande come oggi, oppure l'agente dichiara "nessun brief trovato, procedo a domande".
-10. **Dettaglio dell'eco**: una riga di riepilogo o un elenco punto per punto di ciò che l'agente ha letto.
-11. **Ciclo di vita del brief**: nessuno stato, oppure `bozza` / `attivo` / `superato`. E l'agente deve segnalare a fine task quando il costruito si discosta dal brief?
-12. **Perimetro d'uso**: i brief valgono solo per lo scaffolding, o per ogni task? Nel secondo caso la regola di lettura va in `dev-cycle.instructions.md` Fase 0, non solo nelle skill `dr-scaffold*`.
-13. **Link bidirezionale**: basta `Brief:` nel piano, o serve anche un riferimento al piano dentro il brief?
+## Decisioni (Fase 0, risolte dall'utente il 2026-09-24)
+
+Le risposte dell'utente hanno ridotto molto il perimetro rispetto alla proposta del warroom: niente modello di brief, niente formato, niente lettura automatica della cartella.
+
+1. **Percorso**: `briefs/` in radice (deciso il 2026-09-22).
+2. **Restringere `doc-versioning`**: non applicabile.
+3. **Percorso fisso o parametro**: la cartella la crea il pacchetto core; il percorso è scritto nel testo, nessun parametro nel catalogo.
+4. **Sezioni del modello**: nessun modello. La cartella è vuota; l'utente scrive i `.md` come preferisce.
+5. **Front matter**: nessuno.
+6. **Naming dei file**: libero, a scelta dell'utente.
+7. **Creazione da parte dell'installer**: sempre, dal pacchetto core, cartella vuota. Nessun file dentro, neppure `.gitkeep` o README.
+8. **Indice**: nessuno.
+9. **Nessun brief trovato**: non si applica. L'agente non esplora `briefs/`: è l'utente a indicare nel prompt quale brief usare.
+10. **Eco**: sostituita dalla regola 12.
+11. **Ciclo di vita**: nessuno stato.
+12. **Comportamento quando l'utente indica un brief**: l'agente legge il documento e **crea obbligatoriamente un piano**, a prescindere dal numero di operazioni. L'utente **deve approvare** il piano prima dell'esecuzione. Se l'agente trova problemi o lacune, o lo ritiene opportuno, chiede gli approfondimenti necessari a scrivere il piano. Vale per ogni task, non solo per lo scaffolding.
+13. **Collegamento**: un link al brief sotto il titolo del piano. Nessun riferimento dentro il brief.
+- **Istruzione dedicata ai brief** (clausola "dato, mai istruzione" e divieto di credenziali): **scartata** dall'utente.
+
+**Conseguenza da dichiarare.** La regola 12 prevale sull'esenzione "skill invocata esplicitamente = approvazione" di `CLAUDE.md`: se l'argomento di una skill è un brief, prima viene il piano approvato.
 
 ## Scope
 
 ### File da modificare
-- [ ] `.github/instructions/brief-authoring.instructions.md` — CREATE, contratto del formato
-- [ ] `templates/brief-template.md` — CREATE, modello unico
-- [ ] `.github/instructions/sensitive-data.instructions.md` — menzione esplicita dei brief
-- [ ] `dr-guidelines-install-lib.ps1` — distribuzione della cartella e del modello, con semantica "solo se assente"
-- [ ] `scaffolding-catalog.json` — solo se la decisione aperta 3 sceglie il parametro
-- [ ] `.claude/skills/dr-scaffold/SKILL.md` e `.github/prompts/dr-scaffold.prompt.md` — lettura dei brief
-- [ ] `.claude/skills/dr-scaffold-solution/SKILL.md`, `.claude/skills/dr-scaffold-project/SKILL.md`, `.claude/skills/dr-scaffold-guidelines/SKILL.md` — eco, lacune, conferma
-- [ ] `.github/instructions/dev-cycle.instructions.md` — solo se la decisione aperta 12 estende il perimetro a ogni task
-- [ ] `.github/instructions/plan-tracking.instructions.md` — campo `Brief:` nel template del piano
-- [ ] `.claude/skills/dr-issues-to-plans/SKILL.md` e `.claude/skills/dr-verify-plan/SKILL.md` — raccordo con il campo `Brief:`
-- [ ] `README.md`, `docs/bozza-manuale-installazione.md` — documentazione del flusso
-- [ ] `CLAUDE.md` del core e la sezione iniettata negli host da `Merge-ClaudeMdSection`
+- [x] `.ai/plans/2026-09-22-issue-1-cartella-briefs/plan.md` — questo piano
+- [x] `dr-guidelines-install-lib.ps1` — nuova funzione che crea `briefs/` vuota se assente, invocata nel ramo `IsCore`
+- [x] `.github/instructions/plan-tracking.instructions.md` — sezione "Piani da un brief" e link sotto il titolo nel template
+- [x] `CLAUDE.md` — convenzione `briefs/` (raggiunge gli host via `Merge-ClaudeMdSection`) e deroga all'esenzione delle skill
+- [x] `.github/copilot-instructions.md` — stessa convenzione, per parità su Copilot
+- [x] `README.md` — cartella `briefs/` nella sezione "Cosa viene configurato" e flusso d'uso
+- [x] `docs/bozza-manuale-installazione.md` — `briefs/` fra i risultati attesi del Passo 2
 
 ### Perimetro negativo
-- Non toccherò: `.ai/plans/` esistenti, né i loro stati
-- Non toccherò: `.github/instructions/doc-versioning.instructions.md` — la cartella sta in radice, non sotto `docs/`, quindi non serve nessuna esclusione
-- Non toccherò: la logica di `Copy-GuidelineFile`, `Copy-InstructionsAndPrompts`, `Copy-Skills`
-- Non toccherò: `.gitignore` — `.ai/` è già versionato, l'unica esclusione è il log locale dei permessi; la fase corrispondente è di sola verifica
-- Non toccherò: le istruzioni modulari diverse da quelle elencate in "Scope"
-- Non toccherò: gli altri repository `dr-*` — questa è una convenzione del core
-- Non toccherò: il contenuto dei brief eventualmente già scritti in un host
+- Non toccherò: le skill `dr-scaffold*`, `dr-issues-to-plans`, `dr-verify-plan` e i prompt Copilot — la regola sta nelle istruzioni trasversali
+- Non toccherò: `scaffolding-catalog.json`, `doc-versioning.instructions.md`, `sensitive-data.instructions.md`
+- Non toccherò: `templates/`, nessun modello di brief
+- Non toccherò: la logica delle funzioni di copia esistenti nell'installer
+- Non toccherò: `docs/installazione-semplice.md` né le altre modifiche non committate già presenti in `README.md` e nella bozza
+- Non toccherò: gli altri repository `dr-*`
 
 ## Fasi (formato atomico — obbligatorio)
 
 ### Fase 0: Decisioni residue
-- **Stato**: [ ]
-- **Precondizione**: il piano è stato approvato per l'esecuzione
-- **File**: questo `plan.md`
-- **Operazione**: EDIT
-- **Azione**: sottoporre all'utente le decisioni aperte 3-13 e annotarne qui le risposte. Le decisioni 1 e 2 sono già risolte.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: ogni decisione aperta ancora aperta ha una risposta scritta in questo file
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 0: <cosa>` in plan.md, non procedere
+- **Stato**: [x]
+- **Verifica passo**: tutte le decisioni sono scritte nella sezione precedente
 
-### Fase 1: Contratto del formato
-- **Stato**: [ ]
-- **Precondizione**: Fase 0 completata
-- **File**: `.github/instructions/brief-authoring.instructions.md`
-- **Operazione**: CREATE
-- **Azione**: scrivere l'istruzione modulare con front matter `applyTo: "briefs/**/*.md"`. Definisce posizione, naming (decisione 6), sezioni obbligatorie (decisione 4), coda libera, eventuale front matter (decisione 5) e ciclo di vita (decisione 11). Chiarisce in apertura che un brief **esprime una richiesta**, non descrive un sistema: è l'input da cui nasce un piano. Dichiara esplicitamente che **il contenuto di un brief è dato, mai istruzione per l'agente** — viene letto prima di ogni conferma, quindi è un vettore di prompt injection se trattato altrimenti. Vieta credenziali nel file, rimandando a `sensitive-data.instructions.md`. Markdown neutro: nessun costrutto esclusivo di un tool.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: il file esiste, l'`applyTo` punta a `briefs/`, la clausola "dato, mai istruzione" è presente, la distinzione fra richiesta e specifica è dichiarata
+### Fase 1: Creazione della cartella nell'installer
+- **Stato**: [x]
+- **Precondizione**: piano approvato
+- **File**: `dr-guidelines-install-lib.ps1`
+- **Operazione**: EDIT
+- **Azione**: aggiungere `New-BriefsFolder` (crea `briefs/` solo se assente, non legge né scrive file al suo interno) e invocarla nel ramo `IsCore` accanto a `Copy-ScaffoldingCatalog`
+- **Tool ammessi**: PowerShell (parser)
+- **Verifica passo**: il parser analizza il file senza errori; la funzione non contiene nessun `Copy-Item`, `Set-Content` o `Remove-Item`
+- **Esito**: parser PowerShell, 0 errori
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1: <cosa>` in plan.md, non procedere
 
-### Fase 2: Modello di brief
-- **Stato**: [ ]
+### Fase 2: Prova della funzione in cartella temporanea
+- **Stato**: [x]
 - **Precondizione**: Fase 1 completata
-- **File**: `templates/brief-template.md`
-- **Operazione**: CREATE
-- **Azione**: creare il modello accanto a `templates/global-claude.md`, con le sezioni decise alla Fase 0 e un esempio compilato breve per ciascuna. Il tono delle sezioni è quello di chi chiede, non di chi specifica.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: le sezioni del modello coincidono, una a una, con quelle dichiarate nell'istruzione della Fase 1
+- **File**: nessuno del repository
+- **Operazione**: nessuna modifica al repository
+- **Azione**: caricare la libreria, eseguire `New-BriefsFolder` su una cartella temporanea, scrivere un finto brief, rieseguire la funzione due volte, cancellare la cartella
+- **Tool ammessi**: PowerShell
+- **Verifica passo**: la cartella viene creata; il finto brief resta identico (hash) dopo le due riesecuzioni
+- **Esito**: 2026-09-24 — `[OK]` alla prima esecuzione, `[SKIP]` alle due successive; hash del finto brief identico; cartella temporanea rimossa
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 2: <cosa>` in plan.md, non procedere
 
-### Fase 3: Menzione nelle istruzioni sui dati sensibili
-- **Stato**: [ ]
-- **Precondizione**: Fase 1 completata
-- **File**: `.github/instructions/sensitive-data.instructions.md`
-- **Operazione**: EDIT
-- **Azione**: aggiungere una riga sui brief. Il file è già `applyTo: "**"` e copre tecnicamente il caso: serve la menzione esplicita, non un'estensione di scope.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: la riga è presente e l'`applyTo` è invariato
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
-
-### Fase 4: ~~Esclusione da `doc-versioning`~~ — ANNULLATA
-- **Stato**: [x] non applicabile
-- **Motivo**: la decisione 1 ha scelto `briefs/` in radice. `doc-versioning.instructions.md` cattura solo `docs/**/*.md`, quindi non c'è nessuna eredità da spezzare e il file non va toccato.
-
-### Fase 5: Distribuzione — funzione di copia protettiva
-- **Stato**: [ ]
-- **Precondizione**: Fasi 1 e 2 completate; la decisione aperta 7 ha stabilito se la cartella si crea sempre o su richiesta
-- **File**: `dr-guidelines-install-lib.ps1`
-- **Operazione**: EDIT
-- **Azione**: aggiungere una funzione dedicata (per esempio `Copy-BriefScaffold`) modellata sul ramo `.mcp.json` di `Copy-CoreConfigFiles`: copia il modello e l'eventuale README **solo se assenti**, mai con `-Update`, mai con `Copy-Item -Force` su un file già presente. Il contenuto scritto dall'utente non si tocca in nessuna circostanza.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: la funzione esiste e non contiene nessun percorso di codice che sovrascriva un file esistente
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
-
-### Fase 6: Distribuzione — innesto nel flusso di installazione
-- **Stato**: [ ]
-- **Precondizione**: Fase 5 completata
-- **File**: `dr-guidelines-install-lib.ps1`
-- **Operazione**: EDIT
-- **Azione**: invocare la funzione della Fase 5 nel flusso di installazione del core, accanto a `Copy-ScaffoldingCatalog`, dentro il ramo `IsCore`.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: il parser PowerShell analizza il file senza errori; la chiamata è dentro il ramo `IsCore`
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
-
-### Fase 7: Prova di non sovrascrittura
-- **Stato**: [ ]
-- **Precondizione**: Fase 6 completata
-- **File**: nessuno del repository — cartella temporanea
-- **Operazione**: nessuna modifica al repository
-- **Azione**: installare il core in una cartella temporanea, scrivere a mano un finto brief e modificare il modello copiato, poi rieseguire l'installer con `-Update` due volte. Cancellare la cartella al termine.
-- **Tool ammessi**: PowerShell
-- **Verifica passo**: dopo i due `-Update`, il finto brief e il modello modificato sono **identici** a prima; nessun file utente è stato toccato
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
-
-### Fase 8 *(condizionata alla decisione aperta 3)*: Parametro nel catalogo
-- **Stato**: [ ]
-- **Precondizione**: la decisione aperta 3 ha scelto il parametro invece del percorso fisso
-- **File**: `scaffolding-catalog.json`
-- **Operazione**: EDIT
-- **Azione**: aggiungere la voce del percorso dei brief nel blocco `defaults`, accanto a `sourcePath` e `testPath`, e aggiornare `updatedAt`.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: il file è JSON valido e la nuova voce è nel blocco `defaults`
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
-
-### Fase 9: Lettura dei brief nel punto d'ingresso (Claude Code)
-- **Stato**: [ ]
-- **Precondizione**: Fasi 1 e 2 completate
-- **File**: `.claude/skills/dr-scaffold/SKILL.md`
-- **Operazione**: EDIT
-- **Azione**: nella fase di risoluzione del dominio, leggere i file di `briefs/` **prima** di risolvere il dominio e prima di ogni domanda, e passare il contenuto estratto nella delega alle skill a valle. Il comportamento quando non c'è nessun brief segue la decisione aperta 9.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: la lettura precede, nel testo, sia la risoluzione del dominio sia qualunque domanda all'utente
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
-
-### Fase 10: Lettura dei brief nel punto d'ingresso (Copilot)
-- **Stato**: [ ]
-- **Precondizione**: Fase 9 completata
-- **File**: `.github/prompts/dr-scaffold.prompt.md`
-- **Operazione**: EDIT
-- **Azione**: stessa regola della Fase 9, con il percorso `briefs/` **scritto esplicitamente** nel testo: Copilot non esplora le cartelle da solo, e senza il percorso la parità duale resta sulla carta.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: il percorso compare esplicitamente; il merito coincide con la Fase 9
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 10: <cosa>` in plan.md, non procedere
-
-### Fase 11: Eco, lacune e conferma nelle skill a valle
-- **Stato**: [ ]
-- **Precondizione**: Fasi 9 e 10 completate
-- **File**: `.claude/skills/dr-scaffold-solution/SKILL.md`, `.claude/skills/dr-scaffold-project/SKILL.md`, `.claude/skills/dr-scaffold-guidelines/SKILL.md`
-- **Operazione**: EDIT
-- **Azione**: estendere ai brief il meccanismo già presente in `dr-scaffold-solution` per i dati dati per acquisiti: eco di ciò che è stato letto (dettaglio secondo la decisione aperta 10), poi **solo** le lacune, poi la conferma unica. In `dr-scaffold-guidelines` l'estensione ha senso se il brief può indicare i pacchetti.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: in ciascuna delle tre skill nessuna domanda riguarda un dato già presente nel brief, e la conferma resta una sola
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 11: <cosa>` in plan.md, non procedere
-
-### Fase 12 *(condizionata alla decisione aperta 12)*: Perimetro esteso a ogni task
-- **Stato**: [ ]
-- **Precondizione**: la decisione aperta 12 ha esteso i brief oltre lo scaffolding
-- **File**: `.github/instructions/dev-cycle.instructions.md`
-- **Operazione**: EDIT
-- **Azione**: aggiungere "leggi il brief pertinente" alla checklist pre-task della Fase 0.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: la voce compare nella checklist di Fase 0
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 12: <cosa>` in plan.md, non procedere
-
-### Fase 13: Campo `Brief:` nel template del piano
-- **Stato**: [ ]
-- **Precondizione**: Fase 1 completata
+### Fase 3: Regola nel plan-tracking
+- **Stato**: [x]
+- **Precondizione**: Fase 0 completata
 - **File**: `.github/instructions/plan-tracking.instructions.md`
 - **Operazione**: EDIT
-- **Azione**: aggiungere il campo opzionale `Brief: <percorso>` all'intestazione del template, sul modello del campo `Issue:` già documentato, e spiegare in una riga la divisione dei compiti: il brief dice cosa serve, il piano come si fa. Includere il riferimento inverso se la decisione aperta 13 lo richiede.
+- **Azione**: aggiungere la sezione "Piani da un brief" (lettura, piano obbligatorio anche sotto le 2 operazioni, approvazione obbligatoria, domande su lacune, precedenza sull'esenzione delle skill) e la riga del link sotto il titolo nel template; aggiornare la riga di versione
 - **Tool ammessi**: nessuno
-- **Verifica passo**: il campo è documentato con la stessa forma di `Issue:`, comprese le varianti con e senza grassetto
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 13: <cosa>` in plan.md, non procedere
+- **Verifica passo**: sezione presente, link documentato con percorso relativo, riga di versione aggiornata
+- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
 
-### Fase 14: Raccordo nelle skill che scrivono e verificano i piani
-- **Stato**: [ ]
-- **Precondizione**: Fase 13 completata
-- **File**: `.claude/skills/dr-issues-to-plans/SKILL.md`, `.claude/skills/dr-verify-plan/SKILL.md`
+### Fase 4: CLAUDE.md e copilot-instructions.md
+- **Stato**: [x]
+- **Precondizione**: Fase 3 completata
+- **File**: `CLAUDE.md`, `.github/copilot-instructions.md`
 - **Operazione**: EDIT
-- **Azione**: in `dr-issues-to-plans`, valorizzare `Brief:` quando il piano nasce da un brief. In `dr-verify-plan`, rileggere anche il brief quando il piano porta quel campo.
+- **Azione**: aggiungere in entrambi la convenzione `briefs/` con rimando a `plan-tracking.instructions.md`; in `CLAUDE.md` precisare che l'esenzione delle skill non vale quando l'argomento è un brief
 - **Tool ammessi**: nessuno
-- **Verifica passo**: entrambe le skill citano il campo `Brief:` coerentemente con la Fase 13
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 14: <cosa>` in plan.md, non procedere
+- **Verifica passo**: i due testi dicono la stessa cosa; nessun costrutto esclusivo di un tool in `copilot-instructions.md`
+- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
-### Fase 15: Documentazione del flusso
-- **Stato**: [ ]
-- **Precondizione**: Fasi 1-14 completate o saltate con nota
+### Fase 5: Documentazione
+- **Stato**: [x]
+- **Precondizione**: Fasi 1-4 completate
 - **File**: `README.md`, `docs/bozza-manuale-installazione.md`
 - **Operazione**: EDIT
-- **Azione**: documentare la cartella e la catena "scrivi il brief, poi invoca la skill, che ne ricava un piano", con le righe di versione aggiornate secondo `doc-versioning.instructions.md`.
+- **Azione**: citare `briefs/` fra ciò che l'installer crea e descrivere il flusso "scrivi il brief → indicalo all'agente → approvi il piano"
 - **Tool ammessi**: nessuno
-- **Verifica passo**: entrambi i documenti descrivono la cartella e il flusso; le righe di versione sono aggiornate
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 15: <cosa>` in plan.md, non procedere
+- **Verifica passo**: entrambi i documenti citano `briefs/`; le modifiche non committate preesistenti sono intatte
+- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
-### Fase 16: La regola raggiunge gli host
-- **Stato**: [ ]
-- **Precondizione**: Fase 15 completata
-- **File**: `CLAUDE.md` del core e la sezione iniettata negli host da `Merge-ClaudeMdSection` in `dr-guidelines-install-lib.ps1`
-- **Operazione**: EDIT
-- **Azione**: aggiungere il riferimento a `briefs/`. È il punto in cui la convenzione arriva davvero nei progetti host: saltarlo rende invisibile tutto il resto del lavoro.
-- **Tool ammessi**: nessuno
-- **Verifica passo**: una installazione di prova produce un `CLAUDE.md` host che cita `briefs/`
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 16: <cosa>` in plan.md, non procedere
-
-### Fase 17: Prova end-to-end su un host reale
-- **Stato**: [ ]
-- **Precondizione**: Fasi 1-16 completate; l'utente ha indicato l'host su cui provare (candidato naturale: `dr-postman`, da cui nasce la issue)
-- **File**: nessuno di questo repository
-- **Operazione**: nessuna modifica a questo repository
-- **Azione**: scrivere a mano un brief nell'host, invocare `/dr-scaffold` e osservare il comportamento: eco di ciò che è stato letto, domande solo sulle lacune.
-- **Tool ammessi**: quelli della skill sotto prova
-- **Verifica passo**: nessuna domanda riguarda un dato già presente nel brief
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 17: <cosa>` in plan.md, non procedere
-
-### Fase 18: Verifica finale in contesto isolato
-- **Stato**: [ ]
-- **Precondizione**: Fasi 0-17 completate o saltate con nota
-- **File**: tutti quelli elencati in "Scope"
+### Fase 6: Verifica finale in contesto isolato
+- **Stato**: [x]
+- **Precondizione**: Fasi 1-5 completate
+- **File**: tutti quelli di "Scope"
 - **Operazione**: nessuna modifica — sola verifica
-- **Azione**: eseguire il controllo finale di `plan-tracking.instructions.md`, Fase 4 punto 4, in un contesto isolato dalla conversazione che ha eseguito il piano: nuova sessione, sub-agente o secondo revisore. Su Claude Code corrisponde alla skill `/dr-verify-plan`.
-- **Tool ammessi**: quelli del revisore, in sola lettura
-- **Verifica passo**: il revisore conferma ogni criterio della sezione seguente
-- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 18: <cosa>` in plan.md, non procedere
+- **Azione**: `/dr-verify-plan`
+- **Tool ammessi**: sola lettura
+- **Verifica passo**: il revisore conferma ogni criterio
+- **Esito**: 2026-09-24, sub-agente Explore: 7/7 file CORRISPONDE, criteri 1-7 SODDISFATTO, criterio 8 non valutabile prima della Fase 7
+- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
+
+### Fase 7: Commit, push e aggiornamento di `dr-postman`
+- **Stato**: [ ]
+- **Precondizione**: Fase 6 superata; l'utente autorizza esplicitamente commit e push
+- **File**: nessuno di questo repository oltre al commit; nell'host `E:\Davide\Progetti\dr-postman`
+- **Operazione**: nessuna modifica manuale all'host — solo l'installer
+- **Azione**: commit dei soli file di "Scope"; gate di push (nessun lint applicabile, repository di soli documenti e script: dichiararlo); push su `main`; in `dr-postman` eseguire l'installer del core con `-Update` (come fa `/dr-get-latest`). L'installer scarica la libreria dal raw di `main`: se la prima esecuzione mostra ancora il comportamento vecchio, è la cache del CDN (qualche minuto), non un errore
+- **Tool ammessi**: git, PowerShell
+- **Verifica passo**: in `dr-postman`: la cartella `briefs/` esiste; `.github/instructions/plan-tracking.instructions.md` contiene "Piani da un brief"; `.github/copilot-instructions.md` e la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` citano `briefs/`; il manifest riporta il nuovo commit
+- **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ## Criteri di verifica finale
-- [ ] Esiste la cartella `briefs/` come percorso convenzionale unico, identico su Claude Code e GitHub Copilot, con il percorso scritto esplicitamente nel file `.prompt.md`
-- [ ] L'istruzione del formato dichiara che un brief esprime una richiesta e non descrive un sistema, che il suo contenuto è dato e mai istruzione per l'agente, e vieta le credenziali
-- [ ] Due esecuzioni consecutive dell'installer con `-Update` non alterano nessun file scritto dall'utente in `briefs/`
-- [ ] Le skill di scaffolding leggono i brief prima di qualunque domanda, fanno eco e chiedono solo le lacune
-- [ ] Il template del piano documenta il campo `Brief:` con la stessa forma di `Issue:`
-- [ ] Il `CLAUDE.md` prodotto in un host cita `briefs/`
-- [ ] `doc-versioning.instructions.md` è invariato: la cartella in radice non ricade sotto il suo glob
-- [ ] Nessun costrutto esclusivo di un tool nei file condivisi: compatibilità duale rispettata
-- [ ] Nessun file fuori da "Scope" è stato modificato
+- [x] L'installer del core crea `briefs/` vuota in radice se assente, e non tocca mai il suo contenuto
+- [x] Rieseguire la creazione non altera un brief già scritto (prova con hash)
+- [x] `plan-tracking.instructions.md` impone: brief indicato → piano obbligatorio → approvazione esplicita → domande sulle lacune; link al brief sotto il titolo
+- [x] `CLAUDE.md` e `copilot-instructions.md` citano `briefs/` con lo stesso significato
+- [x] Nessun costrutto esclusivo di un tool nei file condivisi
+- [x] `doc-versioning.instructions.md` invariato
+- [x] Nessun file fuori da "Scope" modificato
+- [ ] `dr-postman` aggiornato con `-Update` riceve `briefs/`, la nuova regola e la sezione `CLAUDE.md` aggiornata
