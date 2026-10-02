@@ -52,7 +52,7 @@
     },
     {
       "id": "devops",
-      "label": "Deploy, container e CI/CD",
+      "label": "Deploy Docker Swarm/Portainer e CI/CD GitLab",
       "kind": "any",
       "packages": ["dr-devops"],
       "projectTypes": []
@@ -69,7 +69,7 @@
     },
     {
       "domain": "devops",
-      "phrases": ["deploy", "docker", "container", "swarm", "portainer", "pipeline", "ci/cd"]
+      "phrases": ["docker swarm", "swarm", "portainer", "stack portainer", "deploy su swarm", "gitlab ci", "pipeline gitlab", "ci/cd gitlab"]
     }
   ],
   "fallback": {
@@ -87,7 +87,7 @@
       "targetPath": "src",
       "defaultNameSuffix": ".api",
       "suggestedPackages": ["dr-dotnet-backend", "dr-minimalapi"],
-      "optionalPackages": ["dr-efdb"],
+      "optionalPackages": ["dr-efdb", "dr-devops"],
       "docs": "docs/scaffolding-minimal-api.md",
       "notes": "Template 'web' (ASP.NET Core vuoto), non 'webapi': la struttura Endpoints/ parte dal template vuoto."
     },
@@ -99,7 +99,7 @@
       "targetPath": "src",
       "defaultNameSuffix": ".service",
       "suggestedPackages": ["dr-dotnet-backend", "dr-winsvc"],
-      "optionalPackages": ["dr-efdb"],
+      "optionalPackages": ["dr-efdb", "dr-devops"],
       "docs": "docs/scaffolding-windows-service.md",
       "notes": "Un file per worker in Workers/, ciascuno erede di BackgroundService."
     },
