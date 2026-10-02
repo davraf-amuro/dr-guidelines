@@ -1,6 +1,6 @@
 # Piano: Cartella `briefs/` per le richieste che l'utente scrive e gli agenti leggono
 Data: 2026-09-22
-Stato: IN CORSO
+Stato: COMPLETATO
 Issue: davraf-amuro/dr-guidelines#1
 
 ## Obiettivo
@@ -167,13 +167,14 @@ Le risposte dell'utente hanno ridotto molto il perimetro rispetto alla proposta 
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
 
 ### Fase 7: Commit, push e aggiornamento di `dr-postman`
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 6 superata; l'utente autorizza esplicitamente commit e push
 - **File**: nessuno di questo repository oltre al commit; nell'host `E:\Davide\Progetti\dr-postman`
 - **Operazione**: nessuna modifica manuale all'host — solo l'installer
 - **Azione**: commit dei soli file di "Scope"; gate di push (nessun lint applicabile, repository di soli documenti e script: dichiararlo); push su `main`; in `dr-postman` eseguire l'installer del core con `-Update` (come fa `/dr-get-latest`). L'installer scarica la libreria dal raw di `main`: se la prima esecuzione mostra ancora il comportamento vecchio, è la cache del CDN (qualche minuto), non un errore
 - **Tool ammessi**: git, PowerShell
 - **Verifica passo**: in `dr-postman`: la cartella `briefs/` esiste; `.github/instructions/plan-tracking.instructions.md` contiene "Piani da un brief"; `.github/copilot-instructions.md` e la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` citano `briefs/`; il manifest riporta il nuovo commit
+- **Esito**: 2026-09-24 — commit `5cb0f80` pushato su `main` (nessun lint applicabile: solo documenti e script PowerShell, parser 0 errori). In `dr-postman`, `-Update` da `e98848d` a `5cb0f80`: `[OK] briefs\` creata vuota; `plan-tracking` contiene "Piani da un brief"; `copilot-instructions.md` e la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` citano `briefs/`; manifest a `5cb0f80`. Nota: lo script esce con codice 128 per il `git diff` sul clone `--depth 1` (commit vecchio assente); l'installazione arriva comunque a "Completato"
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ## Criteri di verifica finale
@@ -184,4 +185,4 @@ Le risposte dell'utente hanno ridotto molto il perimetro rispetto alla proposta 
 - [x] Nessun costrutto esclusivo di un tool nei file condivisi
 - [x] `doc-versioning.instructions.md` invariato
 - [x] Nessun file fuori da "Scope" modificato
-- [ ] `dr-postman` aggiornato con `-Update` riceve `briefs/`, la nuova regola e la sezione `CLAUDE.md` aggiornata
+- [x] `dr-postman` aggiornato con `-Update` riceve `briefs/`, la nuova regola e la sezione `CLAUDE.md` aggiornata
