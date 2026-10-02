@@ -87,6 +87,8 @@ function Get-DrPackageRegistry {
             Dependencies      = @($p.dependencies      | Where-Object { $_ })
             RootFiles         = @($p.rootFiles         | Where-Object { $_ })
             ObsoleteArtifacts = @($p.obsoleteArtifacts | Where-Object { $_ })
+            # Rimandi non vincolanti: mai installati, solo segnalati a fine installazione
+            Suggests          = @($p.suggests          | Where-Object { $_ -and $_.package })
         }
     }
 
@@ -498,6 +500,8 @@ function Install-DrPackage {
         annuncia in un blocco unico, una riga '[dep]' per dipendenza, nell'ordine in cui
         verranno installate. Nessuna conferma interattiva: bloccherebbe agenti ed esecuzioni
         'irm | iex'. La conferma, quando serve, sta a monte nelle skill.
+        A fine installazione, per ogni voce 'suggests' del pacchetto assente dal manifest,
+        stampa una riga '[sugg]' col motivo: il suggerito non si installa e non si chiede nulla.
     .PARAMETER Update
         Sovrascrive i file gia' presenti. Non si propaga alle dipendenze: riguarda solo
         il pacchetto richiesto esplicitamente.
@@ -558,6 +562,14 @@ function Install-DrPackage {
         Write-Host "=== $PackageName ===" -ForegroundColor Cyan
     }
     Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -Update:$Update
+
+    # Suggeriti: manifest riletto dopo l'installazione, vale anche con -NoDependencies
+    $manifest    = Read-DrManifest -HostRoot $hostRoot
+    $suggMissing = @($pkg.Suggests | Where-Object { -not (Test-DrPackageInstalled -Manifest $manifest -PackageName $_.package) })
+    if ($suggMissing.Count -gt 0) {
+        Write-Host "  Pacchetti suggeriti (non installati, nessuna azione automatica):" -ForegroundColor DarkGray
+        $suggMissing | ForEach-Object { Write-Host "  [sugg] $($_.package) non installato: $($_.reason)" -ForegroundColor Yellow }
+    }
 }
 
 function Install-DrPackageContent {

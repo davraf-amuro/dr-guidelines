@@ -18,7 +18,7 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, skill `/dr-audit-fe` |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
 
-Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
+Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. I pacchetti **suggeriti** (campo `suggests`) invece non si installano mai da soli: a fine installazione l'installer stampa una riga `[sugg]` con il motivo per ciascuno che manca. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
 > **I 7 repo sono Public** (dal 2026-09-21). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo`. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
@@ -26,7 +26,7 @@ Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi`
 
 Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), l'unica fonte. L'installer legge da lì l'elenco dei pacchetti. `/dr-scaffold` legge da lì domini e intenti. Per un pacchetto nuovo servono quattro voci nello stesso file:
 
-1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host
+1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
 2. **`kinds`** — solo se il dominio richiede una toolchain nuova, con i suoi prerequisiti (`dotnet`, `node`, `embedded`, `content`, `any`)
 3. **`domains`** — etichetta leggibile, `kind`, pacchetti che lo compongono
 4. **`intentMap`** — le frasi con cui un utente descriverebbe quel lavoro ("progetto per ESP32", "guida turistica")
@@ -470,4 +470,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Settembre 2026 — Revisione v3.9 — 2026-09-24 — claude-opus-5-5 — cartella `briefs/` e flusso brief → piano (issue #1)*
+*Documento aggiornato: Ottobre 2026 — Revisione v3.10 — 2026-10-02 — claude-opus-5-5 — campo di catalogo `suggests` (issue #7)*

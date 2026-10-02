@@ -1,0 +1,115 @@
+name: Suggests text check
+
+# Confronto non bloccante fra i rimandi condizionali scritti nelle istruzioni dei pacchetti
+# ("Controlla `.ai/dr-guidelines-packages.json`: se elenca `<pacchetto>`") e il campo
+# `suggests` di scaffolding-catalog.json. Segnala le divergenze come warning e non fallisce mai:
+# il pattern testuale e' fragile per natura, e una modifica in un altro repo o un problema di rete
+# non devono rompere PR che non c'entrano. Il controllo bloccante di integrita' sta in ci.yml.
+#
+# Esecuzione in locale, dalla radice di dr-guidelines con i pacchetti clonati accanto:
+#   copia il blocco 'run' dello step "Compare" in un .ps1 e lancialo con
+#   $env:CLONE_ROOT = '..'   (cartelle con lo stesso nome dei pacchetti: ../dr-fe, ../dr-efdb, ...)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  suggests-text-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone package repositories
+        shell: pwsh
+        env:
+          CLONE_ROOT: ${{ runner.temp }}/dr-packages
+        run: |
+          $catalog = Get-Content ./scaffolding-catalog.json -Raw | ConvertFrom-Json
+          New-Item -ItemType Directory -Path $env:CLONE_ROOT -Force | Out-Null
+          foreach ($pkg in @($catalog.packages | Where-Object { -not $_.isCore })) {
+            # Solo repo pubblici del proprietario atteso: stessa allowlist dell'installer
+            if (($pkg.repo -split '/')[0] -ne 'davraf-amuro') {
+              Write-Host "::warning::$($pkg.name): owner non consentito in '$($pkg.repo)', repo non clonato"
+              continue
+            }
+            $dest = Join-Path $env:CLONE_ROOT $pkg.name
+            git clone --quiet --depth 1 "https://github.com/$($pkg.repo).git" $dest 2>$null
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::warning::$($pkg.name): clone di $($pkg.repo) fallito, pacchetto escluso dal confronto"
+            }
+          }
+          exit 0
+
+      - name: Compare instruction text with catalog suggests
+        shell: pwsh
+        env:
+          CLONE_ROOT: ${{ runner.temp }}/dr-packages
+        run: |
+          # Radice dei clone: in CI la cartella dello step precedente, in locale '..'
+          $cloneRoot = if ($env:CLONE_ROOT) { $env:CLONE_ROOT } else { '..' }
+          $catalog   = Get-Content ./scaffolding-catalog.json -Raw | ConvertFrom-Json
+
+          # Pattern canonico di cross-package-references.instructions.md
+          $pattern  = 'se elenca `(dr-[a-z0-9-]+)`'
+          $warnings = [System.Collections.Generic.List[string]]::new()
+          $checked  = 0
+
+          foreach ($pkg in @($catalog.packages | Where-Object { -not $_.isCore })) {
+            $instrDir = Join-Path $cloneRoot $pkg.name '.github' 'instructions'
+            if (-not (Test-Path $instrDir)) {
+              $warnings.Add("$($pkg.name): cartella .github/instructions non trovata in '$cloneRoot', pacchetto non confrontato")
+              continue
+            }
+            $checked++
+
+            # Rimandi trovati nel testo: pacchetto citato -> file che lo citano
+            $textRefs = @{}
+            foreach ($file in Get-ChildItem $instrDir -Filter '*.md' -File) {
+              $content = Get-Content $file.FullName -Raw -Encoding UTF8
+              foreach ($m in [regex]::Matches($content, $pattern)) {
+                $target = $m.Groups[1].Value
+                if ($target -eq $pkg.name) { continue }
+                if (-not $textRefs.ContainsKey($target)) { $textRefs[$target] = @() }
+                if ($textRefs[$target] -notcontains $file.Name) { $textRefs[$target] += $file.Name }
+              }
+            }
+
+            $declared = @($pkg.suggests | Where-Object { $_ -and $_.package } | ForEach-Object { $_.package })
+            $deps     = @($pkg.dependencies | Where-Object { $_ })
+
+            # Verso 1: rimando nel testo senza voce suggests (una dipendenza e' sempre installata: non conta)
+            foreach ($target in $textRefs.Keys) {
+              if ($declared -notcontains $target -and $deps -notcontains $target) {
+                $warnings.Add("$($pkg.name): $($textRefs[$target] -join ', ') rimanda a '$target', ma il catalogo non lo dichiara in suggests")
+              }
+            }
+            # Verso 2: voce suggests senza rimando nel testo
+            foreach ($target in $declared) {
+              if (-not $textRefs.ContainsKey($target)) {
+                $warnings.Add("$($pkg.name): suggests dichiara '$target', ma nessuna istruzione del pacchetto contiene il rimando 'se elenca ``$target``'")
+              }
+            }
+          }
+
+          foreach ($w in $warnings) { Write-Host "::warning::$w" }
+
+          $summary = @("## Suggests: confronto testo / catalogo", "")
+          $summary += "Pacchetti confrontati: $checked. Divergenze: $($warnings.Count)."
+          if ($warnings.Count -gt 0) {
+            $summary += ""
+            $summary += @($warnings | ForEach-Object { "- $_" })
+          }
+          if ($env:GITHUB_STEP_SUMMARY) {
+            $summary | Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding UTF8
+          } else {
+            $summary | ForEach-Object { Write-Host $_ }
+          }
+
+          # Non bloccante per progetto: anche con divergenze il job resta verde
+          exit 0

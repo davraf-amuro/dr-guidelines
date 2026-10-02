@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-09-16",
+  "updatedAt": "2026-10-02",
   "defaults": {
     "dotnetFramework": "net10.0",
     "solutionFormat": "slnx",
@@ -192,6 +192,9 @@
       "isCore": false,
       "dependencies": [],
       "appliesTo": ["dotnet"],
+      "suggests": [
+        { "package": "dr-minimalapi", "reason": "senza, il Service layer segue il ripiego generico invece della regola 12 dell'architettura Minimal API" }
+      ],
       "description": "EF Core: provider database e resilienza in avvio.",
       "mcpSuggestion": "db-schema"
     },
@@ -201,6 +204,9 @@
       "isCore": false,
       "dependencies": [],
       "appliesTo": ["node"],
+      "suggests": [
+        { "package": "dr-minimalapi", "reason": "senza, lo schema di login va concordato a mano con chi sviluppa l'API" }
+      ],
       "description": "Organizzazione frontend e skill dr-audit-fe."
     },
     {
@@ -209,6 +215,9 @@
       "isCore": false,
       "dependencies": [],
       "appliesTo": ["any"],
+      "suggests": [
+        { "package": "dr-minimalapi", "reason": "senza, Data Protection e forwarded headers lato codice restano due requisiti da configurare a mano" }
+      ],
       "description": "Docker Swarm, Portainer, CI/CD GitLab."
     }
   ]

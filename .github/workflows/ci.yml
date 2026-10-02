@@ -87,6 +87,40 @@ jobs:
             }
           }
 
+          # suggests: rimando non vincolante verso un altro pacchetto. Qui solo integrita' del campo;
+          # nessun controllo di appliesTo, perche' un suggerito di kind diverso e' proprio il caso d'uso
+          # (dr-fe, node, suggerisce dr-minimalapi, dotnet). Il confronto col testo delle istruzioni
+          # sta nel workflow non bloccante suggests-text-check.yml.
+          foreach ($pkg in $catalog.packages) {
+            $seen = @()
+            foreach ($sugg in @($pkg.suggests | Where-Object { $null -ne $_ })) {
+              $target = [string]$sugg.package
+              if ([string]::IsNullOrWhiteSpace($target)) {
+                $problems += "pacchetto '$($pkg.name)': voce suggests senza 'package'"
+                continue
+              }
+              if ($catalogNames -notcontains $target) {
+                $problems += "suggests non risolvibile: '$($pkg.name)' -> '$target'"
+              }
+              if ($target -eq $pkg.name) {
+                $problems += "pacchetto '$($pkg.name)': suggests verso se stesso"
+              }
+              if (@($pkg.dependencies) -contains $target) {
+                $problems += "pacchetto '$($pkg.name)': '$target' e' sia in dependencies sia in suggests"
+              }
+              if ($seen -contains $target) {
+                $problems += "pacchetto '$($pkg.name)': suggests duplicato '$target'"
+              }
+              $seen += $target
+              $reason = [string]$sugg.reason
+              if ([string]::IsNullOrWhiteSpace($reason)) {
+                $problems += "suggests '$($pkg.name)' -> '$target': reason vuoto"
+              } elseif ($reason -match '[\x00-\x1F\x7F]') {
+                $problems += "suggests '$($pkg.name)' -> '$target': reason con caratteri di controllo (deve stare su una riga)"
+              }
+            }
+          }
+
           # Compatibilita' delle dipendenze: l'installer non conosce il kind dell'host e installa
           # le dipendenze senza filtrare, quindi una dipendenza incompatibile va fermata qui.
           # Regola: D, dipendenza di P, e' compatibile se D.appliesTo contiene 'any' oppure
