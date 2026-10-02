@@ -150,7 +150,7 @@ git status --short
 
 ## 5️⃣ Installare un pacchetto di dominio
 
-`dr-minimalapi` dipende da `dr-dotnet-backend`. Se manca dal manifest, l'installer lo installa **prima**, da solo.
+`dr-minimalapi` dipende da `dr-dotnet-backend`. Se manca dal manifest, l'installer lo annuncia prima di clonare qualsiasi cosa e lo installa **prima**, da solo. Con `-NoDependencies` la dipendenza non arriva: compare come `[skip]` con un avviso.
 
 ```powershell
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Package dr-minimalapi
@@ -159,7 +159,8 @@ git status --short
 **Riga chiave dell'output:**
 
 ```
-  Dipendenza mancante: dr-dotnet-backend -> installazione automatica
+  Dipendenze mancanti, installate prima di dr-minimalapi in questo ordine:
+  [dep]  dr-dotnet-backend (richiesta da dr-minimalapi)
 ```
 
 **Verifiche:**

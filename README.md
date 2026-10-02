@@ -18,7 +18,7 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, skill `/dr-audit-fe` |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
 
-Le dipendenze si installano da sole: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca. È il comportamento dell'installer, non ancora provato sul campo: vedi [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
+Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
 > **I 7 repo sono Public** (dal 2026-09-21). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo`. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 

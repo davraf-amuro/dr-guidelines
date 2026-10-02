@@ -29,16 +29,23 @@
     corrente. Il progetto corrente non viene toccato in alcun modo.
 .PARAMETER Package
     Nome del pacchetto dr-* da installare al posto del core (es. dr-minimalapi).
-    Le dipendenze mancanti vengono installate da sole: dr-minimalapi tira
-    dr-dotnet-backend. Nome sconosciuto -> errore con l'elenco dei pacchetti
-    disponibili. Mutuamente esclusivo con -Global.
+    Le dipendenze mancanti vengono installate prima del pacchetto: dr-minimalapi
+    tira dr-dotnet-backend. Prima di clonare qualsiasi cosa l'installer annuncia
+    l'albero in un blocco unico, una riga '[dep]' per dipendenza nell'ordine di
+    installazione; nessuna conferma interattiva. Un ciclo nel catalogo e' un errore
+    e ferma l'installazione prima di scrivere. Nome sconosciuto -> errore con
+    l'elenco dei pacchetti disponibili. Mutuamente esclusivo con -Global.
+.PARAMETER NoDependencies
+    Solo con -Package. Non installa le dipendenze mancanti: le elenca come '[skip]'
+    con un avviso e installa solo il pacchetto richiesto.
 #>
 
 [CmdletBinding()]
 param(
     [switch]$Update,
     [switch]$Global,
-    [string]$Package
+    [string]$Package,
+    [switch]$NoDependencies
 )
 
 # --- Risoluzione della libreria condivisa ---
@@ -106,7 +113,7 @@ if ($Global -and $Package) {
 if ($Global) {
     Install-DrGlobal -Update:$Update
 } elseif ($Package) {
-    Install-DrPackage -PackageName $Package -Update:$Update
+    Install-DrPackage -PackageName $Package -Update:$Update -NoDependencies:$NoDependencies
 } else {
     Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
 }

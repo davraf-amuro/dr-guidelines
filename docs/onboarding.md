@@ -43,7 +43,8 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 |---|---|
 | nessuno | Installa il core nella cartella corrente, salta i file già presenti |
 | `-Update` | Sovrascrive i file presenti e riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` |
-| `-Package <nome>` | Installa un pacchetto di dominio al posto del core, con le dipendenze mancanti |
+| `-Package <nome>` | Installa un pacchetto di dominio al posto del core, con le dipendenze mancanti. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
+| `-NoDependencies` | Solo con `-Package`: non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
 
 **Da sapere prima di toccare l'installer:**

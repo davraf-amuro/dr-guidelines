@@ -83,6 +83,7 @@ function Get-DrPackageRegistry {
         $registry[$p.name] = @{
             Repo              = $p.repo
             IsCore            = [bool]$p.isCore
+            AppliesTo         = @($p.appliesTo         | Where-Object { $_ })
             Dependencies      = @($p.dependencies      | Where-Object { $_ })
             RootFiles         = @($p.rootFiles         | Where-Object { $_ })
             ObsoleteArtifacts = @($p.obsoleteArtifacts | Where-Object { $_ })
@@ -440,12 +441,76 @@ function Update-DrManifest {
     Write-Host "  [OK]   Manifest aggiornato: $PackageName ($shortCommit)" -ForegroundColor Green
 }
 
+function Resolve-DrDependencyTree {
+    <#
+    .SYNOPSIS
+        Restituisce, in ordine di installazione, le dipendenze mancanti di un pacchetto.
+    .DESCRIPTION
+        Visita in profondita' l'intero grafo delle dipendenze a partire da PackageName.
+        Ogni voce restituita ha Name e RequiredBy (il primo pacchetto che la richiede);
+        l'ordine e' topologico: una dipendenza precede sempre chi la richiede.
+        Il pacchetto di partenza non compare nell'elenco, le dipendenze gia' nel manifest nemmeno.
+
+        Un ciclo nel catalogo (A -> B -> A) e' un errore di chi lo scrive: si ferma qui,
+        prima di qualsiasi clonazione, invece di mandare la ricorsione in loop.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$PackageName,
+        [Parameter(Mandatory)][hashtable]$Registry,
+        $Manifest
+    )
+
+    $order   = [System.Collections.Generic.List[object]]::new()
+    $visited = [System.Collections.Generic.HashSet[string]]::new()
+    $stack   = [System.Collections.Generic.List[string]]::new()
+
+    function Invoke-DrDependencyVisit([string]$Name, [string]$Parent) {
+        if ($stack.Contains($Name)) {
+            $start = $stack.IndexOf($Name)
+            $cycle = @($stack.GetRange($start, $stack.Count - $start)) + $Name
+            throw "Ciclo nelle dipendenze del catalogo: $($cycle -join ' -> '). Correggi scaffolding-catalog.json."
+        }
+        if ($visited.Contains($Name)) { return }
+        if (-not $Registry.ContainsKey($Name)) {
+            throw "Dipendenza sconosciuta: '$Parent' -> '$Name' non e' nel catalogo."
+        }
+
+        $stack.Add($Name)
+        foreach ($dep in $Registry[$Name].Dependencies) { Invoke-DrDependencyVisit $dep $Name }
+        $stack.RemoveAt($stack.Count - 1)
+        $null = $visited.Add($Name)
+
+        if ($Parent -and -not (Test-DrPackageInstalled -Manifest $Manifest -PackageName $Name)) {
+            $order.Add([PSCustomObject]@{ Name = $Name; RequiredBy = $Parent })
+        }
+    }
+
+    Invoke-DrDependencyVisit $PackageName ""
+    return $order.ToArray()
+}
+
 function Install-DrPackage {
+    <#
+    .SYNOPSIS
+        Installa un pacchetto dr-* nel progetto corrente, con le dipendenze mancanti.
+    .DESCRIPTION
+        Prima di clonare qualsiasi cosa calcola l'albero delle dipendenze mancanti e lo
+        annuncia in un blocco unico, una riga '[dep]' per dipendenza, nell'ordine in cui
+        verranno installate. Nessuna conferma interattiva: bloccherebbe agenti ed esecuzioni
+        'irm | iex'. La conferma, quando serve, sta a monte nelle skill.
+    .PARAMETER Update
+        Sovrascrive i file gia' presenti. Non si propaga alle dipendenze: riguarda solo
+        il pacchetto richiesto esplicitamente.
+    .PARAMETER NoDependencies
+        Non installa le dipendenze mancanti: le elenca come '[skip]' con un avviso e
+        installa solo il pacchetto richiesto.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]$PackageName,
-        [switch]$Update
+        [switch]$Update,
+        [switch]$NoDependencies
     )
 
     $registry = Get-DrPackageRegistry
@@ -461,15 +526,53 @@ function Install-DrPackage {
     Write-Host "  Repo    : $($pkg.Repo)"
     Write-Host "  Progetto: $hostRoot"
 
-    # Risoluzione dipendenze: -Update non si propaga, riguarda solo il pacchetto richiesto esplicitamente
+    # Albero calcolato tutto prima di scrivere: un ciclo nel catalogo fallisce qui, a host intatto
     $manifest = Read-DrManifest -HostRoot $hostRoot
-    foreach ($dep in $pkg.Dependencies) {
-        if (-not (Test-DrPackageInstalled -Manifest $manifest -PackageName $dep)) {
-            Write-Host "  Dipendenza mancante: $dep -> installazione automatica" -ForegroundColor Yellow
-            Install-DrPackage -PackageName $dep
-            $manifest = Read-DrManifest -HostRoot $hostRoot
+    $missing  = @(Resolve-DrDependencyTree -PackageName $PackageName -Registry $registry -Manifest $manifest)
+
+    if ($missing.Count -gt 0) {
+        if ($NoDependencies) {
+            Write-Host "  Dipendenze mancanti NON installate (-NoDependencies):" -ForegroundColor Yellow
+            $missing | ForEach-Object { Write-Host "  [skip] $($_.Name) (richiesta da $($_.RequiredBy))" -ForegroundColor Yellow }
+            Write-Host "  Attenzione: $PackageName rimanda a regole di questi pacchetti; installali a parte se servono." -ForegroundColor Yellow
+            $missing = @()
+        } else {
+            Write-Host "  Dipendenze mancanti, installate prima di $PackageName in questo ordine:" -ForegroundColor White
+            $missing | ForEach-Object { Write-Host "  [dep]  $($_.Name) (richiesta da $($_.RequiredBy))" -ForegroundColor Yellow }
+            Write-Host "  Per installare solo $PackageName usa -NoDependencies." -ForegroundColor DarkGray
         }
+    } elseif ($pkg.Dependencies.Count -gt 0) {
+        Write-Host "  Dipendenze: tutte gia' installate" -ForegroundColor DarkGray
     }
+
+    # -Update non si propaga: le dipendenze si installano senza sovrascrivere nulla
+    foreach ($dep in $missing) {
+        Write-Host ""
+        Write-Host "=== $($dep.Name) (dipendenza di $($dep.RequiredBy)) ===" -ForegroundColor Cyan
+        Write-Host "  Repo    : $($registry[$dep.Name].Repo)"
+        Install-DrPackageContent -PackageName $dep.Name -Package $registry[$dep.Name] -HostRoot $hostRoot
+    }
+
+    if ($missing.Count -gt 0) {
+        Write-Host ""
+        Write-Host "=== $PackageName ===" -ForegroundColor Cyan
+    }
+    Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -Update:$Update
+}
+
+function Install-DrPackageContent {
+    # Clona un solo pacchetto e ne copia il contenuto nell'host. Nessuna risoluzione delle
+    # dipendenze: l'ordine lo decide Install-DrPackage, che e' l'unico punto d'ingresso.
+    param(
+        [Parameter(Mandatory)][string]$PackageName,
+        [Parameter(Mandatory)][hashtable]$Package,
+        [Parameter(Mandatory)][string]$HostRoot,
+        [switch]$Update
+    )
+
+    $pkg      = $Package
+    $hostRoot = $HostRoot
+    $manifest = Read-DrManifest -HostRoot $hostRoot
 
     $tempDir = Join-Path $env:TEMP ("dr-install-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null

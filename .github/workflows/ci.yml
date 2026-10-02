@@ -62,7 +62,7 @@ jobs:
           # Get-DrCatalog scaricherebbe il main pubblicato invece del commit in verifica.
           # Get-DrPackageRegistry applica anche l'allowlist dell'owner e fallisce su un repo estraneo.
           $Script:Catalog = $catalog
-          $null = Get-DrPackageRegistry
+          $registry = Get-DrPackageRegistry
 
           $problems = @()
 
@@ -86,6 +86,37 @@ jobs:
               }
             }
           }
+
+          # Compatibilita' delle dipendenze: l'installer non conosce il kind dell'host e installa
+          # le dipendenze senza filtrare, quindi una dipendenza incompatibile va fermata qui.
+          # Regola: D, dipendenza di P, e' compatibile se D.appliesTo contiene 'any' oppure
+          # contiene ogni kind di P.appliesTo. Un pacchetto 'any' puo' dipendere solo da pacchetti 'any'.
+          foreach ($pkg in $catalog.packages) {
+            $pkgKinds = @($pkg.appliesTo | Where-Object { $_ })
+            foreach ($dep in $pkg.dependencies) {
+              $depPkg = $catalog.packages | Where-Object { $_.name -eq $dep } | Select-Object -First 1
+              if (-not $depPkg) { continue }
+              $depKinds = @($depPkg.appliesTo | Where-Object { $_ })
+              if ($depKinds -contains 'any') { continue }
+              $uncovered = @($pkgKinds | Where-Object { $depKinds -notcontains $_ })
+              if ($uncovered.Count -gt 0) {
+                $problems += "dipendenza incompatibile: '$($pkg.name)' ($($pkgKinds -join ',')) -> '$dep' ($($depKinds -join ',')): kind non coperti '$($uncovered -join ',')'"
+              }
+            }
+          }
+
+          # Cicli: stessa visita dell'installer, che su un ciclo lancia un errore invece di andare in loop.
+          # Manifest vuoto: il grafo si visita tutto, come in un host senza pacchetti.
+          $emptyManifest = [PSCustomObject]@{ installed = @() }
+          $graphErrors = @()
+          foreach ($pkg in $catalog.packages) {
+            try {
+              $null = Resolve-DrDependencyTree -PackageName $pkg.name -Registry $registry -Manifest $emptyManifest
+            } catch {
+              $graphErrors += $_.Exception.Message
+            }
+          }
+          $problems += @($graphErrors | Where-Object { $_ -like 'Ciclo*' } | Select-Object -Unique)
 
           foreach ($domain in $catalog.domains) {
             if ($kindIds -notcontains $domain.kind) {

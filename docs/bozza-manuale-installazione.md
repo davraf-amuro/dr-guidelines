@@ -266,13 +266,25 @@ Punti che la futura linea guida dovrebbe fissare:
 
 ## 🧩 Come si comportano le dipendenze fra pacchetti
 
-Scoperto leggendo `dr-guidelines-install-lib.ps1` durante il lavoro sulla issue #5, il 2026-09-24. Riguarda chi installa, quindi vale la pena saperlo prima di scegliere i pacchetti.
+Scoperto leggendo `dr-guidelines-install-lib.ps1` durante il lavoro sulla issue #5, il 2026-09-24; comportamento rivisto con la issue #6, il 2026-10-02. Riguarda chi installa, quindi vale la pena saperlo prima di scegliere i pacchetti.
 
-**Le dipendenze si risolvono da sole, e non si possono rifiutare.** `Install-DrPackage` legge il manifest dell'host e, per ogni dipendenza non ancora installata, stampa `Dipendenza mancante: <nome> -> installazione automatica` e richiama sé stesso. È ricorsivo: la dipendenza di una dipendenza arriva comunque. Nessuna conferma viene chiesta. `-Update` invece non si propaga: riguarda solo il pacchetto chiesto esplicitamente.
+**Le dipendenze si annunciano prima di scrivere.** `Install-DrPackage` legge il manifest dell'host e calcola l'intero albero delle dipendenze mancanti, anche quelle di una dipendenza, prima di clonare qualsiasi cosa. Lo stampa in un blocco unico, una riga per dipendenza nell'ordine in cui verranno installate:
 
-**Il filtro per stack non esiste in questa fase.** `Get-DrPackageRegistry` costruisce il registro con `Repo`, `IsCore`, `Dependencies`, `RootFiles` e `ObsoleteArtifacts`: **`appliesTo` non viene letto affatto dall'installer**. Quel campo è consumato solo da `/dr-scaffold-guidelines`, dal prompt di scaffolding e dal guard di catalogo in CI, cioè quando si *propone* un pacchetto — non quando lo si installa.
+```
+  Dipendenze mancanti, installate prima di dr-minimalapi in questo ordine:
+  [dep]  dr-dotnet-backend (richiesta da dr-minimalapi)
+  Per installare solo dr-minimalapi usa -NoDependencies.
+```
 
-Conseguenza pratica: una dipendenza dichiarata da un pacchetto `node` o `any` verso un pacchetto `dotnet` porterebbe i file di progetto .NET (`Directory.Build.props`, `global.json`, che arrivano con `dr-dotnet-backend`) nella radice di un host che .NET non è, senza che nessuno lo chieda. È il motivo per cui `dr-fe` e `dr-devops` citano `dr-minimalapi` con un rimando condizionale invece che con una dipendenza.
+Poi installa le dipendenze in quell'ordine e infine il pacchetto chiesto. Nessuna conferma interattiva: un prompt bloccherebbe gli agenti e le esecuzioni `irm | iex`. La conferma, quando serve, sta a monte: `/dr-scaffold-guidelines` mostra le dipendenze in arrivo nella sua conferma unica. `-Update` non si propaga: riguarda solo il pacchetto chiesto esplicitamente.
+
+**Si possono rifiutare con `-NoDependencies`.** Con lo switch l'installer non installa le dipendenze mancanti: le elenca con il prefisso `[skip]`, stampa un avviso e installa solo il pacchetto chiesto. Chi passa lo switch ha scelto; le regole del pacchetto che rimandano alla dipendenza restano senza destinazione finché non la installi a parte. Dall'entry point: `dr-guidelines-install.ps1 -Package dr-minimalapi -NoDependencies`.
+
+**Un ciclo nel catalogo è un errore, non un loop.** Se il catalogo dichiarasse A → B → A, l'installer si ferma con `Ciclo nelle dipendenze del catalogo: A -> B -> A` prima di clonare, a host intatto.
+
+**La compatibilità con lo stack la garantisce il catalogo, non l'installer.** L'installer non conosce lo stack dell'host e non lo rileva: `appliesTo` lo legge, ma non filtra. A fermare una dipendenza sbagliata è il guard di catalogo in CI (`catalog-guard` in `.github/workflows/ci.yml`), con questa regola: una dipendenza `D` del pacchetto `P` è compatibile se `D.appliesTo` contiene `any`, oppure contiene ogni kind di `P.appliesTo`. Ne segue che un pacchetto `any` può dipendere solo da pacchetti `any`. Lo stesso guard fallisce su un ciclo.
+
+Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacchetto `dotnet` porterebbe i file di progetto .NET (`Directory.Build.props`, `global.json`, che arrivano con `dr-dotnet-backend`) nella radice di un host che .NET non è. È il motivo per cui `dr-fe` e `dr-devops` citano `dr-minimalapi` con un rimando condizionale invece che con una dipendenza.
 
 **La convenzione che ne è nata**: `cross-package-references.instructions.md`. Un rimando a una regola di un altro pacchetto si scrive sempre condizionale al manifest `.ai/dr-guidelines-packages.json`, con un ripiego che dice *cosa* serve senza spiegare *come* si fa, e con l'obbligo per l'agente di dichiarare nell'output quale dei due rami ha applicato. Senza quella dichiarazione non c'è modo di sapere se la regola è stata seguita o aggirata.
 

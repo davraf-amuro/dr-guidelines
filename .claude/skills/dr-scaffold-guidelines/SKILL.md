@@ -61,7 +61,7 @@ Costruisci la lista dai `packages[]` del catalogo filtrati per `appliesTo` compa
 Regole di selezione:
 
 - `dr-guidelines` (core) va sempre incluso se manca dal manifest: crea `CLAUDE.md` e la configurazione radice da cui dipende tutto il resto.
-- **Non elencare le dipendenze**: le risolve l'installer dal proprio registry (`dr-minimalapi` tira `dr-dotnet-backend`, `dr-winsvc` idem). Aggiungerle a mano non serve.
+- **Non aggiungere le dipendenze come pacchetti da installare a mano**: le installa l'installer, prima del pacchetto che le richiede (`dr-minimalapi` tira `dr-dotnet-backend`, `dr-winsvc` idem). Nella conferma unica però **mostrale**: per ogni pacchetto scelto segui `dependencies` nel catalogo, anche in modo transitivo, ed elenca a parte le dipendenze che arriveranno perché non sono nel manifest né fra i pacchetti scelti (es. «arriverà anche: `dr-dotnet-backend`, dipendenza di `dr-minimalapi`»). L'utente deve vedere tutto ciò che verrà scritto prima di confermare.
 - Se tutti i pacchetti pertinenti risultano già installati, dillo e fermati: non c'è niente da aggiungere. Per aggiornarli → `/dr-get-latest`.
 
 Mostra la selezione e chiedi **una** conferma prima di eseguire.

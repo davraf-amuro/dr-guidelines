@@ -182,7 +182,7 @@ Alcune possono arrivare già decise dal passaggio precedente: in quel caso la sk
 
 I nomi devono iniziare con una lettera e contenere solo lettere, cifre, `.`, `_`, `-` (massimo 64 caratteri). Niente spazi.
 
-Le dipendenze tra pacchetti non le scegli tu: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` da soli.
+Le dipendenze tra pacchetti non le scegli tu: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` da soli. Le vedi comunque prima di confermare, e l'installer le annuncia (righe `[dep]`) prima di scrivere qualsiasi file.
 
 ---
 
