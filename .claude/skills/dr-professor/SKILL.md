@@ -17,16 +17,21 @@ Crei, aggiorni e revisioni la documentazione tecnica del progetto. Prima di scri
 
 ## Documentazione completa del progetto
 
-Quando il task è generico — "documenta il progetto", "genera la documentazione", "prepara i docs", "aggiorna i docs" — esegui i template nell'ordine seguente **senza attendere conferma tra un passo e l'altro**:
+Quando il task è generico — "documenta il progetto", "genera la documentazione", "prepara i docs", "aggiorna i docs" — esegui i template nell'ordine seguente. Fai **una sola domanda all'inizio** (wiki card, vedi sotto); dopo la risposta esegui tutti i passi **senza attendere conferma tra un passo e l'altro**:
 
 | # | Template da leggere | Output | Condizione |
 |---|---|---|---|
-| 1 | `.github/prompts/card-project-generator.prompt.md` | `docs/card-<progetto>.md` | sempre |
+| 1 | `.github/prompts/card-project-generator.prompt.md` | `docs/card-<progetto>.md` (solo card standard) | sempre |
 | 2 | `.github/prompts/endpoints-analyzer.prompt.md` | `docs/endpoint-<group>.md` per ogni MapGroup | solo se Minimal API¹ |
 | 3 | `.github/prompts/onboarding-senior.prompt.md` | `docs/onboarding.md` | sempre |
 | 4 | `.github/prompts/readme-generator.prompt.md` | `README.md` | sempre |
+| 5 | `.github/prompts/card-wiki-generator.prompt.md` | `docs/card-<progetto>-wiki.md` | solo con conferma esplicita² — sempre ultimo |
 
 > ¹ **Come riconoscere una Minimal API:** presenza di `Endpoints/*.cs` e assenza di `Controllers/` nel progetto.
+>
+> ² **Conferma della wiki card.** Prima del passo 1, segui la sezione "Conferma prima di leggere" di `card-wiki-generator.prompt.md`: verifica `.gitignore` e poni la sua domanda, con lo stesso testo (usa `AskUserQuestion` se disponibile). Non aprire file con valori reali per costruirla: bastano i nomi. La risposta vale fino al passo 5, che non la ripete. Senza "sì" esplicito il passo 5 scrive il testo di fallback del template.
+
+**Un passo saltato o bloccato non interrompe i successivi: dichiaralo e prosegui.** Vale anche per una lettura o scrittura negata dall'ambiente.
 
 Al termine di ogni passo, scrivi una riga di riepilogo: `✅ <nome file> generato`.
 
@@ -45,6 +50,7 @@ Quando il task è specifico, leggi il template corrispondente e seguilo come gui
 | Documentazione endpoint Minimal API | `.github/prompts/endpoints-analyzer.prompt.md` | `docs/endpoint-<group>.md` |
 | Onboarding per developer senior | `.github/prompts/onboarding-senior.prompt.md` | `docs/onboarding.md` |
 | Creare o aggiornare README | `.github/prompts/readme-generator.prompt.md` | `README.md` |
+| Wiki card operativa (valori reali, privata) | `.github/prompts/card-wiki-generator.prompt.md` — conferma esplicita prima di leggere | `docs/card-<progetto>-wiki.md` |
 
 Se il task non rientra in nessuna di queste categorie, procedi con lo stile generico.
 
@@ -73,7 +79,7 @@ Questo formato ha precedenza sul footer eventualmente indicato nei singoli templ
 
 - Non riscrivere ciò che è già chiaro e corretto
 - Non aggiungere sezioni vuote o placeholder non compilati
-- Non esporre dati sensibili (segui `.github/instructions/sensitive-data.instructions.md`)
+- Non esporre dati sensibili (segui `.github/instructions/sensitive-data.instructions.md`). Unica eccezione: la wiki card, privata ed esclusa da git, solo dopo conferma esplicita
 
 ## Perimetro non negoziabile
 
