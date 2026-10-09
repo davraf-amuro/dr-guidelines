@@ -150,9 +150,9 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
 | `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Sì | Generato da `.mcp.example.json`, solo perché assente. Il `.gitignore` copiato lo esclude dai commit |
-| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`). Dal 2026-10-09 (issue #9) il core ne contiene 12 ma ne installa 11: `readme-structure.instructions.md` è elencato in `coreOnlyArtifacts` del catalogo, vale solo nel repo dr-guidelines e nell'output compare come `[CORE] readme-structure.instructions.md` invece di `[OK]` |
-| `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` al 2026-08-12. Al 2026-09-16 anche `dr-get-latest` e `dr-file-feedback` |
-| `.claude/skills/` | Sì | Il taccuino del 2026-08-12 riportava 10 cartelle, ma nei commit di quel giorno (`faf6a6c`, `cffb1f2`) le skill del core erano 15: conteggio da rifare. Al 2026-09-16 il core ne ha 16 |
+| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`). Dal 2026-10-09 (issue #9) il core ne contiene 12 ma ne installa 11: `readme-structure.instructions.md` è elencato in `coreOnlyArtifacts` del catalogo, vale solo nel repo dr-guidelines e nell'output compare come `[CORE] readme-structure.instructions.md` invece di `[OK]`. Con la issue #10 il core ne contiene 13 e ne installa 12 (aggiunto `architecture-doc`) |
+| `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` al 2026-08-12. Al 2026-09-16 anche `dr-get-latest` e `dr-file-feedback`. Al 2026-10-09 il core ne ha 9: anche `dr-issues-to-plans` e `architecture-doc` (issue #10) |
+| `.claude/skills/` | Sì | Il taccuino del 2026-08-12 riportava 10 cartelle, ma nei commit di quel giorno (`faf6a6c`, `cffb1f2`) le skill del core erano 15: conteggio da rifare. Al 2026-09-16 il core ne ha 16, al 2026-10-09 17 |
 | `CLAUDE.md` | Sì | Contiene i marker `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-guidelines-packages.json` | Sì | Manifest dei pacchetti installati |
 | `.ai/dr-scaffolding-catalog.json` | Sì | Catalogo tipologie/pacchetti, letto dalle skill `dr-scaffold*` |
@@ -303,4 +303,4 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
-*Revisione v1.9 — 2026-10-09 14:40 — claude-opus-5-5 — `readme-structure` non distribuito (`coreOnlyArtifacts`) e rimosso con `-Update`*
+*Revisione v1.10 — 2026-10-09 14:46 — claude-opus-5-5 — conteggi di istruzioni e prompt con `architecture-doc` (issue #10)*

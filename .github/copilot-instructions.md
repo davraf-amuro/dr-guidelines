@@ -14,7 +14,7 @@ Prima di generare o modificare codice, stabilisci in quale dominio stai lavorand
 
 Nessun pacchetto di dominio installato e il task richiede codice applicativo → fermati e chiedi quale dominio, invece di assumerne uno.
 
-Il rilevamento vale per i task che generano o modificano **codice applicativo**. Per task di sola documentazione o configurazione (markdown, file di config), non porre la domanda: prosegui con l'istruzione modulare o il prompt pertinente al file (es. `doc-versioning`, `readme-generator`).
+Il rilevamento vale per i task che generano o modificano **codice applicativo**. Per task di sola documentazione o configurazione (markdown, file di config), non porre la domanda: prosegui con l'istruzione modulare o il prompt pertinente al file (es. `doc-versioning`, `readme-generator`, `architecture-doc`).
 
 ## Convenzioni essenziali (tutti i domini)
 
@@ -77,4 +77,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Template v2.1 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-09 — claude-opus-5-5
+*Template v2.2 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-09 — claude-opus-5-5

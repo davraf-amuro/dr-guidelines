@@ -204,6 +204,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `logging.instructions.md` | Logging strutturato con placeholder, mai interpolazione (esempi Serilog) |
 | `sensitive-data.instructions.md` | Gestione di credenziali e dati sensibili |
 | `doc-versioning.instructions.md` | Footer di revisione obbligatorio nei documenti in `docs/` |
+| `architecture-doc.instructions.md` | Struttura obbligatoria di `docs/architettura.md`: 8 sezioni, diagrammi solo Mermaid, decisioni D/T/C e riallineamento al codice a fine implementazione. Su Copilot si genera con `.github/prompts/architecture-doc.prompt.md`, su Claude Code con `/dr-professor` |
 | `readme-structure.instructions.md` | Struttura obbligatoria di questo README. **Solo in questo repo**: l'installer non la copia negli host (campo `coreOnlyArtifacts`), dove il README segue `.github/prompts/readme-generator.prompt.md` |
 | `mcp-tool-readme.instructions.md` | README per MCP server (`tools/**/README.md`) |
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione di MCP server: cerca prima di creare |
@@ -478,4 +479,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.12 — 2026-10-09 14:40 — claude-opus-5-5*
+*Revisione v3.13 — 2026-10-09 14:46 — claude-opus-5-5*

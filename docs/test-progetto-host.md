@@ -130,7 +130,7 @@ Get-Content .ai\dr-guidelines-packages.json
 git status --short
 ```
 
-**Atteso** (conteggi del core al 2026-09-22):
+**Atteso** (conteggi del core al 2026-10-09):
 
 | Elemento | Atteso |
 |---|---|
@@ -138,8 +138,8 @@ git status --short
 | `Directory.Build.props`, `global.json` | **Assenti**: appartengono a `dr-dotnet-backend`, arrivano al passo 5 |
 | `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
 | `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
-| `.github/instructions/` | 11 file `*.instructions.md` |
-| `.github/prompts/` | 8 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
+| `.github/instructions/` | 12 file `*.instructions.md`: il core ne contiene 13, `readme-structure.instructions.md` non viene installato (`coreOnlyArtifacts`) |
+| `.github/prompts/` | 9 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `architecture-doc`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
 | `.claude/skills/` | 17 cartelle skill `dr-*` |
 | `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-scaffolding-catalog.json` | Presente: è `scaffolding-catalog.json` del core, copiato con questo nome |
@@ -247,7 +247,7 @@ Atteso: **nessun risultato**. Dal clone locale l'installer prende solo la librer
 | 1 | Cartella di prova fuori dal workspace `dr-*`, aperta in finestra separata | ☐ |
 | 2 | Config radice del core presenti; `Directory.Build.props` e `global.json` solo dopo `dr-dotnet-backend` | ☐ |
 | 3 | `.mcp.json` generato e ignorato da git | ☐ |
-| 4 | 11 istruzioni, 8 prompt, 17 skill dopo il solo core | ☐ |
+| 4 | 12 istruzioni, 9 prompt, 17 skill dopo il solo core | ☐ |
 | 5 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
 | 6 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
 | 7 | `dr-dotnet-backend` installato in automatico | ☐ |
@@ -303,4 +303,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.2 — 2026-10-09 14:15 — claude-opus-5-5*
+*Revisione v2.3 — 2026-10-09 14:46 — claude-opus-5-5*

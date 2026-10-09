@@ -106,6 +106,7 @@ Ricavate da `.github/instructions/`, `.github/copilot-instructions.md` e `CLAUDE
 | Task con ≥ 2 operazioni: piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` e approvazione | `plan-tracking.instructions.md` |
 | Skill nuove con prefisso `dr-` | `CLAUDE.md` globale |
 | Footer obbligatorio nei file `docs/`: `*Revisione vN — YYYY-MM-DD HH:MM — modello*` | `doc-versioning.instructions.md` |
+| `docs/architettura.md` in 8 sezioni fisse, diagrammi solo Mermaid, ogni decisione dei piani presente | `architecture-doc.instructions.md` |
 | Struttura del `README.md` fissa in 12 sezioni | `readme-structure.instructions.md` |
 | Dati sensibili mai in file committati; `.mcp.json` ignorato, `.mcp.example.json` committato | `sensitive-data.instructions.md` |
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
@@ -173,4 +174,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.3 — 2026-09-23 09:15 — claude-opus-5*
+*Revisione v3.4 — 2026-10-09 14:46 — claude-opus-5-5*
