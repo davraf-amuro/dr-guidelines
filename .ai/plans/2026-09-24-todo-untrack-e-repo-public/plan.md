@@ -1,6 +1,6 @@
 # Piano: TODO/ fuori dal versionamento e documenti allineati ai repo Public
 Data: 2026-09-24
-Stato: IN CORSO — esecuzione conclusa, in attesa di /dr-verify-plan
+Stato: COMPLETATO
 
 ## Obiettivo
 1. Togliere `TODO/01-revisione.md` dal repository (committato per errore in `e98848d`) senza cancellarlo dal disco, e impedire che succeda di nuovo.
@@ -47,6 +47,11 @@ Stato: IN CORSO — esecuzione conclusa, in attesa di /dr-verify-plan
 ### Fase 4: Gate di push e push
 - **Stato**: [x] — nessun target di lint, dichiarato. Commit `bb5e3f7` (dr-guidelines), `6f66968` dr-fe, `bb3d7df` dr-devops, `fdc9030` dr-efdb, `e92bd3e` dr-minimalapi, `ea4fb55` dr-winsvc, `3c12474` dr-dotnet-backend. CI dr-guidelines `success`
 - **Verifica passo**: nessun target di lint applicabile, dichiarato. Parser PowerShell non necessario (nessun `.ps1` toccato). `catalog-guard` non necessario (catalogo non toccato). Commit e push nei 7 repo, CI di `dr-guidelines` verde
+
+Divergenza risolta (verifica a freddo 2026-10-09): restavano affermazioni implicite sullo stato Private, corrette con commit ce23fb0 (dr-guidelines), 8dcf14e dr-fe, 88ba408 dr-efdb, 2717e10 dr-minimalapi, 2c4fa55 dr-winsvc, 950d23b dr-dotnet-backend, d179654 dr-devops (clonato). Push eseguito, grep finale vuoto.
+- "oggi risponde 404" (forma breve `irm`): `.github/prompts/dr-scaffold.prompt.md:93`, `.claude/skills/dr-scaffold-solution/SKILL.md:33`, `.claude/skills/dr-install-global/SKILL.md:51`; README di dr-fe:45, dr-efdb:43, dr-minimalapi:70, dr-winsvc:61, dr-dotnet-backend:74, dr-devops:44
+- "credenziali per i repo Private" come dato di fatto: `README.md:117`, `README.md:452`, `docs/guida-nuova-soluzione.md:238`, `docs/test-progetto-host.md:32`
+- dr-devops non è clonato in locale: correzione da fare via clone o da remoto
 
 ## Criteri di verifica finale
 - [x] `TODO/01-revisione.md` non tracciato, presente su disco, ignorato
