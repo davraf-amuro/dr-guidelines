@@ -372,7 +372,7 @@ Genera la documentazione di handoff per far continuare il lavoro a un altro svil
 
 ### `/dr-verify-plan` — Verifica Indipendente di un Piano
 
-Lancia un subagente senza il contesto di chi ha implementato: rilegge i file di Scope, li confronta con il piano e valuta i criteri di verifica prima dello stato `COMPLETATO`. Chi ha scritto il codice tende a confermarlo; un controllo a freddo no.
+Lancia un subagente senza il contesto di chi ha implementato: rilegge i file di Scope, li confronta con il piano e valuta i criteri di verifica prima dello stato `COMPLETATO`. Se lo Scope contiene un documento che descrive il sistema (es. `docs/architettura.md`), ne confronta a campione le affermazioni col codice reale. Chi ha scritto il codice tende a confermarlo; un controllo a freddo no.
 
 **Uso:**
 ```
@@ -479,4 +479,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.13 — 2026-10-09 14:46 — claude-opus-5-5*
+*Revisione v3.14 — 2026-10-09 14:51 — claude-opus-5-5*

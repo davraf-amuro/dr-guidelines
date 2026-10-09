@@ -123,7 +123,7 @@ Si applica `doc-versioning.instructions.md` (il documento sta in `docs/`): ultim
 
 ## Riallineamento a fine implementazione
 
-Si applica quando il documento è stato scritto **prima del codice**, per esempio da una fase iniziale di un piano. A implementazione finita il documento descrive ancora il progetto, non il sistema realizzato: va confrontato col codice reale e corretto.
+Si applica in due casi: il documento è stato scritto **prima del codice**, per esempio da una fase iniziale di un piano; oppure un piano modifica codice che il documento già descrive. In entrambi, a implementazione finita il documento può descrivere il progetto o il sistema di prima, non quello realizzato: va confrontato col codice reale e corretto.
 
 Quando farlo lo stabilisce il piano che modifica il documento, che prevede la fase di riallineamento secondo `plan-tracking.instructions.md`. Questa sezione dice **cosa** si confronta.
 
@@ -148,4 +148,4 @@ Quando farlo lo stabilisce il piano che modifica il documento, che prevede la fa
 
 ---
 
-*Istruzione v1.0 - Architecture Doc - 2026-10-09 — claude-opus-5-5 — prima versione, include il riallineamento a fine implementazione (issue #10)*
+*Istruzione v1.1 - Architecture Doc - 2026-10-09 — claude-opus-5-5 — riallineamento esteso al codice già descritto, come plan-tracking (issue #11)*
