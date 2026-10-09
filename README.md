@@ -129,7 +129,7 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `.gitattributes` | copia | Normalizzazione dei fine riga |
 | `.mcp.json` | copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
 | `.github/copilot-instructions.md` | copia, sovrascritta con `-Update` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
-| `.github/instructions/`, `.github/prompts/` | copia file per file | Istruzioni e prompt del core, per Copilot e Claude Code |
+| `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. `readme-structure.instructions.md` resta in questo repo: negli host il README segue `readme-generator.prompt.md` |
 | `.claude/skills/` | copia cartella per cartella | Skill Claude Code del core (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) |
 | `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte |
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
@@ -169,6 +169,8 @@ A repo Public vale anche la forma breve:
 
 `-Update` sovrascrive i file già presenti con la versione corrente del pacchetto. Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
 
+`-Update` rimuove anche i file che il pacchetto ha dismesso (campo `obsoleteArtifacts` del catalogo), per esempio `readme-structure.instructions.md`. Un file con lo stesso nome di uno del pacchetto viene sovrascritto o rimosso: le personalizzazioni vanno in un file con nome proprio, vedi la [FAQ](#q-come-personalizzo-unistruzione-senza-perderla-con--update).
+
 Nessun submodule e nessun `git submodule update`: la distribuzione non li usa.
 
 **Linee guida globali** (`~/.claude/CLAUDE.md`, valide su tutti i progetti):
@@ -202,7 +204,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `logging.instructions.md` | Logging strutturato con placeholder, mai interpolazione (esempi Serilog) |
 | `sensitive-data.instructions.md` | Gestione di credenziali e dati sensibili |
 | `doc-versioning.instructions.md` | Footer di revisione obbligatorio nei documenti in `docs/` |
-| `readme-structure.instructions.md` | Struttura obbligatoria di questo README |
+| `readme-structure.instructions.md` | Struttura obbligatoria di questo README. **Solo in questo repo**: l'installer non la copia negli host (campo `coreOnlyArtifacts`), dove il README segue `.github/prompts/readme-generator.prompt.md` |
 | `mcp-tool-readme.instructions.md` | README per MCP server (`tools/**/README.md`) |
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione di MCP server: cerca prima di creare |
 | `cross-package-references.instructions.md` | Come si cita una regola che vive in un altro pacchetto `dr-*`: rimando condizionale al manifest, mai secco |
@@ -465,9 +467,15 @@ Poi riavvia Claude Code per caricare il server.
 
 > ⚠️ **Se avevi copiato quel file a mano** seguendo la versione precedente di questo README, e poi l'hai personalizzato: ora è gestito dall'installer e un `-Update` lo sovrascrive senza avvisare. Porta le tue modifiche in una istruzione modulare di `.github/instructions/`, oppure aprile come issue sul core.
 
+### Q: Come personalizzo un'istruzione senza perderla con `-Update`?
+**A:** Scrivila in un file con nome proprio che finisce in `-local.instructions.md`, per esempio `.github/instructions/readme-local.instructions.md`. Non usare mai il nome di un file del pacchetto: `-Update` sovrascrive i file con quel nome, e rimuove quelli che il pacchetto ha dismesso. Nessun pacchetto distribuisce file `*-local.instructions.md`, quindi l'installer non li tocca.
+
+### Q: `readme-structure.instructions.md` è sparito dal mio progetto dopo `-Update`. Perché?
+**A:** Descrive solo il README di questo repo e negli host contraddiceva `readme-generator.prompt.md`, che è la regola per il README dei progetti. Ora l'installer non lo copia più e con `-Update` lo rimuove. Se lo avevi adattato al tuo progetto **mantenendo lo stesso nome**, rinominalo prima di lanciare `-Update` (per esempio in `readme-local.instructions.md`), altrimenti viene cancellato.
+
 ### Q: L'installer fallisce a metà — come ripristino?
 **A:** Se il repository ha già un commit: `git clean -fd` e `git checkout -- .`, poi rilancia. L'installer è idempotente e salta i file già a posto.
 
 ---
 
-*Documento aggiornato: Ottobre 2026 — Revisione v3.11 — 2026-10-09 — claude-opus-5-5 — credenziali git condizionali ai repo Private*
+*Revisione v3.12 — 2026-10-09 14:40 — claude-opus-5-5*

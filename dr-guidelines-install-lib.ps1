@@ -87,6 +87,8 @@ function Get-DrPackageRegistry {
             Dependencies      = @($p.dependencies      | Where-Object { $_ })
             RootFiles         = @($p.rootFiles         | Where-Object { $_ })
             ObsoleteArtifacts = @($p.obsoleteArtifacts | Where-Object { $_ })
+            # File che valgono solo nel repo del pacchetto: presenti nel clone, mai copiati negli host
+            CoreOnlyArtifacts = @($p.coreOnlyArtifacts | Where-Object { $_ })
             # Rimandi non vincolanti: mai installati, solo segnalati a fine installazione
             Suggests          = @($p.suggests          | Where-Object { $_ -and $_.package })
         }
@@ -119,7 +121,22 @@ function Copy-GuidelineFile {
 }
 
 function Copy-InstructionsAndPrompts {
-    param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
+    param([string]$TempRoot, [string]$HostRoot, [string[]]$CoreOnly = @(), [switch]$Update)
+
+    # coreOnlyArtifacts: file che regolano solo il repo del pacchetto (es. la struttura del suo
+    # README) e che in un host contraddirebbero le regole generali. Stanno nel clone ma non si copiano.
+    # Stesse validazioni di Remove-ObsoleteArtifacts: il catalogo e' un file di dati.
+    $skip = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($relative in @($CoreOnly | Where-Object { $_ })) {
+        $normalized = $relative -replace '\\', '/'
+        if ($normalized -match '(^|/)\.\.(/|$)' -or [System.IO.Path]::IsPathRooted($normalized)) {
+            throw "coreOnlyArtifacts: percorso non relativo o con risalita '$relative'."
+        }
+        if ($normalized -notmatch '^\.github/(instructions|prompts)/[^/]+$') {
+            throw "coreOnlyArtifacts: '$relative' non e' un file di .github/instructions/ o .github/prompts/."
+        }
+        $null = $skip.Add($normalized)
+    }
 
     foreach ($sub in @("instructions", "prompts")) {
         $srcDir = Join-Path $TempRoot ".github\$sub"
@@ -130,6 +147,10 @@ function Copy-InstructionsAndPrompts {
 
         Write-Host "  .github/$sub/:" -ForegroundColor White
         foreach ($f in Get-ChildItem $srcDir -File) {
+            if ($skip.Contains(".github/$sub/$($f.Name)")) {
+                Write-Host "  [CORE] $($f.Name)" -ForegroundColor DarkGray
+                continue
+            }
             Copy-GuidelineFile -SrcFile $f.FullName -DestFile (Join-Path $destDir $f.Name) -Update:$Update
         }
     }
@@ -614,7 +635,7 @@ function Install-DrPackageContent {
             }
         }
 
-        Copy-InstructionsAndPrompts -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+        Copy-InstructionsAndPrompts -TempRoot $tempDir -HostRoot $hostRoot -CoreOnly $pkg.CoreOnlyArtifacts -Update:$Update
         Copy-Skills -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
 
         if ($Update -and $pkg.ObsoleteArtifacts) {

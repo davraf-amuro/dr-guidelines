@@ -150,7 +150,7 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
 | `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Sì | Generato da `.mcp.example.json`, solo perché assente. Il `.gitignore` copiato lo esclude dai commit |
-| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`) |
+| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`). Dal 2026-10-09 (issue #9) il core ne contiene 12 ma ne installa 11: `readme-structure.instructions.md` è elencato in `coreOnlyArtifacts` del catalogo, vale solo nel repo dr-guidelines e nell'output compare come `[CORE] readme-structure.instructions.md` invece di `[OK]` |
 | `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` al 2026-08-12. Al 2026-09-16 anche `dr-get-latest` e `dr-file-feedback` |
 | `.claude/skills/` | Sì | Il taccuino del 2026-08-12 riportava 10 cartelle, ma nei commit di quel giorno (`faf6a6c`, `cffb1f2`) le skill del core erano 15: conteggio da rifare. Al 2026-09-16 il core ne ha 16 |
 | `CLAUDE.md` | Sì | Contiene i marker `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
@@ -190,6 +190,7 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 11 | Il test prova sempre il `main` **remoto**: `Install-DrPackage` fa `git clone --depth 1` da `github.com` anche se l'installer è lanciato da path locale. Modifiche non pushate non vengono installate | ☐ Da provare: modifica locale non pushata → assente nella cartella host |
 | 12 | Passi 1 e 2 di questo taccuino dopo la riscrittura della libreria (`aee84a4`, 2026-09-16: catalogo come fonte dei pacchetti, `rootFiles`, nessun rilevamento dello stack). Le prove del 2026-08-12 riguardano la versione precedente | ☐ Da riverificare in una cartella vuota |
 | 13 | Guida per non programmatori [`installazione-semplice.md`](installazione-semplice.md): percorso completo su un PC senza Git, con `winget install` di Git e PowerShell 7, forma `irm ... \| iex`, e verifica che PowerShell 5.1 preinstallato basti o no | ☐ Da provare con un utente non tecnico |
+| 14 | `-Update` su un host installato prima del 2026-10-09 → riga `[DEL] .github/instructions/readme-structure.instructions.md` (voce in `obsoleteArtifacts`). Un adattamento locale salvato con lo **stesso nome** viene cancellato: va rinominato prima, per esempio in `readme-local.instructions.md` (caso `dr-mailroom`). I file `*-local.instructions.md` non vengono toccati | 🟡 2026-10-09: provato in locale con la libreria del working tree e un clone simulato (host vuoto → `[CORE]`, host con il file → `[DEL]`, `readme-local` preservato). ☐ Da provare sul campo dopo il push su `main` |
 
 ---
 
@@ -302,4 +303,4 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
-*Revisione v1.8 — 2026-09-24 — claude-opus-5-5 — `briefs/` fra i risultati attesi del Passo 2*
+*Revisione v1.9 — 2026-10-09 14:40 — claude-opus-5-5 — `readme-structure` non distribuito (`coreOnlyArtifacts`) e rimosso con `-Update`*

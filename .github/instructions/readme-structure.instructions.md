@@ -4,6 +4,8 @@ applyTo: "README.md"
 
 # Struttura README — dr-guidelines
 
+> **Ambito.** Vale solo nel repo dr-guidelines: l'installer non la distribuisce (campo `coreOnlyArtifacts` di `scaffolding-catalog.json`) e con `-Update` la rimuove dagli host che l'avevano ricevuta. Nei progetti host il README segue `.github/prompts/readme-generator.prompt.md`.
+
 Questo file definisce la struttura obbligatoria del `README.md` di questo repository (`dr-guidelines`, pacchetto core della suite `dr-*`).
 Quando crei o aggiorni il README, rispetta esattamente questa struttura. Non aggiungere sezioni non previste. Non rimuovere sezioni esistenti.
 
@@ -26,7 +28,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 | 9 | MCP Servers | 🔌 | Una voce per ogni server in `.mcp.json` |
 | 10 | Documentazione | 📄 | Tabella di tutti i file `.md` in `docs/` con descrizione |
 | 11 | FAQ | ❓ | Domande frequenti in formato Q/A |
-| 12 | Footer | — | `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello*` |
+| 12 | Footer | — | `*Revisione v{N} — {YYYY-MM-DD HH:MM} — {modello-llm}*` |
 
 ---
 
@@ -78,6 +80,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 ### 7 — Istruzioni Modulari
 - Tabella con colonne: `File | Quando usarlo`
 - Una riga per ogni file `.instructions.md` presente in `.github/instructions/` **di questo repo** (contenuto core, trasversale — le istruzioni specifiche di dominio vivono nei rispettivi pacchetti, vedi sezione 2)
+- I file elencati in `coreOnlyArtifacts` del catalogo restano in tabella, con l'indicazione che valgono solo in questo repo e non vengono installati negli host
 - Aggiorna la tabella quando aggiungi o rimuovi file instruction
 
 ### 8 — Claude Code Skills
@@ -102,8 +105,8 @@ Il README deve contenere queste sezioni, in questo ordine:
 - Non rimuovere voci esistenti senza motivo esplicito
 
 ### 12 — Footer
-- Formato esatto: `*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello-llm*`
-- Aggiorna mese/anno, numero revisione, data e modello ad ogni modifica significativa
+- Formato esatto: `*Revisione v{N} — {YYYY-MM-DD HH:MM} — {modello-llm}*`, lo stesso di `readme-generator.prompt.md` e di `doc-versioning.instructions.md`
+- Aggiorna numero revisione, data e ora (locali) e modello a ogni modifica, anche minore
 - Incrementa la revisione di 0.1 per modifiche normali, di 1.0 per ristrutturazioni (stessa logica di `doc-versioning.instructions.md`)
 
 ---
@@ -120,4 +123,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v2.2 - dr-guidelines - Last Update 2026-08-09 11:40 — claude-opus-5 — installer rinominati <pacchetto>-install.ps1, aggiunta la variante gh api per i repo Private*
+*Template v2.3 - dr-guidelines - Last Update 2026-10-09 14:39 — claude-opus-5-5 — ambito limitato al repo dr-guidelines (coreOnlyArtifacts), footer README allineato a readme-generator*

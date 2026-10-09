@@ -158,7 +158,11 @@
         ".claude/skills/dr-tattico",
         ".claude/skills/dr-CreateLaunchProfiles",
         ".github/prompts/dr-pianifica-issue.prompt.md",
-        ".github/prompts/dr-segnala-miglioria.prompt.md"
+        ".github/prompts/dr-segnala-miglioria.prompt.md",
+        ".github/instructions/readme-structure.instructions.md"
+      ],
+      "coreOnlyArtifacts": [
+        ".github/instructions/readme-structure.instructions.md"
       ]
     },
     {

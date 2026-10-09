@@ -73,7 +73,7 @@ Per i file in `docs/`, usa **sempre** il formato definito in `.github/instructio
 
 Questo formato ha precedenza sul footer eventualmente indicato nei singoli template.
 
-> **Eccezione — `README.md`.** Il README sta nella root, non in `docs/`: segue il footer definito da `.github/instructions/readme-structure.instructions.md` (`*Documento aggiornato: Mese Anno — Revisione vN — YYYY-MM-DD — modello*`), non il formato `doc-versioning`.
+> **`README.md`.** Il README sta nella root, non in `docs/`: struttura e footer arrivano da `.github/prompts/readme-generator.prompt.md` (`*Revisione v{N} — {YYYY-MM-DD HH:MM} — {modello-llm}*`, stesse regole di incremento di `doc-versioning`). Solo nel repo dr-guidelines, dove esiste `.github/instructions/readme-structure.instructions.md`, il README segue anche quella struttura in 12 sezioni; l'installer non la distribuisce, quindi in un progetto host non va cercata né applicata.
 
 ## Cosa NON fare
 
