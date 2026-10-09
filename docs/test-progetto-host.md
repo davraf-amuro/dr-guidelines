@@ -29,7 +29,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | PowerShell 7+ | `pwsh --version` |
 | git | `git --version` |
 | `gh` autenticato con scope `repo` | `gh auth status` |
-| git con credenziali per i repo Private | `git ls-remote https://github.com/davraf-amuro/dr-guidelines.git` risponde senza chiedere credenziali. Se non va: `gh auth setup-git` |
+| git (credenziali solo se un repo è Private) | `git ls-remote https://github.com/davraf-amuro/dr-guidelines.git` risponde senza chiedere credenziali. Se non va: `gh auth setup-git` |
 | VS Code con Claude Code | Per il passo 8 |
 | Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
@@ -303,4 +303,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.1 — 2026-09-22 06:46 — claude-opus-5*
+*Revisione v2.2 — 2026-10-09 14:15 — claude-opus-5-5*

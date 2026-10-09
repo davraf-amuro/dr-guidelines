@@ -114,7 +114,7 @@ Oppure con l'installer del pacchetto. Gli installer si chiamano sempre `<pacchet
 
 Un nome di pacchetto sconosciuto produce un errore con l'elenco dei pacchetti disponibili. `-Package` e `-Global` non si usano insieme. Ogni installazione viene registrata in `.ai/dr-guidelines-packages.json`.
 
-**Se `git clone` fallisce** con `git clone fallito per davraf-amuro/...`: git non ha le credenziali per i repo Private. Esegui `gh auth setup-git` e riprova.
+**Se `git clone` fallisce** con `git clone fallito per davraf-amuro/...`: controlla la rete e l'URL. Se il repo è Private, git deve avere le credenziali: esegui `gh auth setup-git` e riprova.
 
 ---
 
@@ -449,7 +449,7 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Sì. Usa `git clone --depth 1` per scaricare il pacchetto in una cartella temporanea. Senza git l'installazione non parte, e `/dr-scaffold` lo verifica prima di scrivere.
 
 ### Q: `git clone fallito per davraf-amuro/...` — cosa faccio?
-**A:** git non ha le credenziali per i repo Private. Esegui `gh auth setup-git`, poi rilancia l'installer.
+**A:** Controlla la rete e l'URL. Se il repo è Private, git deve avere le credenziali: esegui `gh auth setup-git`, poi rilancia l'installer.
 
 ### Q: Devo committare i file `.github/` e `.claude/`?
 **A:** Sì. L'installer li copia come file reali, non come junction o submodule.
@@ -470,4 +470,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Documento aggiornato: Ottobre 2026 — Revisione v3.10 — 2026-10-02 — claude-opus-5-5 — campo di catalogo `suggests` (issue #7)*
+*Documento aggiornato: Ottobre 2026 — Revisione v3.11 — 2026-10-09 — claude-opus-5-5 — credenziali git condizionali ai repo Private*

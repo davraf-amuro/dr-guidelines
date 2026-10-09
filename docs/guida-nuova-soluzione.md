@@ -235,7 +235,7 @@ L'installer non sovrascrive i file: uno già presente viene saltato con `[SKIP]`
 |---|---|---|
 | `404` scaricando l'installer | Hai usato `irm https://raw.githubusercontent.com/...` su un repo Private | Usa la forma `gh api` del passo 3 |
 | `gh` non riconosciuto, richiesta di `gh auth login`, oppure `Not Found (HTTP 404)` da `gh api` | `gh` non installato, non autenticato, o account senza accesso ai repo `dr-*` | Installa `gh`, esegui `gh auth login` con scope `repo`, poi riprova. Il comando non scrive niente finché il download non riesce |
-| `git clone fallito per davraf-amuro/...` | git non ha le credenziali per i repo Private | `gh auth setup-git`, poi riprova |
+| `git clone fallito per davraf-amuro/...` | Rete o URL; se il repo è Private, git senza credenziali | Verifica la rete; per un repo Private `gh auth setup-git`, poi riprova |
 | La riga `Progetto:` mostra la cartella sbagliata | Mancava `Set-Location` | Annulla (riga sotto) e rilancia dalla cartella giusta |
 | `/dr-scaffold` non compare | Le skill si leggono all'avvio | `Developer: Reload Window` |
 | Ogni comando `dotnet` fallisce dopo l'installazione | `global.json` di `dr-dotnet-backend` richiede l'SDK 10 | `dotnet --list-sdks`: installa l'SDK 10 |
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.2 — 2026-10-02 15:48 — claude-opus-5-5*
+*Revisione v1.3 — 2026-10-09 14:15 — claude-opus-5-5*
