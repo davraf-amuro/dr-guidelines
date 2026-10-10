@@ -49,9 +49,10 @@ Rendere installabili i temi LCARS Enterprise-D ed Enterprise-E in qualsiasi fron
 ## Fasi
 
 ### Fase 0: Decisioni D1, D2, D3
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Azione**: l'utente sceglie; il piano si aggiorna con nomi definitivi
 - **Verifica passo**: D1–D3 annotate qui con data
+- **Esito** (utente, 2026-10-11): D1 → `dr-ux-lcars` (repo `davraf-amuro/dr-ux-lcars`); D2 → `dependencies: ["dr-fe"]`; D3 → nomi LCARS mantenuti, palette `enterprise-d` ed `enterprise-e`
 
 ### Fase 1: Contratto dei token in dr-fe
 - **Stato**: [ ]
@@ -80,7 +81,7 @@ Rendere installabili i temi LCARS Enterprise-D ed Enterprise-E in qualsiasi fron
 
 ### Fase 6: Catalogo e documentazione dr-guidelines
 - **Stato**: [ ]
-- **Azione**: voce in `packages` (`appliesTo: ["node"]`, `dependencies` o `suggests` da D2, `rootFiles: ["scripts/lcars-contrast.mjs"]`); `dr-ux-lcars` in `optionalPackages` di `vue-fe`; `updatedAt`; README e `docs/` che elencano i pacchetti
+- **Azione**: voce in `packages` (`appliesTo: ["node"]`, `dependencies: ["dr-fe"]`, `rootFiles: ["scripts/lcars-contrast.mjs"]`); `dr-ux-lcars` in `optionalPackages` di `vue-fe`; `updatedAt`; README e `docs/` che elencano i pacchetti
 - **Verifica passo**: JSON valido; `catalog-guard` di `.github/workflows/ci.yml` eseguito in locale passa
 
 ### Fase 7: Prova end-to-end e issue di seguito
