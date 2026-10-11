@@ -8,9 +8,9 @@ Ogni affermazione della documentazione della suite dr-* corrisponde a codice, ca
 ## Scope
 
 ### File da modificare
-- [ ] `dr-guidelines/README.md` — struttura di `readme-structure.instructions.md`
-- [ ] `dr-guidelines/docs/*.md` — footer di `doc-versioning.instructions.md`
-- [ ] `README.md` di dr-dotnet-backend, dr-minimalapi, dr-winsvc, dr-efdb, dr-fe, dr-devops, dr-ux-lcars
+- [x] `dr-guidelines/README.md` — struttura di `readme-structure.instructions.md`
+- [x] `dr-guidelines/docs/*.md` — footer di `doc-versioning.instructions.md`
+- [x] `README.md` di dr-dotnet-backend, dr-minimalapi, dr-winsvc, dr-efdb, dr-fe, dr-devops, dr-ux-lcars
 
 ### Perimetro negativo
 - Non toccherò: istruzioni, prompt, skill, installer, catalogo (solo se un documento rivela un errore nel codice: lo segnalo, non lo correggo qui), `TODO/`, `.ai/` degli altri piani, `davraf-guidelines`.
