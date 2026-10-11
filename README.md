@@ -16,10 +16,10 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service / Worker .NET. Dipende da `dr-dotnet-backend` |
 | dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio |
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, skill `/dr-audit-fe` |
-| dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
+| dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab. Non copre `Dockerfile` né compose per host singolo |
 | dr-ux-lcars | [davraf-amuro/dr-ux-lcars](https://github.com/davraf-amuro/dr-ux-lcars) | Tema grafico LCARS per frontend Vue + Tailwind v4 (palette `enterprise-d` ed `enterprise-e`), verifica dei contrasti. Dipende da `dr-fe` |
 
-Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca, `dr-ux-lcars` si porta dietro `dr-fe`. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. I pacchetti **suggeriti** (campo `suggests`) invece non si installano mai da soli: a fine installazione l'installer stampa una riga `[sugg]` con il motivo per ciascuno che manca. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
+Le dipendenze si installano prima del pacchetto che le richiede. Il core `dr-guidelines` è una dipendenza implicita di ogni pacchetto: se manca dal manifest, `-Package <nome>` lo installa per primo. Fra quelle dichiarate nel catalogo, `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca, `dr-ux-lcars` si porta dietro `dr-fe`. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. I pacchetti **suggeriti** (campo `suggests`) invece non si installano mai da soli: a fine installazione l'installer stampa una riga `[sugg]` con il motivo per ciascuno che manca. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
 > **Gli 8 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo`. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
@@ -27,7 +27,7 @@ Le dipendenze si installano prima del pacchetto che le richiede: `dr-minimalapi`
 
 Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), l'unica fonte. L'installer legge da lì l'elenco dei pacchetti. `/dr-scaffold` legge da lì domini e intenti. Per un pacchetto nuovo servono quattro voci nello stesso file:
 
-1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
+1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, `sourceFiles` (sorgenti applicativi, vedi sotto) e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
 2. **`kinds`** — solo se il dominio richiede una toolchain nuova, con i suoi prerequisiti (`dotnet`, `node`, `embedded`, `content`, `any`)
 3. **`domains`** — etichetta leggibile, `kind`, pacchetti che lo compongono
 4. **`intentMap`** — le frasi con cui un utente descriverebbe quel lavoro ("progetto per ESP32", "guida turistica")
@@ -141,6 +141,20 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 **Come si usa `briefs/`.** Scrivi la richiesta in un file, per esempio `briefs/export-contatti.md`, poi indicalo all'agente nel prompt: *"crea il piano da `briefs/export-contatti.md`"*. L'agente legge il brief e, se trova lacune, ti fa domande. Poi scrive sempre un piano in `.ai/plans/` con il link al brief sotto il titolo e aspetta la tua approvazione prima di eseguirlo. Vale anche quando passi il brief come argomento di una skill. La cartella non viene esplorata: l'agente usa solo il brief che gli indichi.
 
 I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/prompts/`, `.claude/skills/` e i **file di radice dichiarati nel catalogo** (campo `rootFiles`). Non toccano `CLAUDE.md` né la configurazione del core.
+
+**Sorgenti applicativi (campo `sourceFiles`).** Un pacchetto può distribuire file di codice, per esempio i CSS di un tema: ogni voce ha `from` (percorso nel pacchetto) e `to` (percorso relativo alla cartella sorgente dell'host). La cartella sorgente si sceglie con `-SourceRoot`, solo insieme a `-Package`; il default è la radice:
+
+```json
+"sourceFiles": [
+  { "from": "src/theme/tokens.css", "to": "src/styles/tokens.css" }
+]
+```
+
+```powershell
+dr-guidelines-install.ps1 -Package <nome> -SourceRoot frontend
+```
+
+Una volta copiati, i sorgenti appartengono all'host e **non si sovrascrivono mai**. Senza `-Update` un file presente si salta. Con `-Update` si saltano i file uguali a quelli del pacchetto; se il contenuto è cambiato a monte, la versione nuova va in `<file>.new` accanto all'originale e l'installer elenca i `.new` da confrontare a mano. Percorsi assoluti o con `..`, nel catalogo come in `-SourceRoot`, fermano l'installazione prima di scrivere. Nessun pacchetto usa ancora il campo: oggi `dr-ux-lcars` distribuisce i sorgenti del tema dentro un prompt con conferma per file. La scelta di una variante (per esempio la palette) al momento dell'installazione non c'è ancora.
 
 > **Il core non è un pacchetto .NET.** `Directory.Build.props` e `global.json` appartengono a `dr-dotnet-backend`. Un frontend, un firmware o un repository di documenti non li riceve. Un progetto .NET li ottiene con quel pacchetto, che arriva da solo con `dr-minimalapi` e `dr-winsvc`.
 
@@ -480,4 +494,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.15 — 2026-10-11 16:40 — claude-opus-5-5*
+*Revisione v3.18 — 2026-10-11 18:45 — claude-opus-5-5 — perimetro Docker di dr-devops (dr-devops#1)*

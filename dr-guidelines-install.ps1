@@ -28,16 +28,23 @@
     Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto
     corrente. Il progetto corrente non viene toccato in alcun modo.
 .PARAMETER Package
-    Nome del pacchetto dr-* da installare al posto del core (es. dr-minimalapi).
-    Le dipendenze mancanti vengono installate prima del pacchetto: dr-minimalapi
-    tira dr-dotnet-backend. Prima di clonare qualsiasi cosa l'installer annuncia
+    Nome del pacchetto dr-* da installare (es. dr-minimalapi). Il core dr-guidelines
+    e' una dipendenza implicita di ogni pacchetto: se manca dal manifest si installa
+    per primo. Le altre dipendenze mancanti vengono installate prima del pacchetto:
+    dr-minimalapi tira dr-dotnet-backend. Prima di clonare qualsiasi cosa l'installer annuncia
     l'albero in un blocco unico, una riga '[dep]' per dipendenza nell'ordine di
     installazione; nessuna conferma interattiva. Un ciclo nel catalogo e' un errore
     e ferma l'installazione prima di scrivere. Nome sconosciuto -> errore con
     l'elenco dei pacchetti disponibili. Mutuamente esclusivo con -Global.
 .PARAMETER NoDependencies
     Solo con -Package. Non installa le dipendenze mancanti: le elenca come '[skip]'
-    con un avviso e installa solo il pacchetto richiesto.
+    con un avviso e installa solo il pacchetto richiesto. Vale anche per il core.
+.PARAMETER SourceRoot
+    Solo con -Package. Cartella dell'host, relativa alla radice, dove finiscono i
+    sorgenti applicativi dei pacchetti (campo 'sourceFiles' del catalogo), es.
+    'frontend' quando src/ sta in una sottocartella. Default: la radice. Percorsi
+    assoluti o con '..' sono rifiutati. I sorgenti gia' presenti non si sovrascrivono
+    mai: con -Update la versione nuova va in '<file>.new'.
 #>
 
 [CmdletBinding()]
@@ -45,7 +52,8 @@ param(
     [switch]$Update,
     [switch]$Global,
     [string]$Package,
-    [switch]$NoDependencies
+    [switch]$NoDependencies,
+    [string]$SourceRoot = "."
 )
 
 # --- Risoluzione della libreria condivisa ---
@@ -109,11 +117,14 @@ if (-not $libLoaded) {
 if ($Global -and $Package) {
     throw "-Global e -Package sono mutuamente esclusivi: -Global scrive ~/.claude/CLAUDE.md e non tocca il progetto corrente."
 }
+if ($PSBoundParameters.ContainsKey('SourceRoot') -and -not $Package) {
+    throw "-SourceRoot vale solo con -Package: il core non distribuisce sorgenti applicativi."
+}
 
 if ($Global) {
     Install-DrGlobal -Update:$Update
 } elseif ($Package) {
-    Install-DrPackage -PackageName $Package -Update:$Update -NoDependencies:$NoDependencies
+    Install-DrPackage -PackageName $Package -Update:$Update -NoDependencies:$NoDependencies -SourceRoot $SourceRoot
 } else {
     Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
 }

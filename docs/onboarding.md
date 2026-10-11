@@ -43,8 +43,9 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 |---|---|
 | nessuno | Installa il core nella cartella corrente, salta i file già presenti |
 | `-Update` | Sovrascrive i file presenti e riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` |
-| `-Package <nome>` | Installa un pacchetto di dominio al posto del core, con le dipendenze mancanti. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
+| `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
 | `-NoDependencies` | Solo con `-Package`: non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
+| `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new` |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
 
 **Da sapere prima di toccare l'installer:**
@@ -72,7 +73,7 @@ dr-guidelines/
   docs/                 ← Guide, onboarding, card, scaffolding per tipologia
   templates/
     global-claude.md    ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
-  dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package
+  dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package, -NoDependencies, -SourceRoot
   dr-guidelines-install-lib.ps1  ← Get-DrCatalog, Get-DrPackageRegistry, Install-DrPackage, Install-DrGlobal
   scaffolding-catalog.json       ← Catalogo: kinds, domains, intentMap, fallback, projectTypes, packages
   CLAUDE.md             ← Istruzioni Claude Code; il corpo diventa la sezione iniettata negli host
@@ -174,4 +175,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.4 — 2026-10-09 14:46 — claude-opus-5-5*
+*Revisione v3.7 — 2026-10-11 20:00 — claude-opus-5-5 — `-SourceRoot` (#15)*

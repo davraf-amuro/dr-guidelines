@@ -279,6 +279,8 @@ Scoperto leggendo `dr-guidelines-install-lib.ps1` durante il lavoro sulla issue 
 
 Poi installa le dipendenze in quell'ordine e infine il pacchetto chiesto. Nessuna conferma interattiva: un prompt bloccherebbe gli agenti e le esecuzioni `irm | iex`. La conferma, quando serve, sta a monte: `/dr-scaffold-guidelines` mostra le dipendenze in arrivo nella sua conferma unica. `-Update` non si propaga: riguarda solo il pacchetto chiesto esplicitamente.
 
+**Il core è una dipendenza implicita.** Nessun pacchetto lo dichiara nel catalogo, ma `Install-DrPackage` lo aggiunge in testa all'albero quando manca dal manifest: `-Package dr-fe` in una cartella vuota stampa `[dep]  dr-guidelines (richiesta da dr-fe, core implicito)` e installa il core prima di `dr-fe`. Prima del 2026-10-11 non succedeva: l'host riceveva solo `dr-fe`, senza `CLAUDE.md` né istruzioni trasversali (issue dr-fe#1). Implicita, non scritta nel catalogo, perché vale anche per i pacchetti futuri senza ripeterla in ogni voce. Provato il 2026-10-11 con la libreria locale in una cartella temporanea: manifest con `dr-guidelines` e `dr-fe`; con `-NoDependencies` solo `dr-fe` e la riga `[skip] dr-guidelines`.
+
 **Si possono rifiutare con `-NoDependencies`.** Con lo switch l'installer non installa le dipendenze mancanti: le elenca con il prefisso `[skip]`, stampa un avviso e installa solo il pacchetto chiesto. Chi passa lo switch ha scelto; le regole del pacchetto che rimandano alla dipendenza restano senza destinazione finché non la installi a parte. Dall'entry point: `dr-guidelines-install.ps1 -Package dr-minimalapi -NoDependencies`.
 
 **Un ciclo nel catalogo è un errore, non un loop.** Se il catalogo dichiarasse A → B → A, l'installer si ferma con `Ciclo nelle dipendenze del catalogo: A -> B -> A` prima di clonare, a host intatto.
@@ -290,6 +292,16 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 **La convenzione che ne è nata**: `cross-package-references.instructions.md`. Un rimando a una regola di un altro pacchetto si scrive sempre condizionale al manifest `.ai/dr-guidelines-packages.json`, con un ripiego che dice *cosa* serve senza spiegare *come* si fa, e con l'obbligo per l'agente di dichiarare nell'output quale dei due rami ha applicato. Senza quella dichiarazione non c'è modo di sapere se la regola è stata seguita o aggirata.
 
 ---
+
+## 📦 Sorgenti applicativi: `sourceFiles` e `-SourceRoot`
+
+Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo file piatti di `.github/instructions/` e `.github/prompts/` e i `rootFiles` alla stessa path della radice. Un frontend con `src/` in una sottocartella non era gestito, e `-Update` sovrascriveva senza confronto.
+
+- **Catalogo**: `sourceFiles: [{ "from": "<percorso nel pacchetto>", "to": "<percorso relativo a -SourceRoot>" }]`. Il campo si valida già quando l'installer legge il catalogo (`Get-DrPackageRegistry`): un `from` o un `to` vuoto, assoluto (`C:/…`, `/…`) o con `..` ferma tutto prima di clonare. La CI (`catalog-guard`) costruisce lo stesso registry, quindi blocca un catalogo malformato.
+- **`-SourceRoot`**: cartella dell'host relativa alla radice, solo con `-Package` (con il core da solo è un errore). Vale per il pacchetto e per le sue dipendenze. Il confine si verifica anche sul percorso risolto: nessun file finisce fuori da `-SourceRoot`.
+- **Esiti per file**: `[OK]` copiato, `[SKIP]` già presente senza `-Update`, `[=]` invariato con `-Update`, `[NEW]` versione cambiata scritta in `<file>.new` (l'originale non si tocca), `[MISS]` voce del catalogo assente nel pacchetto.
+- **Provato il 2026-10-11** con la libreria locale e un pacchetto finto in cartella temporanea: 15 controlli superati, tra cui copia in `frontend/`, salto, `.new`, file invariato, rifiuto di `../fuori`, di `C:/x` e di `/etc/a`. Nessun file scritto fuori dall'host.
+- **Non ancora**: varianti scelte all'installazione (es. palette). Gli installer dei singoli pacchetti non accettano `-SourceRoot`: si passa dall'installer del core con `-Package`.
 
 ## 🔗 Riferimenti
 
@@ -303,4 +315,4 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
-*Revisione v1.10 — 2026-10-09 14:46 — claude-opus-5-5 — conteggi di istruzioni e prompt con `architecture-doc` (issue #10)*
+*Revisione v1.12 — 2026-10-11 18:30 — claude-opus-5-5 — `sourceFiles` e `-SourceRoot` (#15)*
