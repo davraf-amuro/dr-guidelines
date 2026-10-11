@@ -1,6 +1,6 @@
 # Piano: temi UX LCARS Enterprise-D ed Enterprise-E come pacchetto dr-*
 Data: 2026-10-11
-Stato: PROPOSTO
+Stato: COMPLETATO — verificato il 2026-10-11 (vedi criteri)
 Issue: davraf-amuro/dr-guidelines#13, davraf-amuro/dr-guidelines#14
 Branch: plan/issue-13-14-ux-lcars
 
@@ -61,7 +61,7 @@ Rendere installabili i temi LCARS Enterprise-D ed Enterprise-E in qualsiasi fron
 - **Verifica passo**: nomi identici a `tokens.css` di `dr-mailroom-fe` `main`; frontmatter compatibile Claude Code + Copilot; nessun riferimento a temi specifici
 
 ### Fase 2: Repo del pacchetto
-- **Stato**: [~] (locale fatto; creazione su GitHub e prova installer in attesa di conferma)
+- **Stato**: [x]
 - **Esito parziale**: repo locale `../dr-ux-lcars` (`git init -b main`), commit `a9632e2`: installer ricavato da `dr-fe-install.ps1` (dipendenze installate dalla lib: `Resolve-DrDependencyTree`), README, LICENSE, issue template. Vincolo scoperto: l'installer legge il catalogo da `main` di dr-guidelines su GitHub e clona il pacchetto da GitHub, quindi la prova con l'installer reale richiede repo creato e push (Fase 7b)
 - **Azione**: creazione repo (conferma esplicita prima di `gh repo create`), scheletro copiato dal pacchetto più recente (installer che scarica la lib comune, README, LICENSE, issue template)
 - **Verifica passo**: installer eseguito su cartella vuota di prova: copia instructions, prompt e script, scrive il manifest
@@ -91,23 +91,24 @@ Rendere installabili i temi LCARS Enterprise-D ed Enterprise-E in qualsiasi fron
 - **Verifica passo**: JSON valido; `catalog-guard` di `.github/workflows/ci.yml` eseguito in locale passa
 
 ### Fase 7: Prova end-to-end e issue di seguito
-- **Stato**: [~] (7a fatta; 7b e issue di seguito dopo creazione repo e push)
+- **Stato**: [x]
 - **Esito 7a** (applicazione, 2026-10-11): worktree usa-e-getta di `dr-mailroom-fe` da `main` (palette D con nomi di colore), file del pacchetto copiati a mano. Baseline verde. Prompt con `enterprise-e`: contrasti 48/48, lint, format, type-check, vitest 209/209, build verdi dopo 2 correzioni al pacchetto (commit `fix`: spread con fallback segnalato da oxlint nello script; riferimenti non formattati secondo Prettier → aggiunto il passo di formattazione). Cambio a `enterprise-d` (Fase 2 del prompt): toccati solo `tokens.css`, `index.html`, `site.webmanifest`; tutto verde. Screenshot Playwright 375/1280 chiaro/scuro su `/mailboxes`, `/filters`, `/stats`: 12/12 identici pixel per pixel a `main` (una differenza al primo giro, assente alla ripetizione: temporizzazione del banner di stato). Worktree e branch di prova rimossi; `main` di dr-mailroom-fe non toccato (aveva 3 file modificati non committati dell'utente, rimasti intatti)
-- **Da fare 7b**: installer reale (`-Package dr-ux-lcars`) su cartella di prova dopo push di catalogo, dr-fe e repo; issue di seguito sull'estensione dell'installer
+- **Esito 7b**: installer reale del pacchetto (comando `gh api` del README) in cartella vuota: `[dep] dr-fe` installato per primo (con `design-tokens`), poi istruzione, prompt e `scripts/lcars-contrast.mjs`; manifest con `dr-fe` `a9284b6` e `dr-ux-lcars` `a5e1fca`; seconda esecuzione tutta `[SKIP]`. Issue di seguito: davraf-amuro/dr-guidelines#15
 - **Azione**: su un branch di prova di `dr-mailroom-fe` riportato al tema base: installazione del pacchetto, prompt con palette E, poi D; script contrasti; lint, format, type-check, vitest, build; screenshot 375/1280 chiaro/scuro. Aprire issue separata per l'estensione dell'installer (cartella sorgente, varianti, protezione in `-Update`)
 - **Verifica passo**: tutte le verifiche verdi; risultato visivo equivalente ai commit di riferimento
 
 ### Fase 8: Commit, push, chiusura issue
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Azione**: commit dei soli file di Scope in ciascun repo; gate di push (nessun lint applicabile ai repo di sole linee guida: dichiararlo; nell'host i comandi di dr-fe); chiusura #13 e #14 con rimando alla decisione del tavolo (conferma esplicita prima di chiudere)
+- **Esito**: conferma utente (AskUserQuestion, "tutto su main"). Gate dichiarato: nessun lint applicabile (Markdown, PowerShell, JSON; script `.mjs` già passato da oxlint/eslint/prettier dell'host); catalog-guard locale exit 0. `gh repo create davraf-amuro/dr-ux-lcars --public` + push `a5e1fca`; dr-fe `main` fast-forward a `a9284b6`; dr-guidelines `main` fast-forward a `9932ba4`, CI verde. #13 e #14 chiuse con commento (conferma utente), rimando a #15
 
 ## Criteri di verifica finale
-- [ ] Contratto dei token semantici scritto in dr-fe, senza valori
-- [ ] Un solo pacchetto con struttura unica e due palette che differiscono solo nei valori
-- [ ] Token decorativi per ruolo (`frame`, `trim`, `accent-1..4`), nessun nome di colore nei componenti
-- [ ] Nessun file dell'host sovrascritto senza diff e conferma
-- [ ] Script contrasti riproduce i rapporti delle issue e fallisce su un colore non conforme
-- [ ] Catalogo valido, `catalog-guard` verde
-- [ ] Prova end-to-end verde su entrambe le palette
-- [ ] Installer non modificato; issue di seguito aperta
-- [ ] Ogni file condiviso compatibile Claude Code + GitHub Copilot
+- [x] Contratto dei token semantici scritto in dr-fe, senza valori
+- [x] Un solo pacchetto con struttura unica e due palette che differiscono solo nei valori
+- [x] Token decorativi per ruolo (`frame`, `trim`, `accent-1..4`), nessun nome di colore nei componenti
+- [x] Nessun file dell'host sovrascritto senza diff e conferma (regola d'oro del prompt; installer: solo ``.github`` e ``scripts/``, ``[SKIP]`` se esistono)
+- [x] Script contrasti riproduce i rapporti delle issue e fallisce su un colore non conforme
+- [x] Catalogo valido, `catalog-guard` verde
+- [x] Prova end-to-end verde su entrambe le palette
+- [x] Installer non modificato; issue di seguito aperta
+- [x] Ogni file condiviso compatibile Claude Code + GitHub Copilot
