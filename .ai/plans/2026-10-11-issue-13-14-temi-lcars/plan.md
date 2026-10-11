@@ -55,37 +55,45 @@ Rendere installabili i temi LCARS Enterprise-D ed Enterprise-E in qualsiasi fron
 - **Esito** (utente, 2026-10-11): D1 → `dr-ux-lcars` (repo `davraf-amuro/dr-ux-lcars`); D2 → `dependencies: ["dr-fe"]`; D3 → nomi LCARS mantenuti, palette `enterprise-d` ed `enterprise-e`
 
 ### Fase 1: Contratto dei token in dr-fe
-- **Stato**: [ ]
+- **Stato**: [x]
+- **Esito**: dr-fe branch `feat/design-tokens`, commit `d0d5b15`: nuova `design-tokens.instructions.md` v1.0 (`applyTo: "**/*.css,**/*.vue"`, 7 regole, nessun valore), rimando e cartella `assets/styles/` in `frontend-organization` v1.3, README v1.3. Confronto automatico: 19/19 nomi identici a `tokens.css` del tema base (`fcc1502^`, escluso `--panel-bevel` proprio del tema)
 - **Azione**: `design-tokens.instructions.md` (`applyTo` su `**/*.css` e `**/*.vue`): elenco token semantici e coppie `on-*`, regole d'uso, soglie di contrasto, focus e area di tocco; nessun valore. Rimando da `frontend-organization.instructions.md`; README di dr-fe
 - **Verifica passo**: nomi identici a `tokens.css` di `dr-mailroom-fe` `main`; frontmatter compatibile Claude Code + Copilot; nessun riferimento a temi specifici
 
 ### Fase 2: Repo del pacchetto
-- **Stato**: [ ]
+- **Stato**: [~] (locale fatto; creazione su GitHub e prova installer in attesa di conferma)
+- **Esito parziale**: repo locale `../dr-ux-lcars` (`git init -b main`), commit `a9632e2`: installer ricavato da `dr-fe-install.ps1` (dipendenze installate dalla lib: `Resolve-DrDependencyTree`), README, LICENSE, issue template. Vincolo scoperto: l'installer legge il catalogo da `main` di dr-guidelines su GitHub e clona il pacchetto da GitHub, quindi la prova con l'installer reale richiede repo creato e push (Fase 7b)
 - **Azione**: creazione repo (conferma esplicita prima di `gh repo create`), scheletro copiato dal pacchetto più recente (installer che scarica la lib comune, README, LICENSE, issue template)
 - **Verifica passo**: installer eseguito su cartella vuota di prova: copia instructions, prompt e script, scrive il manifest
 
 ### Fase 3: Istruzione del tema
-- **Stato**: [ ]
+- **Stato**: [x]
+- **Esito**: `lcars-theme.instructions.md` v1.0, 6 regole. Ruoli verificati sul codice: `frame` (gomito, segmento lungo, hero), `trim` (coda, pulsante tema, staffa, 2° segmento), `accent-1..4` (voci; 3° segmento = accent-1, 4° = accent-4). D ed E hanno gli stessi ruoli: nessun `accent-5`. Deviazione accettata: in E i segmenti 2-3 della testata passano da blu/acciaio ad acciaio/blu. Etichetta del gomito spostata in `--lcars-label` (CSS `content`), così i componenti sono identici tra palette
 - **Azione**: `lcars-theme.instructions.md`: ruoli `frame`/`trim`/`accent-1..4`, token di forma, tipografia Saira, guscio a gomito, voce attiva staccata, componenti condivisi, insidie note (`hidden md:flex` non nello style scoped), regole di contrasto
 - **Verifica passo**: ogni regola delle issue (sezione "Struttura comune") ha una riga corrispondente; nessuna duplicazione del contratto di Fase 1 (solo rimando)
 
 ### Fase 4: Prompt di applicazione con i sorgenti di riferimento
-- **Stato**: [ ]
+- **Stato**: [x]
+- **Esito**: `dr-ux-lcars-apply.prompt.md` v1.0 (frontmatter `agent`/`description`/`tools` come i prompt del core). Sorgenti generalizzati: voci di navigazione, marchio, stato e icone restano dell'host; mobile con `grid-flow-col auto-cols-fr` invece di `grid-cols-4`; `--font-mono` di sistema (JetBrains Mono era una dipendenza dell'app di prova). Blocchi `tokens.css` estratti dal prompt e passati allo script: 48/48 conformi per entrambe le palette. Nessun nome di colore nei riferimenti dei componenti
 - **Azione**: `dr-ux-lcars-apply.prompt.md`: chiede la palette, verifica che dr-fe sia nel manifest, individua la cartella `src/`, applica `tokens.css`, `main.css`, `App.vue`, `AppSidebar.vue`, `AppHeader.vue`, `BasePanel`, `BaseButton`, `BaseBadge`, `HazardStripe` (estratti da `dr-mailroom-fe` `main` e `fcc1502`, token rinominati per ruolo), `theme-color` in `index.html` e `site.webmanifest`. File esistente → diff + conferma, mai sovrascrittura silenziosa. Termina lanciando lo script contrasti e i comandi di verifica dell'host
 - **Verifica passo**: le due palette differiscono solo nei valori; i componenti non contengono colori letterali né nomi di colore; tabelle palette identiche alle issue
 
 ### Fase 5: Script contrasti
-- **Stato**: [ ]
+- **Stato**: [x]
+- **Esito**: `scripts/lcars-contrast.mjs` (Node, `node:fs` soltanto). Rapporti identici alle tabelle delle issue (es. D 4.74/5.20, 8.39, 5.66; E 4.57/5.19, 4.87). Negativi: accent-4 a `#555555` → exit 1 (2.70:1); blocco `prefers-color-scheme` divergente dal tema scuro → exit 2; file assente → exit 2. Aggiunta soglia 4.5:1 per `federal`/`alert`/`ok` usati come testo, riportata in dr-fe (commit `a9284b6`)
 - **Azione**: `scripts/lcars-contrast.mjs`: legge `tokens.css` dell'host (path come argomento, default `src/assets/styles/tokens.css`), calcola WCAG 2.x per tema chiaro e scuro (testo ≥ 4.5:1, bordi/focus ≥ 3:1, ogni coppia `on-*`, `--c-on-lcars` su ogni blocco), exit code non-zero se una coppia fallisce. Nessun `eval`, nessuna rete
 - **Verifica passo**: sui valori delle issue riproduce i rapporti dichiarati (±0.01); con un colore peggiorato ad arte esce con errore
 
 ### Fase 6: Catalogo e documentazione dr-guidelines
-- **Stato**: [ ]
+- **Stato**: [x]
+- **Esito**: commit `8263bd4`: voce `dr-ux-lcars`, `vue-fe.optionalPackages`, `updatedAt` 2026-10-11; README (tabella, dipendenze, 8 repo Public), `readme-structure` v2.4, `card-dr-guidelines` v2.7, `guida-nuova-soluzione` v1.4. JSON valido; catalog-guard locale exit 0 ("8 pacchetti, 5 tipologie"). Skill `dr-scaffold*` non toccate: leggono il catalogo
 - **Azione**: voce in `packages` (`appliesTo: ["node"]`, `dependencies: ["dr-fe"]`, `rootFiles: ["scripts/lcars-contrast.mjs"]`); `dr-ux-lcars` in `optionalPackages` di `vue-fe`; `updatedAt`; README e `docs/` che elencano i pacchetti
 - **Verifica passo**: JSON valido; `catalog-guard` di `.github/workflows/ci.yml` eseguito in locale passa
 
 ### Fase 7: Prova end-to-end e issue di seguito
-- **Stato**: [ ]
+- **Stato**: [~] (7a fatta; 7b e issue di seguito dopo creazione repo e push)
+- **Esito 7a** (applicazione, 2026-10-11): worktree usa-e-getta di `dr-mailroom-fe` da `main` (palette D con nomi di colore), file del pacchetto copiati a mano. Baseline verde. Prompt con `enterprise-e`: contrasti 48/48, lint, format, type-check, vitest 209/209, build verdi dopo 2 correzioni al pacchetto (commit `fix`: spread con fallback segnalato da oxlint nello script; riferimenti non formattati secondo Prettier → aggiunto il passo di formattazione). Cambio a `enterprise-d` (Fase 2 del prompt): toccati solo `tokens.css`, `index.html`, `site.webmanifest`; tutto verde. Screenshot Playwright 375/1280 chiaro/scuro su `/mailboxes`, `/filters`, `/stats`: 12/12 identici pixel per pixel a `main` (una differenza al primo giro, assente alla ripetizione: temporizzazione del banner di stato). Worktree e branch di prova rimossi; `main` di dr-mailroom-fe non toccato (aveva 3 file modificati non committati dell'utente, rimasti intatti)
+- **Da fare 7b**: installer reale (`-Package dr-ux-lcars`) su cartella di prova dopo push di catalogo, dr-fe e repo; issue di seguito sull'estensione dell'installer
 - **Azione**: su un branch di prova di `dr-mailroom-fe` riportato al tema base: installazione del pacchetto, prompt con palette E, poi D; script contrasti; lint, format, type-check, vitest, build; screenshot 375/1280 chiaro/scuro. Aprire issue separata per l'estensione dell'installer (cartella sorgente, varianti, protezione in `-Update`)
 - **Verifica passo**: tutte le verifiche verdi; risultato visivo equivalente ai commit di riferimento
 
