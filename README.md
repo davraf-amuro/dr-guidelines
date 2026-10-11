@@ -16,7 +16,7 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service / Worker .NET. Dipende da `dr-dotnet-backend` |
 | dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio |
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, skill `/dr-audit-fe` |
-| dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab |
+| dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab. Non copre `Dockerfile` né compose per host singolo |
 | dr-ux-lcars | [davraf-amuro/dr-ux-lcars](https://github.com/davraf-amuro/dr-ux-lcars) | Tema grafico LCARS per frontend Vue + Tailwind v4 (palette `enterprise-d` ed `enterprise-e`), verifica dei contrasti. Dipende da `dr-fe` |
 
 Le dipendenze si installano prima del pacchetto che le richiede. Il core `dr-guidelines` è una dipendenza implicita di ogni pacchetto: se manca dal manifest, `-Package <nome>` lo installa per primo. Fra quelle dichiarate nel catalogo, `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca, `dr-ux-lcars` si porta dietro `dr-fe`. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. I pacchetti **suggeriti** (campo `suggests`) invece non si installano mai da soli: a fine installazione l'installer stampa una riga `[sugg]` con il motivo per ciascuno che manca. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
@@ -494,4 +494,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.17 — 2026-10-11 18:30 — claude-opus-5-5 — campo `sourceFiles` e `-SourceRoot` (#15)*
+*Revisione v3.18 — 2026-10-11 18:45 — claude-opus-5-5 — perimetro Docker di dr-devops (dr-devops#1)*
