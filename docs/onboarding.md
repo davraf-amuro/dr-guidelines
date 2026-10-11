@@ -73,7 +73,7 @@ dr-guidelines/
   docs/                 ← Guide, onboarding, card, scaffolding per tipologia
   templates/
     global-claude.md    ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
-  dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package
+  dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package, -NoDependencies, -SourceRoot
   dr-guidelines-install-lib.ps1  ← Get-DrCatalog, Get-DrPackageRegistry, Install-DrPackage, Install-DrGlobal
   scaffolding-catalog.json       ← Catalogo: kinds, domains, intentMap, fallback, projectTypes, packages
   CLAUDE.md             ← Istruzioni Claude Code; il corpo diventa la sezione iniettata negli host
@@ -175,4 +175,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.6 — 2026-10-11 19:30 — claude-opus-5-5 — `-SourceRoot` (#15)*
+*Revisione v3.7 — 2026-10-11 20:00 — claude-opus-5-5 — `-SourceRoot` (#15)*
