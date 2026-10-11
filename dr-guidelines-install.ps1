@@ -28,16 +28,17 @@
     Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto
     corrente. Il progetto corrente non viene toccato in alcun modo.
 .PARAMETER Package
-    Nome del pacchetto dr-* da installare al posto del core (es. dr-minimalapi).
-    Le dipendenze mancanti vengono installate prima del pacchetto: dr-minimalapi
-    tira dr-dotnet-backend. Prima di clonare qualsiasi cosa l'installer annuncia
+    Nome del pacchetto dr-* da installare (es. dr-minimalapi). Il core dr-guidelines
+    e' una dipendenza implicita di ogni pacchetto: se manca dal manifest si installa
+    per primo. Le altre dipendenze mancanti vengono installate prima del pacchetto:
+    dr-minimalapi tira dr-dotnet-backend. Prima di clonare qualsiasi cosa l'installer annuncia
     l'albero in un blocco unico, una riga '[dep]' per dipendenza nell'ordine di
     installazione; nessuna conferma interattiva. Un ciclo nel catalogo e' un errore
     e ferma l'installazione prima di scrivere. Nome sconosciuto -> errore con
     l'elenco dei pacchetti disponibili. Mutuamente esclusivo con -Global.
 .PARAMETER NoDependencies
     Solo con -Package. Non installa le dipendenze mancanti: le elenca come '[skip]'
-    con un avviso e installa solo il pacchetto richiesto.
+    con un avviso e installa solo il pacchetto richiesto. Vale anche per il core.
 #>
 
 [CmdletBinding()]

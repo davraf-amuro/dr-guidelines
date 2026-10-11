@@ -279,6 +279,8 @@ Scoperto leggendo `dr-guidelines-install-lib.ps1` durante il lavoro sulla issue 
 
 Poi installa le dipendenze in quell'ordine e infine il pacchetto chiesto. Nessuna conferma interattiva: un prompt bloccherebbe gli agenti e le esecuzioni `irm | iex`. La conferma, quando serve, sta a monte: `/dr-scaffold-guidelines` mostra le dipendenze in arrivo nella sua conferma unica. `-Update` non si propaga: riguarda solo il pacchetto chiesto esplicitamente.
 
+**Il core è una dipendenza implicita.** Nessun pacchetto lo dichiara nel catalogo, ma `Install-DrPackage` lo aggiunge in testa all'albero quando manca dal manifest: `-Package dr-fe` in una cartella vuota stampa `[dep]  dr-guidelines (richiesta da dr-fe, core implicito)` e installa il core prima di `dr-fe`. Prima del 2026-10-11 non succedeva: l'host riceveva solo `dr-fe`, senza `CLAUDE.md` né istruzioni trasversali (issue dr-fe#1). Implicita, non scritta nel catalogo, perché vale anche per i pacchetti futuri senza ripeterla in ogni voce. Provato il 2026-10-11 con la libreria locale in una cartella temporanea: manifest con `dr-guidelines` e `dr-fe`; con `-NoDependencies` solo `dr-fe` e la riga `[skip] dr-guidelines`.
+
 **Si possono rifiutare con `-NoDependencies`.** Con lo switch l'installer non installa le dipendenze mancanti: le elenca con il prefisso `[skip]`, stampa un avviso e installa solo il pacchetto chiesto. Chi passa lo switch ha scelto; le regole del pacchetto che rimandano alla dipendenza restano senza destinazione finché non la installi a parte. Dall'entry point: `dr-guidelines-install.ps1 -Package dr-minimalapi -NoDependencies`.
 
 **Un ciclo nel catalogo è un errore, non un loop.** Se il catalogo dichiarasse A → B → A, l'installer si ferma con `Ciclo nelle dipendenze del catalogo: A -> B -> A` prima di clonare, a host intatto.
@@ -303,4 +305,4 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
-*Revisione v1.10 — 2026-10-09 14:46 — claude-opus-5-5 — conteggi di istruzioni e prompt con `architecture-doc` (issue #10)*
+*Revisione v1.11 — 2026-10-11 18:00 — claude-opus-5-5 — core come dipendenza implicita di `-Package` (dr-fe#1)*

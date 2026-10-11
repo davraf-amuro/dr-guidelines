@@ -521,6 +521,8 @@ function Install-DrPackage {
         annuncia in un blocco unico, una riga '[dep]' per dipendenza, nell'ordine in cui
         verranno installate. Nessuna conferma interattiva: bloccherebbe agenti ed esecuzioni
         'irm | iex'. La conferma, quando serve, sta a monte nelle skill.
+        Il core (voce del catalogo con isCore) e' una dipendenza implicita di ogni altro
+        pacchetto: se manca dal manifest e' il primo '[dep]' dell'albero.
         A fine installazione, per ogni voce 'suggests' del pacchetto assente dal manifest,
         stampa una riga '[sugg]' col motivo: il suggerito non si installa e non si chiede nulla.
     .PARAMETER Update
@@ -554,6 +556,17 @@ function Install-DrPackage {
     # Albero calcolato tutto prima di scrivere: un ciclo nel catalogo fallisce qui, a host intatto
     $manifest = Read-DrManifest -HostRoot $hostRoot
     $missing  = @(Resolve-DrDependencyTree -PackageName $PackageName -Registry $registry -Manifest $manifest)
+
+    # Il core e' una dipendenza implicita di ogni pacchetto di dominio: senza, l'host non ha
+    # CLAUDE.md, istruzioni trasversali ne' skill di base. Va per primo perche' le altre
+    # dipendenze ne presuppongono i file. Implicita e non scritta nel catalogo: vale anche
+    # per i pacchetti futuri senza doverla ripetere in ogni voce.
+    $coreName = $registry.Keys | Where-Object { $registry[$_].IsCore } | Select-Object -First 1
+    if ($coreName -and $PackageName -ne $coreName -and
+        -not (Test-DrPackageInstalled -Manifest $manifest -PackageName $coreName) -and
+        -not ($missing | Where-Object { $_.Name -eq $coreName })) {
+        $missing = @([PSCustomObject]@{ Name = $coreName; RequiredBy = "$PackageName, core implicito" }) + $missing
+    }
 
     if ($missing.Count -gt 0) {
         if ($NoDependencies) {
