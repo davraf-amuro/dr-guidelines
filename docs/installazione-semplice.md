@@ -78,7 +78,7 @@ Git serve all'installatore per scaricare le linee guida. PowerShell 7 è la vers
 
 ## ✅ Passo 3 — Crea la cartella di lavoro
 
-Se hai già una cartella con i tuoi documenti, puoi usare quella. Le linee guida **non cancellano e non modificano** i tuoi file: aggiungono solo i propri.
+Se hai già una cartella con i tuoi documenti, puoi usare quella. Le linee guida non cancellano i tuoi file e non li sostituiscono: un file con lo stesso nome resta com'è. Due eccezioni: se hai già un `CLAUDE.md`, in fondo viene aggiunta una sezione; se hai già `.claude/settings.json`, vengono aggiunti alcuni permessi.
 
 Se parti da zero:
 
@@ -155,6 +155,7 @@ L'assistente legge le skill solo quando VS Code si avvia. Va ricaricato.
    | Cartella `.claude` | Skill e impostazioni di Claude Code |
    | Cartella `.github` | Istruzioni lette da Claude Code e da GitHub Copilot |
    | Cartella `.ai` | Elenco dei pacchetti installati |
+   | Cartella `briefs` | Qui scrivi le richieste per l'assistente. Nasce vuota |
    | File `CLAUDE.md` | Regole di base per l'assistente |
 
 4. Apri la chat di **Claude Code** e scrivi `/dr-`. Deve comparire un elenco di skill, per esempio `/dr-professor`.
@@ -174,7 +175,7 @@ L'assistente legge le skill solo quando VS Code si avvia. Va ricaricato.
 | `Impossibile caricare dr-guidelines-install-lib.ps1` | Come sopra: GitHub non raggiungibile | Come sopra |
 | Scritta rossa con `irm` o `Invoke-RestMethod` | Collegamento a Internet interrotto o bloccato | Riprova tra un minuto. Se si ripete, come sopra |
 | Nessuna skill con `/dr-` | VS Code non è stato ricaricato | Rifai il passo 6. Se ancora niente, chiudi e riapri VS Code |
-| Le cartelle `.claude`, `.github`, `.ai` sono finite nella cartella sbagliata | Era aperta un'altra cartella | Vedi sotto |
+| Le cartelle `.claude`, `.github`, `.ai`, `briefs` sono finite nella cartella sbagliata | Era aperta un'altra cartella | Vedi sotto |
 
 ### Come togliere un'installazione dalla cartella sbagliata
 
@@ -182,7 +183,7 @@ Vale **solo se quella cartella prima non conteneva questi elementi**. Se hai dub
 
 In Esplora file, nella cartella sbagliata, elimina:
 
-- le cartelle `.claude`, `.github`, `.ai`
+- le cartelle `.claude`, `.github`, `.ai`, `briefs`
 - i file `CLAUDE.md`, `.editorconfig`, `.gitattributes`, `.gitignore`, `.mcp.json`
 
 Poi ripeti dal passo 4 con la cartella giusta.
@@ -199,6 +200,8 @@ Le linee guida migliorano nel tempo. Per ricevere gli aggiornamenti, apri la cha
 
 L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I tuoi documenti non vengono toccati.
 
+> ⚠️ L'aggiornamento sovrascrive i file delle linee guida, compresi `.gitignore`, `.editorconfig` e `.gitattributes`. Se li hai modificati a mano, le modifiche si perdono.
+
 ---
 
 ## 🔗 Per saperne di più
@@ -211,4 +214,4 @@ L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I
 
 ---
 
-*Revisione v1.0 — 2026-09-24 22:44 — claude-opus-5-5*
+*Revisione v1.1 — 2026-10-11 21:30 — claude-opus-5-5*

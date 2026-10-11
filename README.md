@@ -14,23 +14,34 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Base backend .NET: rilevamento tipo progetto, `Directory.Build.props` e `global.json`, skill `/dr-audit-api` |
 | dr-minimalapi | [davraf-amuro/dr-minimalapi](https://github.com/davraf-amuro/dr-minimalapi) | Architettura Minimal API .NET, prompt per endpoint e card. Dipende da `dr-dotnet-backend` |
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service / Worker .NET. Dipende da `dr-dotnet-backend` |
-| dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio |
-| dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, skill `/dr-audit-fe` |
+| dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio. Suggerisce il server MCP `db-schema` |
+| dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, design token, skill `/dr-audit-fe` |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab. Non copre `Dockerfile` né compose per host singolo |
 | dr-ux-lcars | [davraf-amuro/dr-ux-lcars](https://github.com/davraf-amuro/dr-ux-lcars) | Tema grafico LCARS per frontend Vue + Tailwind v4 (palette `enterprise-d` ed `enterprise-e`), verifica dei contrasti. Dipende da `dr-fe` |
 
-Le dipendenze si installano prima del pacchetto che le richiede. Il core `dr-guidelines` è una dipendenza implicita di ogni pacchetto: se manca dal manifest, `-Package <nome>` lo installa per primo. Fra quelle dichiarate nel catalogo, `dr-minimalapi` e `dr-winsvc` si portano dietro `dr-dotnet-backend` se manca, `dr-ux-lcars` si porta dietro `dr-fe`. Prima di scrivere, l'installer annuncia l'elenco delle dipendenze in arrivo (righe `[dep]`); con `-NoDependencies` installa solo il pacchetto chiesto e le elenca come `[skip]`. Il guard di catalogo in CI garantisce che una dipendenza sia compatibile con gli stack del pacchetto che la dichiara e che non ci siano cicli. I pacchetti **suggeriti** (campo `suggests`) invece non si installano mai da soli: a fine installazione l'installer stampa una riga `[sugg]` con il motivo per ciascuno che manca. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
+Come arrivano gli altri pacchetti:
 
-> **Gli 8 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo`. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
+- **Core implicito.** Il core `dr-guidelines` è una dipendenza implicita di ogni pacchetto. Se manca dal manifest si installa per primo, con `-Package` come con l'installer del pacchetto.
+- **Dipendenze dichiarate.** `dr-minimalapi` e `dr-winsvc` portano `dr-dotnet-backend`; `dr-ux-lcars` porta `dr-fe`. Arrivano prima del pacchetto che le chiede. A schermo: righe `[dep]`.
+- **`-NoDependencies`.** Installa solo il pacchetto chiesto, senza dipendenze e senza core. A schermo: righe `[skip]`.
+- **Suggeriti** (campo `suggests`). Non si installano mai da soli. A fine installazione: una riga `[sugg]` con il motivo per ognuno che manca.
+- **Controllo in CI.** Il guard di catalogo blocca cicli e dipendenze incompatibili con lo stack del pacchetto.
+
+Dettagli e prove sul campo in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
+
+> **Gli 8 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
 ### Aggiungere un dominio nuovo
 
-Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), l'unica fonte. L'installer legge da lì l'elenco dei pacchetti. `/dr-scaffold` legge da lì domini e intenti. Per un pacchetto nuovo servono quattro voci nello stesso file:
+Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), l'unica fonte. L'installer legge da lì l'elenco dei pacchetti. `/dr-scaffold` legge da lì domini e intenti. Per un pacchetto nuovo si toccano fino a cinque voci dello stesso file:
 
-1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, `sourceFiles` (sorgenti applicativi, vedi sotto) e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
+1. **`packages`** — nome, repository, `appliesTo` (i `kind` a cui serve), `description`, dipendenze, `rootFiles` da installare nella radice del progetto host, `sourceFiles` (sorgenti applicativi, vedi sotto), `obsoleteArtifacts` quando rinomini o togli un file, e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
 2. **`kinds`** — solo se il dominio richiede una toolchain nuova, con i suoi prerequisiti (`dotnet`, `node`, `embedded`, `content`, `any`)
 3. **`domains`** — etichetta leggibile, `kind`, pacchetti che lo compongono
 4. **`intentMap`** — le frasi con cui un utente descriverebbe quel lavoro ("progetto per ESP32", "guida turistica")
+5. **`projectTypes`** — solo se il dominio crea progetti con `/dr-scaffold`
+
+In CI, `catalog-guard` controlla la coerenza del catalogo a ogni push; `suggests-text-check.yml` confronta ogni settimana i rimandi scritti nelle istruzioni con i `suggests`.
 
 Il repository del pacchetto contiene il proprio `<pacchetto>-install.ps1`, un wrapper sottile che carica la libreria condivisa da questo repo. Più le sue `.github/instructions/`, `.github/prompts/` e `.claude/skills/`. L'installer non va toccato.
 
@@ -44,7 +55,7 @@ Il repository del pacchetto contiene il proprio `<pacchetto>-install.ps1`, un wr
 
 **L'ordine conta:** prima si installa il core, poi si crea la solution. In una cartella vuota Claude Code non ha nessuna skill `dr-*`: arrivano con il core.
 
-> Il percorso da cartella vuota a solution non è ancora stato provato sul campo con l'installer attuale: l'installazione del core è stata provata il 2026-08-12 con la versione precedente, il resto mai. Il catalogo chiede inoltre di creare un frontend Vue prima del core. Lo stato delle prove è nella guida.
+> Il percorso da cartella vuota a solution non è ancora stato provato sul campo con l'installer attuale. Per il primo progetto parti dal solo backend e aggiungi il frontend Vue dopo: il catalogo chiede di creare il frontend prima del core. Lo stato delle prove è nella guida.
 
 ```powershell
 # 1. Cartella nuova, aperta in una finestra VS Code separata
@@ -85,7 +96,7 @@ Set-Location <root-del-progetto>
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-Il comando breve funziona perché i repo sono Public (dal 2026-09-21). Non richiede `gh`, ma non è ancora stato provato sul campo. Su un repo Private risponderebbe `404`:
+Forma breve, senza `gh` (funziona perché i repo sono Public):
 
 ```powershell
 irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
@@ -113,9 +124,21 @@ Oppure con l'installer del pacchetto. Gli installer si chiamano sempre `<pacchet
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-minimalapi/contents/dr-minimalapi-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-Un nome di pacchetto sconosciuto produce un errore con l'elenco dei pacchetti disponibili. `-Package` e `-Global` non si usano insieme. Ogni installazione viene registrata in `.ai/dr-guidelines-packages.json`.
+Un nome di pacchetto sconosciuto produce un errore con l'elenco dei pacchetti disponibili. Ogni installazione viene registrata in `.ai/dr-guidelines-packages.json`.
 
-**Se `git clone` fallisce** con `git clone fallito per davraf-amuro/...`: controlla la rete e l'URL. Se il repo è Private, git deve avere le credenziali: esegui `gh auth setup-git` e riprova.
+Parametri dell'installer del core:
+
+| Parametro | Cosa fa | Vincoli |
+|---|---|---|
+| `-Update` | Sovrascrive i file del pacchetto e rimuove quelli dismessi | Non aggiorna le dipendenze |
+| `-Package <nome>` | Installa un pacchetto di dominio, con le dipendenze mancanti | Non insieme a `-Global` |
+| `-NoDependencies` | Installa solo il pacchetto chiesto: niente dipendenze, niente core | Solo con `-Package` |
+| `-SourceRoot <cartella>` | Cartella dell'host dove vanno i sorgenti (`sourceFiles`) | Solo con `-Package` |
+| `-Global` | Scrive solo `~/.claude/CLAUDE.md` | Non insieme a `-Package` |
+
+L'installer di un singolo pacchetto (`<pacchetto>-install.ps1`) accetta solo `-Update`. Per `-NoDependencies` e `-SourceRoot` usa l'installer del core con `-Package`.
+
+**Se `git clone` fallisce:** vedi la [FAQ](#q-git-clone-fallito-per-davraf-amuro--cosa-faccio).
 
 ---
 
@@ -125,36 +148,26 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
-| `.editorconfig` | copia | Stile di codice e naming conventions |
-| `.gitignore` | copia | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
-| `.gitattributes` | copia | Normalizzazione dei fine riga |
+| `.editorconfig` | copia, sovrascritta con `-Update` | Stile di codice e naming conventions |
+| `.gitignore` | copia, sovrascritta con `-Update` | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
+| `.gitattributes` | copia, sovrascritta con `-Update` | Normalizzazione dei fine riga |
 | `.mcp.json` | copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
 | `.github/copilot-instructions.md` | copia, sovrascritta con `-Update` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
-| `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. `readme-structure.instructions.md` resta in questo repo: negli host il README segue `readme-generator.prompt.md` |
+| `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. Prompt: `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans`, `architecture-doc`, `readme-generator`, `card-project-generator` (scheda del progetto), `card-wiki-generator` (wiki card con valori reali), `onboarding-senior` (onboarding per un senior) |
 | `.claude/skills/` | copia cartella per cartella | Skill Claude Code del core (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) |
 | `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte |
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
-| `.ai/dr-scaffolding-catalog.json` | copia | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
-| `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati con il **commit** di provenienza: fa da lock file, e `-Update` lo usa per mostrare cosa è cambiato |
+| `.ai/dr-scaffolding-catalog.json` | copia, sovrascritta con `-Update` | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
+| `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati, con il **commit** di provenienza: fa da lock file. A ogni esecuzione l'installer confronta il commit vecchio con il nuovo e lo scrive a schermo |
 | `briefs/` | creata vuota, solo se assente | Le tue richieste per l'agente, in Markdown, con nome e forma liberi. L'installer non ne legge né tocca mai il contenuto, nemmeno con `-Update` |
+
+> ⚠️ **`-Update` riscrive `.gitignore`, `.editorconfig` e `.gitattributes`.** Le righe che hai aggiunto tu si perdono, anche con `/dr-get-latest`. Dopo l'aggiornamento controlla con `git diff` e rimettile.
 
 **Come si usa `briefs/`.** Scrivi la richiesta in un file, per esempio `briefs/export-contatti.md`, poi indicalo all'agente nel prompt: *"crea il piano da `briefs/export-contatti.md`"*. L'agente legge il brief e, se trova lacune, ti fa domande. Poi scrive sempre un piano in `.ai/plans/` con il link al brief sotto il titolo e aspetta la tua approvazione prima di eseguirlo. Vale anche quando passi il brief come argomento di una skill. La cartella non viene esplorata: l'agente usa solo il brief che gli indichi.
 
 I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/prompts/`, `.claude/skills/` e i **file di radice dichiarati nel catalogo** (campo `rootFiles`). Non toccano `CLAUDE.md` né la configurazione del core.
 
-**Sorgenti applicativi (campo `sourceFiles`).** Un pacchetto può distribuire file di codice, per esempio i CSS di un tema: ogni voce ha `from` (percorso nel pacchetto) e `to` (percorso relativo alla cartella sorgente dell'host). La cartella sorgente si sceglie con `-SourceRoot`, solo insieme a `-Package`; il default è la radice:
-
-```json
-"sourceFiles": [
-  { "from": "src/theme/tokens.css", "to": "src/styles/tokens.css" }
-]
-```
-
-```powershell
-dr-guidelines-install.ps1 -Package <nome> -SourceRoot frontend
-```
-
-Una volta copiati, i sorgenti appartengono all'host e **non si sovrascrivono mai**. Senza `-Update` un file presente si salta. Con `-Update` si saltano i file uguali a quelli del pacchetto; se il contenuto è cambiato a monte, la versione nuova va in `<file>.new` accanto all'originale e l'installer elenca i `.new` da confrontare a mano. Percorsi assoluti o con `..`, nel catalogo come in `-SourceRoot`, fermano l'installazione prima di scrivere. Nessun pacchetto usa ancora il campo: oggi `dr-ux-lcars` distribuisce i sorgenti del tema dentro un prompt con conferma per file. La scelta di una variante (per esempio la palette) al momento dell'installazione non c'è ancora.
+**Sorgenti applicativi (campo `sourceFiles`).** Un pacchetto può distribuire file di codice: ogni voce va da `from` (percorso nel pacchetto) a `to` (percorso nell'host). La cartella di arrivo si sceglie con `-SourceRoot`; il default è la radice. Percorsi assoluti o con `..` fermano l'installazione prima di scrivere. I sorgenti copiati sono tuoi e non si sovrascrivono mai: con `-Update` la versione nuova va in `<file>.new` e l'installer elenca i `.new` da confrontare a mano. Oggi nessun pacchetto usa il campo. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
 > **Il core non è un pacchetto .NET.** `Directory.Build.props` e `global.json` appartengono a `dr-dotnet-backend`. Un frontend, un firmware o un repository di documenti non li riceve. Un progetto .NET li ottiene con quel pacchetto, che arriva da solo con `dr-minimalapi` e `dr-winsvc`.
 
@@ -176,7 +189,7 @@ Legge `.ai/dr-guidelines-packages.json` e riesegue l'installer di ogni pacchetto
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Update
 ```
 
-A repo Public vale anche la forma breve:
+Forma breve:
 
 ```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
@@ -184,7 +197,9 @@ A repo Public vale anche la forma breve:
 
 `-Update` sovrascrive i file già presenti con la versione corrente del pacchetto. Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
 
-`-Update` rimuove anche i file che il pacchetto ha dismesso (campo `obsoleteArtifacts` del catalogo), per esempio `readme-structure.instructions.md`. Un file con lo stesso nome di uno del pacchetto viene sovrascritto o rimosso: le personalizzazioni vanno in un file con nome proprio, vedi la [FAQ](#q-come-personalizzo-unistruzione-senza-perderla-con--update).
+`-Update` aggiorna solo il pacchetto che indichi, non le sue dipendenze. Per aggiornare tutto usa `/dr-get-latest`.
+
+`-Update` rimuove anche i file che il pacchetto ha dismesso (campo `obsoleteArtifacts` del catalogo). Un file con lo stesso nome di uno del pacchetto viene sovrascritto o rimosso: le personalizzazioni vanno in un file con nome proprio, vedi la [FAQ](#q-come-personalizzo-unistruzione-senza-perderla-con--update).
 
 Nessun submodule e nessun `git submodule update`: la distribuzione non li usa.
 
@@ -200,7 +215,7 @@ Equivalente da riga di comando:
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String))) -Global -Update
 ```
 
-Viene riscritta **solo** la sezione tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`. Senza `-Update`, una sezione già presente resta com'è (`[SKIP]`).
+Viene riscritta **solo** la sezione tra `## Davraf Guidelines (Globale)` e `<!-- /davraf-guidelines -->`. Il testo viene da [`templates/global-claude.md`](templates/global-claude.md). Senza `-Update`, una sezione già presente resta com'è (`[SKIP]`). Se c'è il titolo ma manca la riga di chiusura, l'installer avvisa (`[WARN]`) e non tocca il file.
 
 ---
 
@@ -270,7 +285,7 @@ Rileva lo stack, propone i pacchetti pertinenti segnando quelli già installati,
 
 ### `/dr-get-latest` — Aggiornamento Pacchetti
 
-Aggiorna tutti i pacchetti tracciati in `.ai/dr-guidelines-packages.json`, rieseguendo il rispettivo `<pacchetto>-install.ps1 -Update`.
+Aggiorna tutti i pacchetti tracciati in `.ai/dr-guidelines-packages.json`, rieseguendo il rispettivo `<pacchetto>-install.ps1 -Update`. Su GitHub Copilot: [`.github/prompts/dr-get-latest.prompt.md`](.github/prompts/dr-get-latest.prompt.md).
 
 **Uso:**
 ```
@@ -439,17 +454,17 @@ Poi riavvia Claude Code per caricare il server.
 | [`docs/scaffolding-windows-service.md`](docs/scaffolding-windows-service.md) | Struttura interna di un Windows Service generato: domande, file, convenzioni |
 | [`docs/scaffolding-crud.md`](docs/scaffolding-crud.md) | Endpoint CRUD per una tabella: domande, file, regole sui tipi |
 
-> I tre `scaffolding-*.md` vengono dal repo `davraf-guidelines` precedente allo split. Descrivono la struttura interna dei progetti (Dto, Endpoints, Workers, Validators), contenuto ancora valido e indipendente dal meccanismo di installazione.
+> I tre `scaffolding-*.md` sono panoramiche di ciò che l'assistente scrive seguendo le istruzioni di `dr-minimalapi` e `dr-winsvc`. Le regole valide restano quelle delle istruzioni.
 
 ---
 
 ## ❓ FAQ
 
 ### Q: Devo rendere pubblici i repo `dr-*` per usarli o testarli?
-**A:** No. Basta `gh` autenticato con scope `repo` (`gh auth status`). Usa la forma `gh api` dei comandi: funziona su repo Private e Public. Solo `irm https://raw.githubusercontent.com/... | iex` richiede repo Public.
+**A:** No. Servono due cose: `gh` autenticato con scope `repo` (`gh auth status`) e git collegato a `gh` (`gh auth setup-git`), perché l'installer clona il pacchetto con git. Poi usa la forma `gh api` dei comandi. Solo `irm https://raw.githubusercontent.com/... | iex` richiede repo Public.
 
 ### Q: `irm ... | iex` funziona?
-**A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata e scarica lo stesso da GitHub, senza clone locale. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
+**A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata. Non serve avere `dr-guidelines` clonato sul PC. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
 
 ### Q: Non sono un programmatore: posso installare le guidelines?
 **A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7, installabili con due comandi `winget`. Non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md).
@@ -490,8 +505,8 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Descrive solo il README di questo repo e negli host contraddiceva `readme-generator.prompt.md`, che è la regola per il README dei progetti. Ora l'installer non lo copia più e con `-Update` lo rimuove. Se lo avevi adattato al tuo progetto **mantenendo lo stesso nome**, rinominalo prima di lanciare `-Update` (per esempio in `readme-local.instructions.md`), altrimenti viene cancellato.
 
 ### Q: L'installer fallisce a metà — come ripristino?
-**A:** Se il repository ha già un commit: `git clean -fd` e `git checkout -- .`, poi rilancia. L'installer è idempotente e salta i file già a posto.
+**A:** Rilancia l'installer: è idempotente e salta i file già a posto. Se vuoi annullare, guarda prima `git status`: ripristina i file modificati con `git checkout -- <file>` e cancella a mano i file nuovi. Non usare `git clean -fd`: cancella anche i tuoi file non committati, compresi i brief.
 
 ---
 
-*Revisione v3.18 — 2026-10-11 18:45 — claude-opus-5-5 — perimetro Docker di dr-devops (dr-devops#1)*
+*Revisione v3.19 — 2026-10-11 21:30 — claude-opus-5-5*

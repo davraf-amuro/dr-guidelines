@@ -2,6 +2,8 @@
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-winsvc` installati) di creare un nuovo Windows Service. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
+`/dr-scaffold` crea il progetto `dotnet new worker`. Worker e configurazione li scrive l'assistente seguendo `windows-service.instructions.md` di `dr-winsvc`.
+
 ---
 
 ## Gate preliminare — cosa chiede Claude prima di procedere
@@ -10,7 +12,7 @@ Prima di creare qualsiasi file, Claude raccoglie tutto in un unico messaggio:
 
 | # | Domanda | Default proposto |
 |---|---------|-----------------|
-| 1 | Nome del progetto | `<nomecartella>.worker` o `<nomecartella>.service` in lowercase |
+| 1 | Nome del progetto | `<nomecartella>.service` in lowercase (suffisso del catalogo `scaffolding-catalog.json`) |
 | 2 | Nome dei worker da creare | Es. `SyncOrders`, `Cleanup` |
 | 3 | IntervalSeconds per ogni worker | Chiede se non specificato |
 | 4 | Entity Framework Core necessario? | Chiede prima di aggiungere il pacchetto |
@@ -95,6 +97,9 @@ public class SyncOrdersWorker(
 ```csharp
 var builder = Host.CreateApplicationBuilder(args);
 
+// Segreti e valori locali: file non committato, opzionale
+builder.Configuration.AddJsonFile("appsettings.local.json", optional: true);
+
 builder.Services.AddWindowsService(options =>
     options.ServiceName = builder.Configuration["Service:Name"]!);
 
@@ -106,7 +111,7 @@ builder.Services.Configure<SyncOrdersOptions>(
 builder.Services.AddHostedService<SyncOrdersWorker>();
 
 // Serilog
-builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration));
+builder.Services.AddSerilog((services, cfg) => cfg.ReadFrom.Configuration(builder.Configuration));
 
 var host = builder.Build();
 host.Run();
@@ -115,11 +120,11 @@ host.Run();
 ### Configurazione strongly-typed
 
 ```csharp
-// Options/<Worker>Options.cs — una classe per worker
+// <Worker>Options — una classe per worker.
+// La cartella non è fissata dalle istruzioni (non esiste `Options/` nella struttura): Da verificare.
 public class SyncOrdersOptions
 {
     public int IntervalSeconds { get; set; } = 60;
-    public bool Enabled { get; set; } = true;
 }
 ```
 
@@ -132,8 +137,7 @@ public class SyncOrdersOptions
   },
   "Workers": {
     "SyncOrders": {
-      "IntervalSeconds": 60,
-      "Enabled": true
+      "IntervalSeconds": 60
     }
   },
   "Serilog": {
@@ -172,7 +176,7 @@ builder.Services.AddHostedService<CleanupWorker>();
 }
 ```
 
-Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `Options/<Name>Options.cs`. Non si condividono.
+Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `<Name>Options`. Non si condividono. Dove metterla non lo dicono le istruzioni: Da verificare.
 
 ---
 
@@ -198,7 +202,7 @@ Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `Op
 | Pacchetto | Motivo |
 |---|---|
 | `Microsoft.Extensions.Hosting.WindowsServices` | `AddWindowsService` + integrazione SCM |
-| `Serilog.AspNetCore` | Logging su file + console |
+| `Serilog.Extensions.Hosting` | Serilog su `HostApplicationBuilder` (`AddSerilog`) |
 | `Serilog.Sinks.File` | Sink file |
 | `Serilog.Sinks.Console` | Sink console |
 | `Microsoft.EntityFrameworkCore.SqlServer` | ORM (solo se confermato) |
@@ -214,16 +218,18 @@ Dopo la build:
 dotnet publish src/<progetto>/<progetto>.csproj -c Release -o C:\Services\<nomesvc>
 
 # Installa come servizio SCM
-sc create "<ServiceName>" binPath="C:\Services\<nomesvc>\<progetto>.exe" start=auto
-sc start "<ServiceName>"
+sc.exe create "<ServiceName>" binPath="C:\Services\<nomesvc>\<progetto>.exe" start=auto
+sc.exe start "<ServiceName>"
 ```
+
+In PowerShell `sc` è un alias di `Set-Content`: usa sempre `sc.exe`.
 
 Per disinstallare:
 ```powershell
-sc stop "<ServiceName>"
-sc delete "<ServiceName>"
+sc.exe stop "<ServiceName>"
+sc.exe delete "<ServiceName>"
 ```
 
 ---
 
-*Revisione v1.1 — 2026-09-16 16:09 — claude-opus-5*
+*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*

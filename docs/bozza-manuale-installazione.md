@@ -126,7 +126,7 @@ irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guideli
 
 | Visibilità repo | `irm ... \| iex` | `gh api ...` |
 |---|---|---|
-| Public | Funziona | Funziona |
+| Public | Dovrebbe funzionare, non ancora provato sul campo | Funziona |
 | Private | **404** — `raw.githubusercontent.com` non serve repo privati | Funziona (usa il token di `gh`) |
 
 **Consiglio operativo:** parti sempre dalla forma `gh api`. Funziona in entrambi i casi, quindi non devi sapere in che stato sono i repo.
@@ -150,9 +150,10 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
 | `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Sì | Generato da `.mcp.example.json`, solo perché assente. Il `.gitignore` copiato lo esclude dai commit |
-| `.github/instructions/` | Sì | 10 file `*.instructions.md` al 2026-08-12. Al 2026-09-16 il core ne ha 11 (aggiunto `no-hardcoded-values`). Dal 2026-10-09 (issue #9) il core ne contiene 12 ma ne installa 11: `readme-structure.instructions.md` è elencato in `coreOnlyArtifacts` del catalogo, vale solo nel repo dr-guidelines e nell'output compare come `[CORE] readme-structure.instructions.md` invece di `[OK]`. Con la issue #10 il core ne contiene 13 e ne installa 12 (aggiunto `architecture-doc`) |
-| `.github/prompts/` | Sì | `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `dr-scaffold` al 2026-08-12. Al 2026-09-16 anche `dr-get-latest` e `dr-file-feedback`. Al 2026-10-09 il core ne ha 9: anche `dr-issues-to-plans` e `architecture-doc` (issue #10) |
-| `.claude/skills/` | Sì | Il taccuino del 2026-08-12 riportava 10 cartelle, ma nei commit di quel giorno (`faf6a6c`, `cffb1f2`) le skill del core erano 15: conteggio da rifare. Al 2026-09-16 il core ne ha 16, al 2026-10-09 17 |
+| `.github/copilot-instructions.md` | Sì | Lo copia solo il core; serve al rimando `@.github/copilot-instructions.md` in `CLAUDE.md` |
+| `.github/instructions/` | Sì | 12 file `*.instructions.md`: il core ne contiene 13, `readme-structure.instructions.md` non viene installato (`coreOnlyArtifacts`; nell'output compare `[CORE]` invece di `[OK]`) |
+| `.github/prompts/` | Sì | 9 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `architecture-doc`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
+| `.claude/skills/` | Sì | 17 cartelle skill `dr-*`. Lo storico dei conteggi è nella git history |
 | `CLAUDE.md` | Sì | Contiene i marker `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-guidelines-packages.json` | Sì | Manifest dei pacchetti installati |
 | `.ai/dr-scaffolding-catalog.json` | Sì | Catalogo tipologie/pacchetti, letto dalle skill `dr-scaffold*` |
@@ -185,7 +186,7 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | ☐ Da provare |
 | 7 | `/dr-snapshot` eseguita dal progetto host | ☐ Da provare |
 | 8 | `/dr-get-latest` dal progetto host | ☐ Da provare |
-| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ 2026-09-21: tutti e 7 (`dr-guidelines`, `dr-devops`, `dr-fe`, `dr-efdb`, `dr-winsvc`, `dr-minimalapi`, `dr-dotnet-backend`) → `PUBLIC`, dopo una scansione segreti su tutta la history (solo placeholder documentati). Accesso anonimo verificato con `git ls-remote` senza credenziali. Il 2026-09-16 erano `PRIVATE`. La forma breve `irm ... \| iex` del Passo 1 diventa quindi applicabile: ☐ da provare sul campo |
+| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ Tutti e 8 `PUBLIC`: i 7 originali (`dr-guidelines`, `dr-devops`, `dr-fe`, `dr-efdb`, `dr-winsvc`, `dr-minimalapi`, `dr-dotnet-backend`) dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11). Per i 7 originali: dopo una scansione segreti su tutta la history (solo placeholder documentati). Accesso anonimo verificato con `git ls-remote` senza credenziali. Il 2026-09-16 erano `PRIVATE`. La forma breve `irm ... \| iex` del Passo 1 diventa quindi applicabile: ☐ da provare sul campo |
 | 10 | Nome del catalogo dopo la copia: nel repo sorgente il file sta in root e si chiama `scaffolding-catalog.json`; `test-progetto-host.md` lo dà per `.ai/dr-scaffolding-catalog.json` nell'host. Rinomina prevista o discrepanza? | 🟡 Rinomina prevista nel codice: `Copy-ScaffoldingCatalog` in `dr-guidelines-install-lib.ps1` copia il file come `.ai\dr-scaffolding-catalog.json`. ☐ Conferma sul campo con `Get-ChildItem .ai` nella cartella host |
 | 11 | Il test prova sempre il `main` **remoto**: `Install-DrPackage` fa `git clone --depth 1` da `github.com` anche se l'installer è lanciato da path locale. Modifiche non pushate non vengono installate | ☐ Da provare: modifica locale non pushata → assente nella cartella host |
 | 12 | Passi 1 e 2 di questo taccuino dopo la riscrittura della libreria (`aee84a4`, 2026-09-16: catalogo come fonte dei pacchetti, `rootFiles`, nessun rilevamento dello stack). Le prove del 2026-08-12 riguardano la versione precedente | ☐ Da riverificare in una cartella vuota |
@@ -215,53 +216,7 @@ Aperte, da risolvere prima che il manuale sia considerato completo.
 
 | # | Domanda | Stato al 2026-08-12 |
 |---|---|---|
-| 1 | I pacchetti `dr-*` coprono l'autenticazione? | ✅ **Risolta il 2026-08-12.** All'apertura della domanda: no. L'unica menzione era una riga in `minimal-api-architecture.instructions.md` (riga 16) che citava `SimpleAuthenticationTools` in versione API Key — adatta a chiamate servizio-a-servizio, non a utenti umani. Nessuna voce nel catalogo, nessuna domanda nel flusso di scaffolding, nessun check nell'audit, niente in `dr-fe`. Intervento eseguito su tre file, vedi sotto |
-
-**Come è stata chiusa** — piano `.ai/plans/2026-08-12-auth-guidelines/plan.md`:
-
-| Pacchetto | File | Contenuto aggiunto |
-|---|---|---|
-| `dr-minimalapi` | `minimal-api-architecture.instructions.md` | Sezione "Autenticazione": matrice di scelta a cinque rami, motivazione di ASP.NET Identity, coesistenza cookie/bearer, sottosezione "Rilascio in container". Punto auth nel gate di raccolta informazioni. `AddJwtBearer` per utenti umani in "Vietato" |
-| `dr-fe` | `frontend-organization.instructions.md` | Regola 7: la login non si implementa nel frontend, domanda obbligatoria all'utente, comportamento del client HTTP secondo lo schema, collocazione dei file |
-| `dr-devops` | `docker-swarm-compose.instructions.md` | Sezione 6: persistenza del portachiavi Data Protection lato stack |
-
-**Le decisioni fissate:**
-
-| Caso | Schema |
-|---|---|
-| Utenti umani, frontend browser stesso dominio | ASP.NET Identity + cookie `HttpOnly` |
-| Utenti umani, domini diversi o client non-browser previsto | Identity + `AddBearerToken` (token opachi) |
-| Entrambi | Stessi endpoint `MapIdentityApi`, si aggiunge solo lo schema |
-| Nessun utente umano, servizio-a-servizio | `SimpleAuthenticationTools` (API Key) |
-| Auth non richiesta | Nessuna |
-
-**Il caso container, emerso durante la stesura.** Nessun file del workspace nominava `Data Protection` né `ForwardedHeaders`. Sono le due cause di rottura silenziosa dell'auth in container:
-
-1. Portachiavi Data Protection non persistito → ricreare il container invalida ogni sessione; con `replicas > 1` ogni replica ha il proprio portachiavi, quindi 401 a intermittenza
-2. TLS terminato sul reverse proxy → l'app riceve `http`, non emette il cookie `Secure`. Trappola Docker: `UseForwardedHeaders` di default si fida solo del loopback, mentre il proxy arriva dall'IP di un altro container, quindi le intestazioni vengono ignorate senza errore
-
-Entrambe ora coperte dalla sottosezione "Rilascio in container" di `minimal-api-architecture` e dalla sezione 6 di `docker-swarm-compose`.
-
-### Caso reale che ha esposto il buco (2026-08-12)
-
-Prompt dato in `dr-test-01`: applicazione familiare con frontend browser, **login per differenziare gli utenti**, maschera profilo con email e cambio password, registrazione fatture di casa (una tantum e periodiche) e grafico spese 12 mesi passati + 12 mesi di previsione.
-
-Cosa ha fatto l'agente: ha aperto una `AskUserQuestion` intitolata *"Confermi ASP.NET Identity + JWT per l'autenticazione?"*, con tre opzioni — Identity + JWT (preselezionata), tabella utenti custom con hash password, Identity + JWT con OAuth Google/Microsoft dall'inizio.
-
-| Aspetto | Valutazione |
-|---|---|
-| Aver chiesto conferma | **Corretto.** La riga 16 impone di chiedere prima di aggiungere il pacchetto auth. E la domanda verteva su *quale schema*, non su *se* fare la login: il requisito era stato recepito |
-| Le opzioni proposte | **Fuori guideline.** ASP.NET Identity, JWT e OAuth non compaiono in nessun file `dr-*`. L'agente le ha prodotte dalla conoscenza generale del modello |
-| Coerenza del pacchetto citato dalle guidelines | **Inadatta al caso.** `SimpleAuthenticationTools` è citato in versione API Key, pensata per chiamate servizio-a-servizio. Non copre utenti umani con registrazione, profilo e cambio password |
-
-**Conclusione:** finché manca una linea guida sull'autenticazione di utenti interattivi, ogni progetto con login otterrà uno schema improvvisato e diverso dal precedente. È il caso d'uso che giustifica il pacchetto `dr-auth` (o almeno una sezione dedicata).
-
-Punti che la futura linea guida dovrebbe fissare:
-
-- ASP.NET Identity come base quando servono registrazione, profilo, cambio password, reset e lockout — non riscriverli a mano
-- Scelta esplicita **cookie vs JWT**: cookie per frontend solo-browser same-origin, JWT quando è previsto un client non-browser. Da decidere in fase di raccolta requisiti, non a valle
-- Se e quando proporre OAuth esterno (richiede registrazione app presso il provider: non è a costo zero)
-- Quando `SimpleAuthenticationTools` resta la scelta giusta — API interne senza utenti umani
+| 1 | I pacchetti `dr-*` coprono l'autenticazione? | ✅ Domanda chiusa il 2026-08-12. Dettagli in `.ai/plans/2026-08-12-auth-guidelines/plan.md`. |
 
 ---
 
@@ -315,4 +270,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.12 — 2026-10-11 18:30 — claude-opus-5-5 — `sourceFiles` e `-SourceRoot` (#15)*
+*Revisione v1.13 — 2026-10-11 21:30 — claude-opus-5-5*

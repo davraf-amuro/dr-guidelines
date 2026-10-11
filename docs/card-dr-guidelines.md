@@ -4,7 +4,7 @@
 
 - **Progetto:** dr-guidelines — pacchetto **core** e catalogo della suite `dr-*`
 - **Solution:** —
-- **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, con i 7 repo `dr-*` come cartelle sorelle
+- **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, che apre 7 cartelle: `dr-guidelines`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-dotnet-backend` e `../davraf-guidelines`. Non include `dr-devops` né `dr-ux-lcars`
 - **Repository:** https://github.com/davraf-amuro/dr-guidelines (Public)
 - **Tipo Applicazione:** Repository di linee guida e configurazioni, distribuito come pacchetto installabile con `dr-guidelines-install.ps1`
 - **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code, catalogo JSON come fonte unica dei pacchetti
@@ -50,10 +50,10 @@
 
 ## Configurazione e Hosting
 
-- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Update` (sovrascrive i file presenti) · `-Package <nome>` (pacchetto di dominio con dipendenze, core compreso se manca) · `-SourceRoot <cartella>` (con `-Package`: destinazione dei `sourceFiles`) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
+- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Package <nome>` (pacchetto di dominio; prima installa le dipendenze mancanti e il core, se manca) · `-NoDependencies` (con `-Package`: non installa le dipendenze, le elenca come `[skip]`) · `-Update` (sovrascrive i file presenti; non vale per le dipendenze) · `-SourceRoot <cartella>` (con `-Package`: destinazione dei `sourceFiles`) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
 - **Ambiente Test:** non pubblicato
 - **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v2.9 — 2026-10-11 19:30 — claude-opus-5-5*
+*Revisione v2.10 — 2026-10-11 21:30 — claude-opus-5-5*

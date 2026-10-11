@@ -14,7 +14,16 @@ Claude raccoglie le informazioni necessarie in **un unico messaggio**:
 |---|---------|------------------------|
 | 1 | Campi dell'entità (nome e tipo) | Se MCP `db-schema` attivo → legge automaticamente lo schema dalla tabella |
 | 2 | Nome tabella SQL (se diverso dal nome entità) | Usa il nome entità come default |
-| 3 | Chiave primaria e tipo (int IDENTITY, Guid, composita) | Default: `int` con IDENTITY |
+| 3 | Chiave primaria e tipo | Non prevista dalle istruzioni: dillo tu se la chiave non è `int`. |
+
+Come si riconosce `db-schema`:
+
+| Fonte | Cosa dice |
+|-------|-----------|
+| Istruzioni `dr-minimalapi` | Il server è attivo se compare nella chiave `mcpServers` di `.claude/settings.json` o `~/.claude/settings.json` |
+| Skill `dr-scaffold-solution` e `dr-scaffold-guidelines` | Con `dr-efdb` propongono di registrarlo in `.mcp.json` |
+
+Da verificare: le due fonti indicano file diversi. Se il server c'è solo in `.mcp.json`, non è chiaro se l'assistente lo rilevi.
 
 Se **MCP `db-schema` è attivo** nel progetto, Claude:
 1. Legge la struttura della tabella automaticamente
@@ -31,6 +40,7 @@ src/<progetto>/
   Dto/
     MyTableDto.cs                    ← record completo con static Projection
     MyTableSummaryDto.cs             ← record ridotto
+    MyTableRequest.cs                ← corpo di POST e PUT (posizione non fissata dalle istruzioni: Da verificare)
   Endpoints/
     MyTableMapping.cs                ← extension method con 6 endpoint CRUD
   Infrastructure/
@@ -39,15 +49,18 @@ src/<progetto>/
         MyTable.cs                   ← entity con [Table] e [Column]
       Filters/
         MyTableFilter.cs             ← filtro con ToExpression()
-    MyTableDbContext.cs              ← (solo se DbContext non esiste)
-    MyTableProvider.cs               ← CRUD: Get, GetById, Create, Update, Delete
-    MyTableProviderExtensions.cs     ← Add<Provider>Provider() per DI
+      <Progetto>DbContext.cs         ← uno per progetto; si aggiunge il DbSet (creato solo se manca)
+      <Progetto>Provider.cs          ← CRUD: Get, GetById, Create, Update, Delete
+      <Progetto>ProviderExtensions.cs ← Add<Progetto>Provider() per DI
   Services/
     MyTableService.cs                ← service layer tra handler e provider
   Validators/
     MyTableRequestValidator.cs       ← regole per POST e PUT
     MyTableFilterValidator.cs        ← regole per il filtro GET
+  <progetto>.http                    ← esempi di chiamata per i nuovi endpoint
 ```
+
+> Con `dr-efdb` installato il provider sta in `Infrastructure/<NomeProvider>/` invece di `Infrastructure/Provider/`. Vedi la nota in fondo.
 
 ---
 
@@ -83,7 +96,11 @@ public record MyTableDto(int Id, string Nome, decimal Prezzo, DateTime CreatedAt
     public static Expression<Func<MyTable, MyTableDto>> Projection =>
         e => new(e.Id, e.Nome, e.Prezzo, e.CreatedAt);
 }
+```
 
+### `Dto/MyTableSummaryDto.cs`
+
+```csharp
 /// <summary>Reduced DTO — SELECT contains only Id and Nome.</summary>
 public record MyTableSummaryDto(int Id, string Nome)
 {
@@ -99,7 +116,7 @@ public record MyTableSummaryDto(int Id, string Nome)
 public class MyTableFilter
 {
     public string? Nome { get; set; }             // string → Contains
-    public decimal? PrezzoMin { get; set; }       // numerici → uguaglianza o range
+    public decimal? PrezzoMin { get; set; }       // decimal: scelta dell'assistente, non fissata dalle istruzioni
     public decimal? PrezzoMax { get; set; }
     public DateTime? CreatedAtFrom { get; set; }  // DateTime → coppia From/To
     public DateTime? CreatedAtTo { get; set; }
@@ -118,7 +135,7 @@ public class MyTableFilter
 
 ```csharp
 /// <summary>Application service for MyTable: handlers depend on this, never on the provider.</summary>
-public class MyTableService(MyTableProvider provider)
+public class MyTableService(<Progetto>Provider provider)
 {
     /// <summary>Returns rows matching the filter, projected to the full DTO.</summary>
     public Task<List<MyTableDto>> GetAllAsync(MyTableFilter filter, CancellationToken ct) =>
@@ -195,14 +212,14 @@ public class MyTableRequestValidator : AbstractValidator<MyTableRequest>
 
 ## Regole dei tipi applicati automaticamente ai filtri
 
-| Tipo colonna SQL | Tipo C# | Campo filter | Predicato in ToExpression |
-|---|---|---|---|
-| `varchar(N)` / `nvarchar(N)` | `string` | `string? Campo` | `(Campo == null \|\| e.Campo.Contains(Campo))` |
-| `int` / `bigint` | `int` / `long` | `int? Campo` | `(Campo == null \|\| e.Campo == Campo)` |
-| `decimal` / `numeric` | `decimal` | `decimal? CampoMin`, `decimal? CampoMax` | range `>=` / `<=` |
-| `datetime` / `datetime2` | `DateTime` | `DateTime? CampoFrom`, `DateTime? CampoTo` | range `>=` / `<=` |
-| `bit` | `bool` | `bool? Campo` | `(Campo == null \|\| e.Campo == Campo)` |
-| `uniqueidentifier` | `Guid` | `Guid? Campo` | `(Campo == null \|\| e.Campo == Campo)` |
+Le istruzioni fissano quattro regole: string → `Contains`; int → uguaglianza; DateTime → coppia From/To; bool → uguaglianza. Per gli altri tipi l'assistente sceglie da sé: controlla il risultato.
+
+| Tipo C# | Campo filter | Predicato in ToExpression |
+|---|---|---|
+| `string` | `string? Campo` | `(Campo == null \|\| e.Campo.Contains(Campo))` |
+| `int` | `int? Campo` | `(Campo == null \|\| e.Campo == Campo)` |
+| `DateTime` | `DateTime? CampoFrom`, `DateTime? CampoTo` | range `>=` / `<=` |
+| `bool` | `bool? Campo` | `(Campo == null \|\| e.Campo == Campo)` |
 
 Tutti i campi filter sono **nullable** — nessun filtro è obbligatorio.
 
@@ -229,6 +246,17 @@ Tutti i campi filter sono **nullable** — nessun filtro è obbligatorio.
 | `appsettings.local.json` | Aggiunge connection string con valori reali (non committato) |
 | `.gitignore` | Aggiunge `appsettings.local.json` se non presente |
 
+### Con `dr-efdb` installato
+
+Il flusso cambia così (da `database-provider.instructions.md`):
+
+| Passo | Cosa succede |
+|-------|--------------|
+| Provider assente | Claude chiede conferma prima di creare i file e attende il tuo sì |
+| Dopo la conferma | Crea un branch git locale e un commit iniziale. Nessun push |
+| Cartella | Il provider sta in `Infrastructure/<NomeProvider>/` |
+| Connection string | Va in `appsettings.Development.json` |
+
 ---
 
-*Revisione v1.1 — 2026-09-16 16:09 — claude-opus-5*
+*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*

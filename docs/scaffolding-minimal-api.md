@@ -2,6 +2,8 @@
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-minimalapi` installati) di creare una nuova Minimal API. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
+`/dr-scaffold` crea il progetto vuoto. Questa struttura la scrive l'assistente dopo, quando chiedi endpoint o entità, seguendo le istruzioni di `dr-minimalapi`. Le regole valide sono in `minimal-api-architecture.instructions.md`. Questo documento è una panoramica: sta nel repo `dr-guidelines` e non viene copiato nel progetto.
+
 ---
 
 ## Gate preliminare — cosa chiede Claude prima di procedere
@@ -10,10 +12,12 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
 
 | # | Domanda | Default proposto |
 |---|---------|-----------------|
-| 1 | Nome del progetto | `<nomecartella>.api` in lowercase — es. cartella `ordini/` → propone `ordini.api` |
-| 2 | Aggiungere Serilog? | Nessun default — chiede esplicitamente |
-| 3 | Entity Framework Core presente? | Se già nel `.csproj`, lo dichiara e procede senza chiedere |
-| 4 | Connessione DB (solo se MCP db-schema attivo) | — |
+| 1 | Nome entità + campi | Solo se il task coinvolge un'entità e non sono già indicati |
+| 2 | Nome del progetto | `<nomecartella>.api` in lowercase — es. cartella `ordini/` → propone `ordini.api` |
+| 3 | Aggiungere Serilog? | Nessun default — chiede esplicitamente |
+| 4 | Entity Framework Core presente? | Se è già nel `.csproj` lo dichiara; altrimenti chiede. |
+| 5 | Utenti umani con login? | Nessun default. Se sì, lo schema dipende dai client |
+| 6 | Connessione DB (solo se MCP db-schema attivo) | Solo se sono disponibili più connessioni |
 
 > ⚠️ Se il nome progetto non è ricavabile dal contesto, Claude si **ferma** e aspetta risposta. Non inventa nomi come `MyApi` o `WebApi`.
 
@@ -42,6 +46,7 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
           <Progetto>ProviderExtensions.cs ← Add<Progetto>Provider() per DI
       Properties/
         ApiVersionFactory.cs              ← ApiVersionFactory con Version1
+        launchSettings.json               ← obbligatorio: profili IIS Express e Kestrel
       Services/
         <Entity>Service.cs                ← service layer tra handler e provider
       Transformers/
@@ -54,25 +59,27 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
       Program.cs
       <progetto>.csproj
       <progetto>.http                     ← esempi di chiamate HTTP
-  .vscode/
+  .vscode/                                ← lo genera `/dr-create-launch-profiles`
     launch.json                           ← profili debug http e https (type: coreclr)
     tasks.json                            ← build task
   test/
   docs/
 ```
 
+> Con `dr-efdb` installato il provider sta in `Infrastructure/<NomeProvider>/` (non in `Infrastructure/Provider/`). La struttura esatta è in `database-provider.instructions.md`.
+
 ---
 
 ## File chiave — esempio con entità `Prodotto`
 
-### `Endpoints/ProdottiMapping.cs`
+### `Endpoints/ProdottoMapping.cs`
 
 ```csharp
 namespace mio_progetto.api.Endpoints;
 
-public static class ProdottiMapping
+public static class ProdottoMapping
 {
-    public static IEndpointRouteBuilder MapProdottiEndpoints(
+    public static IEndpointRouteBuilder MapProdottoEndpoints(
         this IEndpointRouteBuilder routes,
         ApiVersionSet versionSet)
     {
@@ -165,7 +172,11 @@ public record ProdottoDto(int Id, string Nome, decimal Prezzo, DateTime CreatedA
     public static Expression<Func<Prodotto, ProdottoDto>> Projection =>
         e => new(e.Id, e.Nome, e.Prezzo, e.CreatedAt);
 }
+```
 
+### `Dto/ProdottoSummaryDto.cs`
+
+```csharp
 /// <summary>Reduced DTO — SELECT contains only Id and Nome.</summary>
 public record ProdottoSummaryDto(int Id, string Nome)
 {
@@ -209,12 +220,13 @@ public class ProdottoService(ProdottiProvider provider)
 | Filtro | `<Entity>Filter` con tutti campi nullable e `ToExpression()` |
 | Service layer | Handler → Service → Provider (mai handler → provider direttamente) |
 | Health check | `HealthMapping.cs` con `/health` (infrastruttura) + `GET /api/v1/status` (consumer) |
+| Avvio con DB irraggiungibile | L'API parte; `/api/v1/status` mostra lo stato del DB; le richieste che lo usano rispondono 503. Con `dr-efdb` vale `database-startup-resilience.instructions.md`. |
 | Validation | `IValidator<T>` su ogni input (body e query filter con ≥ 1 campo) |
 | Tracking EF | `NoTracking` come default; `AsTracking()` esplicito su Update/Delete |
 | Commenti | `///` su tutti i `public` method di provider/service/handler/validator |
 | File sensibili | `appsettings.local.json` in `.gitignore`, mai credenziali reali in file committati |
 | Debug VS Code | `launch.json` + `tasks.json` con `type: coreclr` (http + https) |
-| Serilog | Solo se confermato — `UseSerilog` in Program.cs, sezione in appsettings.json, `logs/` in .gitignore |
+| Serilog | Solo se confermato — `AddSerilog` in Program.cs, sezione in appsettings.json, `logs/` in .gitignore |
 
 ---
 
@@ -224,12 +236,15 @@ public class ProdottoService(ProdottiProvider provider)
 |---|---|
 | `Asp.Versioning.Mvc.ApiExplorer` | Versioning + Scalar |
 | `Tinyhelpers.AspNetCore` | Helper Minimal API |
+| `Scalar.AspNetCore` | Documentazione Scalar (`MapScalarApiReference`). Nome dedotto dal codice: le istruzioni non lo scrivono. Da verificare |
+| `Microsoft.AspNetCore.OpenApi` | `AddOpenApi` e transformer. Nome dedotto dal codice: le istruzioni non lo scrivono. Da verificare |
 | `FluentValidation` | Validazione input |
 | `Microsoft.EntityFrameworkCore.SqlServer` | ORM (se richiesto) |
 | `Serilog.AspNetCore` | Logging su file + console (se confermato) |
 | `Serilog.Sinks.File` | Sink file Serilog (se Serilog confermato) |
 | `Serilog.Sinks.Console` | Sink console Serilog (se Serilog confermato) |
+| `Serilog.Enrichers.Thread` | Enricher `ThreadId` (se Serilog confermato, da `logging.instructions.md`) |
 
 ---
 
-*Revisione v1.1 — 2026-09-16 16:09 — claude-opus-5*
+*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*

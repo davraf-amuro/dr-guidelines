@@ -147,9 +147,9 @@ Descrivi cosa vuoi costruire, con parole tue:
 
 | Esempio di richiesta | Cosa viene proposto |
 |---|---|
-| `/dr-scaffold crea una Minimal API per gli ordini` | Solution `.slnx` + progetto `ordini.api` + pacchetto `dr-minimalapi` |
-| `/dr-scaffold crea un servizio windows che importa file` | Solution + progetto `.service` + pacchetto `dr-winsvc` |
-| `/dr-scaffold crea una Minimal API con frontend Vue` | Solution + API + frontend `ordini-fe` + pacchetti `dr-minimalapi` e `dr-fe`. Vedi la nota sul frontend qui sotto |
+| `/dr-scaffold crea una Minimal API per gli ordini` | Solution `.slnx` + progetto `ordini.api` + pacchetti `dr-dotnet-backend` e `dr-minimalapi` |
+| `/dr-scaffold crea un servizio windows che importa file` | Solution + progetto `.service` + pacchetti `dr-dotnet-backend` e `dr-winsvc` |
+| `/dr-scaffold crea una Minimal API con frontend Vue` | Solution + API + frontend `ordini-fe` + pacchetti `dr-dotnet-backend`, `dr-minimalapi` e `dr-fe`. Vedi la nota sul frontend qui sotto |
 | `/dr-scaffold` | Nessun indizio: ti mostra i domini disponibili e chiede quale |
 
 Tipologie di progetto e pacchetti non sono scritti nella skill: arrivano dal catalogo [`scaffolding-catalog.json`](../scaffolding-catalog.json).
@@ -207,8 +207,8 @@ La skill esegue queste verifiche da sola e si ferma alla prima che fallisce. Puo
 | Profili di avvio e debug in VS Code | `/dr-create-launch-profiles` |
 | Aggiungere un progetto alla solution | `/dr-scaffold aggiungi un worker` |
 | Aggiornare le linee guida più avanti | `/dr-get-latest` |
-| Leggere la struttura interna di una Minimal API | [`scaffolding-minimal-api.md`](scaffolding-minimal-api.md) |
-| Leggere la struttura interna di un Windows Service | [`scaffolding-windows-service.md`](scaffolding-windows-service.md) |
+| Vedere cosa scrive l'assistente quando gli chiedi endpoint, seguendo `dr-minimalapi` | [`scaffolding-minimal-api.md`](scaffolding-minimal-api.md) |
+| Vedere cosa scrive l'assistente quando gli chiedi un worker, seguendo `dr-winsvc` | [`scaffolding-windows-service.md`](scaffolding-windows-service.md) |
 | Segnalare un errore nelle linee guida | `/dr-file-feedback <descrizione>` |
 
 Se hai scelto `dr-efdb`, la skill propone di registrare il server MCP `db-schema` in `.mcp.json`. Senza quel server lo scaffolding CRUD deve chiederti i campi della tabella a mano.
@@ -265,7 +265,7 @@ Questa guida unisce passaggi eseguiti davvero e passaggi descritti a partire dal
 |---|---|
 | 1 — Prerequisiti | ✅ Verificato il 2026-08-12 |
 | 2 — Cartella vuota fuori dal workspace `dr-*` | ✅ Verificato il 2026-08-12 |
-| 3 — Installazione del core con `gh api` su repo Private | ⚠️ Verificato il 2026-08-12 con la versione precedente dell'installer. Il 2026-09-16 (`aee84a4`) la libreria è stata riscritta: catalogo come fonte dei pacchetti, `rootFiles`. ☐ Da riverificare |
+| 3 — Installazione del core con `gh api` | ⚠️ Verificato il 2026-08-12, con i repo Private e con l'installer di allora. Dal 2026-09-16 la libreria legge i pacchetti dal catalogo. Dal 2026-09-21 i repo sono Public. ☐ Da riverificare |
 | 4 — Le skill compaiono dopo il reload | ☐ Da verificare |
 | 5 — `/dr-scaffold` da cartella con solo il core fino alla solution | ☐ Da verificare |
 | 5 — Dipendenza `dr-dotnet-backend` installata in automatico | ☐ Da verificare |
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.4 — 2026-10-11 16:40 — claude-opus-5-5*
+*Revisione v1.5 — 2026-10-11 21:30 — claude-opus-5-5*

@@ -13,12 +13,13 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | L'installer del core copia i file attesi | Ispezione della cartella dopo l'esecuzione |
 | Merge della sezione `<!-- dr-guidelines -->` in `CLAUDE.md` | Contenuto prima e dopo |
 | Dipendenze automatiche | `dr-minimalapi` deve installare anche `dr-dotnet-backend` |
+| Core implicito, `-NoDependencies`, `-SourceRoot` | Passo 5-bis, **da eseguire**: `-Package dr-fe` in una cartella vuota |
 | Idempotenza (`[SKIP]`) e `-Update` (`[UPD]`) | Doppia esecuzione dell'installer |
 | Manifest `.ai/dr-guidelines-packages.json` | Una voce per pacchetto, con commit |
 | Si installa il `main` remoto, non il clone locale | Modifica non pushata che non deve arrivare |
 | Skill caricate da Claude Code | `/dr-snapshot` e `/dr-get-latest` dal progetto di prova |
 
-> Aggiornamento 2026-09-22: i 7 repo `dr-*` sono **pubblici** dal 2026-09-21 e il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`) è chiuso. Questo collaudo resta una prova del meccanismo su cartella sintetica, non su un progetto host reale.
+> Aggiornamento 2026-09-22: gli 8 repo `dr-*` sono **pubblici**: i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11). Il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`) è chiuso. Questo collaudo resta una prova del meccanismo su cartella sintetica, non su un progetto host reale.
 
 ---
 
@@ -33,7 +34,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | VS Code con Claude Code | Per il passo 8 |
 | Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
-**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. I repo sono Public dal 2026-09-21: anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
+**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. Gli 8 repo `dr-*` sono Public (i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione, 2026-10-11): anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
 
 **Il workspace `dr-*` clonato serve solo ai passi 7 e 8.4.** Tutti gli altri comandi scaricano da GitHub.
 
@@ -82,7 +83,7 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
 
 **Cosa succede dentro:**
 
-1. `dr-guidelines-install.ps1` cerca la libreria `dr-guidelines-install-lib.ps1`: raw pubblico (`404`) → clone locale (assente: lo script arriva da uno stream) → `gh api` (riesce)
+1. L'installer carica `dr-guidelines-install-lib.ps1`. Prova prima `raw.githubusercontent.com`, che con i repo Public riesce. Solo se fallisce prova il clone locale (qui assente) e poi `gh api`.
 2. La libreria carica `scaffolding-catalog.json` con la stessa catena e costruisce l'elenco dei pacchetti
 3. `Install-DrPackage` clona il `main` di `dr-guidelines` in `%TEMP%\dr-install-<guid>`
 4. Copia i file nella cartella di prova, fonde `.claude/settings.json` e `CLAUDE.md`, aggiorna il manifest
@@ -111,7 +112,8 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
   [OK]   .claude/settings.json
   Catalogo scaffolding:
   [OK]   dr-scaffolding-catalog.json
-  CLAUDE.md:
+  Cartella brief:
+  [OK]   briefs\n  CLAUDE.md:
   [OK]   CLAUDE.md creato con sezione dr-guidelines
   [OK]   Manifest aggiornato: dr-guidelines (a1b2c3d)
   Completato: dr-guidelines
@@ -137,6 +139,8 @@ git status --short
 | `.editorconfig`, `.gitignore`, `.gitattributes` | Presenti |
 | `Directory.Build.props`, `global.json` | **Assenti**: appartengono a `dr-dotnet-backend`, arrivano al passo 5 |
 | `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
+| `.github/copilot-instructions.md` | Presente: lo copia solo il core |
+| `briefs/` | Presente e vuota. Git non la vede finché resta vuota |
 | `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
 | `.github/instructions/` | 12 file `*.instructions.md`: il core ne contiene 13, `readme-structure.instructions.md` non viene installato (`coreOnlyArtifacts`) |
 | `.github/prompts/` | 9 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `architecture-doc`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
@@ -174,7 +178,23 @@ Test-Path Directory.Build.props, global.json                 # True, True
 
 Il manifest deve elencare `dr-guidelines`, `dr-dotnet-backend`, `dr-minimalapi`.
 
+Compaiono anche righe `[sugg]` per `dr-efdb`, `dr-fe` e `dr-devops`: sono solo suggerimenti, non si installano e non sono errori.
+
 > I pacchetti di dominio non toccano `CLAUDE.md` né `.editorconfig`, `.gitignore`, `.gitattributes`: sono esclusiva del core. Copiano solo i file di radice dichiarati nel catalogo (`rootFiles`), come `global.json` per `dr-dotnet-backend`.
+
+---
+
+## 5-bis — Core implicito, `-NoDependencies` e `-SourceRoot` (da eseguire)
+
+> Passo **non ancora eseguito**. Atteso ricavato dal codice di `Install-DrPackage`, da confermare in prova.
+
+Ogni prova va in una cartella vuota diversa, per esempio `dr-test-02`, `dr-test-03`, `dr-test-04`.
+
+| Prova | Comando (`...` = la forma `gh api` del passo 3) | Atteso |
+|---|---|---|
+| Core implicito | `... -Package dr-fe` | Prima riga: `[dep]  dr-guidelines (richiesta da dr-fe, core implicito)` |
+| Senza dipendenze | `... -Package dr-fe -NoDependencies` | `[skip] dr-guidelines` con avviso; il core non viene installato |
+| `-SourceRoot` non valido | `... -Package dr-fe -SourceRoot ..uori` | Errore prima di scrivere qualsiasi file |
 
 ---
 
@@ -225,7 +245,7 @@ Serve il clone locale: il test ha senso solo lanciando l'installer **dal percors
    Select-String -Path .github\instructions\minimal-api-architecture.instructions.md -Pattern "<testo della riga>"
    ```
 
-Atteso: **nessun risultato**. Dal clone locale l'installer prende solo la libreria; il contenuto del pacchetto lo clona dal `main` su GitHub. Poi annulla la modifica nel clone locale con `git checkout -- <file>`.
+Atteso: **nessun risultato**. Il contenuto del pacchetto arriva sempre da un clone del `main` su GitHub. Anche la libreria arriva da GitHub; il clone locale serve solo se il download fallisce. Poi annulla la modifica nel clone locale con `git checkout -- <file>`.
 
 ---
 
@@ -303,4 +323,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.3 — 2026-10-09 14:46 — claude-opus-5-5*
+*Revisione v2.4 — 2026-10-11 21:30 — claude-opus-5-5*

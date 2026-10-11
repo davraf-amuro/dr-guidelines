@@ -1,8 +1,10 @@
 # Onboarding — dr-guidelines
 
+Per chi sviluppa il core. Chi vuole solo usare le linee guida legga [`guida-nuova-soluzione.md`](guida-nuova-soluzione.md).
+
 ## 1. Il progetto in tre righe
 
-`dr-guidelines` è il pacchetto **core** e il **catalogo** della suite `dr-*`: istruzioni, prompt e skill per Claude Code e GitHub Copilot, validi per qualsiasi stack. Non ha un entrypoint applicativo: si **installa** in un progetto host con `dr-guidelines-install.ps1`, che clona il pacchetto in `%TEMP%` e ne copia i file nella root del repository. Le regole di dominio (Minimal API, Windows Service, EF Core, frontend, DevOps) vivono in sei pacchetti separati, elencati in `scaffolding-catalog.json`.
+`dr-guidelines` è il pacchetto **core** e il **catalogo** della suite `dr-*`: istruzioni, prompt e skill per Claude Code e GitHub Copilot, validi per qualsiasi stack. Non ha un entrypoint applicativo: si **installa** in un progetto host con `dr-guidelines-install.ps1`, che clona il pacchetto in `%TEMP%` e ne copia i file nella root del repository. Le regole di dominio vivono in sette pacchetti (base .NET, Minimal API, Windows Service, EF Core, frontend, DevOps, tema LCARS), elencati in `scaffolding-catalog.json`.
 
 ---
 
@@ -41,17 +43,18 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 
 | Flag | Effetto |
 |---|---|
-| nessuno | Installa il core nella cartella corrente, salta i file già presenti |
-| `-Update` | Sovrascrive i file presenti e riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` |
+| nessuno | Installa il core nella cartella corrente. Salta i file già presenti; una skill già presente si salta per intero. Aggiunge comunque i permessi mancanti a `.claude/settings.json` e la sezione in `CLAUDE.md`, se manca |
+| `-Update` | Sovrascrive i file presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. Per i `sourceFiles` scrive `<file>.new`. Non vale per le dipendenze |
 | `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
-| `-NoDependencies` | Solo con `-Package`: non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
-| `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new` |
+| `-NoDependencies` | Solo con `-Package` (senza `-Package` è ignorato): non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
+| `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new`. Gli installer dei singoli pacchetti e `/dr-get-latest` non lo accettano: si usa l'installer del core con `-Package` |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
 
 **Da sapere prima di toccare l'installer:**
 
 - `Install-DrPackage` fa **sempre** `git clone --depth 1` del `main` da github.com, anche se l'installer è lanciato da un clone locale. Una modifica non pushata non arriva mai in un host.
-- Il clone locale serve solo a trovare, tramite `$PSScriptRoot`, la libreria `dr-guidelines-install-lib.ps1`, il catalogo e il template di `-Global`. Il contenuto dei pacchetti arriva comunque dal clone temporaneo.
+- La libreria e il catalogo arrivano prima da `raw.githubusercontent.com`. Il clone locale si usa solo se quel download fallisce. Quindi anche da un clone locale gira la libreria del `main` pubblicato: una modifica non pushata alla libreria non viene usata.
+- Il contenuto dei pacchetti arriva sempre dal clone temporaneo.
 
 ---
 
@@ -68,6 +71,7 @@ dr-guidelines/
     instructions/       ← Istruzioni modulari trasversali (.instructions.md)
     prompts/            ← Prompt duali: documentazione, scaffolding, segnalazioni
     workflows/ci.yml    ← Job build-and-test e catalog-guard
+    workflows/suggests-text-check.yml ← Confronto non bloccante dei rimandi nel testo con `suggests`
     copilot-instructions.md   ← Entry point Copilot: individua il dominio dai pacchetti installati
   .template.config/     ← Template dotnet new (Davraf.Guidelines)
   docs/                 ← Guide, onboarding, card, scaffolding per tipologia
@@ -92,7 +96,7 @@ dr-guidelines/
 | Contenuto delle linee guida globali | `templates/global-claude.md`, poi `/dr-install-global aggiorna` |
 | File distribuiti agli host | Root del repository, poi `-Update` o `/dr-get-latest` negli host |
 
-> ⚠️ **CI da allineare.** Il job `catalog-guard` di `ci.yml` confronta ancora il catalogo con `$Script:PackageRegistry`, cioè il doppio registry precedente. Ora la libreria costruisce il registry dal catalogo solo quando serve, quindi il job non trova il valore. La CI del push del 2026-09-16 (`aee84a4`) risulta fallita su `catalog-guard`; `build-and-test` passa.
+Il job `catalog-guard` di `ci.yml` carica la libreria e costruisce il registry dal catalogo del commit. Controlla dipendenze, `suggests`, compatibilità dei kind e cicli. Il workflow `suggests-text-check.yml` confronta i rimandi nel testo con `suggests`: gira il lunedì (cron `0 6 * * 1`) o a mano, e non blocca.
 
 ---
 
@@ -175,4 +179,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.7 — 2026-10-11 20:00 — claude-opus-5-5 — `-SourceRoot` (#15)*
+*Revisione v3.8 — 2026-10-11 21:30 — claude-opus-5-5*
