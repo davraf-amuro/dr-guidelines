@@ -25,7 +25,7 @@
 ### Progetti Interni
 
 - Nessuna dipendenza in ingresso: è il provider.
-- Consumato dai 6 pacchetti di dominio (`dr-dotnet-backend`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`), i cui installer caricano `dr-guidelines-install-lib.ps1` e il catalogo da questo repo.
+- Consumato dai 7 pacchetti di dominio (`dr-dotnet-backend`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-ux-lcars`), i cui installer caricano `dr-guidelines-install-lib.ps1` e il catalogo da questo repo.
 
 ### Pacchetti Esterni
 
@@ -56,4 +56,4 @@
 
 ---
 
-*Revisione v2.6 — 2026-09-16 16:09 — claude-opus-5*
+*Revisione v2.7 — 2026-10-11 16:40 — claude-opus-5-5*

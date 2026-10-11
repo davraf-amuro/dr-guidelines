@@ -178,7 +178,7 @@ Alcune possono arrivare già decise dal passaggio precedente: in quel caso la sk
 | Formato | `slnx`, il default dell'SDK 10. `sln` solo per Visual Studio più vecchio |
 | Tipologie di progetto | Minimal API, Worker/Windows Service, class library, test xUnit, frontend Vue |
 | Nomi dei progetti | Proposti con suffisso: `ordini.api`, `ordini.service`, `ordini.tests`, `ordini-fe` |
-| Pacchetti `dr-*` | Già preselezionati in base alle tipologie. `dr-efdb` e `dr-devops` sono opzionali: `dr-devops` se il deploy è su Docker Swarm/Portainer o la pipeline è GitLab CI/CD; Docker su host singolo non è ancora coperto (dr-devops#1) |
+| Pacchetti `dr-*` | Già preselezionati in base alle tipologie. `dr-efdb` e `dr-devops` sono opzionali: `dr-devops` se il deploy è su Docker Swarm/Portainer o la pipeline è GitLab CI/CD; Docker su host singolo non è ancora coperto (dr-devops#1). Per il frontend Vue è opzionale `dr-ux-lcars` (tema grafico LCARS) |
 
 I nomi devono iniziare con una lettera e contenere solo lettere, cifre, `.`, `_`, `-` (massimo 64 caratteri). Niente spazi.
 
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.3 — 2026-10-09 14:15 — claude-opus-5-5*
+*Revisione v1.4 — 2026-10-11 16:40 — claude-opus-5-5*

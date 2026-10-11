@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-02",
+  "updatedAt": "2026-10-11",
   "defaults": {
     "dotnetFramework": "net10.0",
     "solutionFormat": "slnx",
@@ -139,7 +139,7 @@
       "targetPath": ".",
       "defaultNameSuffix": "-fe",
       "suggestedPackages": ["dr-fe"],
-      "optionalPackages": [],
+      "optionalPackages": ["dr-ux-lcars"],
       "docs": null,
       "notes": "I flag di create-vue sono booleani puri: '--vitest=false' fa fallire il comando. Va creato PRIMA dell'install del core, perche' scrive un proprio .editorconfig/.gitignore/.gitattributes. Lo script 'lint' generato usa --fix, quindi non vale come gate di verifica."
     }
@@ -223,6 +223,15 @@
         { "package": "dr-minimalapi", "reason": "senza, Data Protection e forwarded headers lato codice restano due requisiti da configurare a mano" }
       ],
       "description": "Docker Swarm, Portainer, CI/CD GitLab."
+    },
+    {
+      "name": "dr-ux-lcars",
+      "repo": "davraf-amuro/dr-ux-lcars",
+      "isCore": false,
+      "dependencies": ["dr-fe"],
+      "appliesTo": ["node"],
+      "rootFiles": ["scripts/lcars-contrast.mjs"],
+      "description": "Tema grafico LCARS per frontend Vue 3 + Tailwind v4: palette enterprise-d ed enterprise-e, prompt di applicazione, verifica dei contrasti."
     }
   ]
 }
