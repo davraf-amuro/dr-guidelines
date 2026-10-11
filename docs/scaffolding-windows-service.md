@@ -120,8 +120,7 @@ host.Run();
 ### Configurazione strongly-typed
 
 ```csharp
-// <Worker>Options — una classe per worker.
-// La cartella non è fissata dalle istruzioni (non esiste `Options/` nella struttura): Da verificare.
+// Workers/Options/<Worker>Options.cs — una classe per worker.
 public class SyncOrdersOptions
 {
     public int IntervalSeconds { get; set; } = 60;
@@ -176,7 +175,7 @@ builder.Services.AddHostedService<CleanupWorker>();
 }
 ```
 
-Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `<Name>Options`. Non si condividono. Dove metterla non lo dicono le istruzioni: Da verificare.
+Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `<Name>Options`. Non si condividono. Le istruzioni non fissano la cartella; il prompt `card-worker-service.prompt.md` di `dr-winsvc` le cerca in `Workers/Options/`.
 
 ---
 

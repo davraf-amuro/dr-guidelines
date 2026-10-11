@@ -55,7 +55,7 @@ Il repository del pacchetto contiene il proprio `<pacchetto>-install.ps1`, un wr
 
 **L'ordine conta:** prima si installa il core, poi si crea la solution. In una cartella vuota Claude Code non ha nessuna skill `dr-*`: arrivano con il core.
 
-> Il percorso da cartella vuota a solution non è ancora stato provato sul campo con l'installer attuale. Per il primo progetto parti dal solo backend e aggiungi il frontend Vue dopo: il catalogo chiede di creare il frontend prima del core. Lo stato delle prove è nella guida.
+> Il percorso da cartella vuota a solution non è ancora stato provato sul campo con l'installer attuale. Per il primo progetto parti dal solo backend e aggiungi il frontend Vue dopo. Il motivo: il catalogo chiede di creare il frontend con `create-vue` prima del core, perché `create-vue` scrive propri `.editorconfig`, `.gitignore` e `.gitattributes`; partendo da una cartella vuota l'ordine è invertito e la combinazione non è provata. Lo stato delle prove è nella guida.
 
 ```powershell
 # 1. Cartella nuova, aperta in una finestra VS Code separata
@@ -132,7 +132,7 @@ Parametri dell'installer del core:
 |---|---|---|
 | `-Update` | Sovrascrive i file del pacchetto e rimuove quelli dismessi | Non aggiorna le dipendenze |
 | `-Package <nome>` | Installa un pacchetto di dominio, con le dipendenze mancanti | Non insieme a `-Global` |
-| `-NoDependencies` | Installa solo il pacchetto chiesto: niente dipendenze, niente core | Solo con `-Package` |
+| `-NoDependencies` | Installa solo il pacchetto chiesto: niente dipendenze, niente core | Ha effetto solo con `-Package`; senza, è ignorato |
 | `-SourceRoot <cartella>` | Cartella dell'host dove vanno i sorgenti (`sourceFiles`) | Solo con `-Package` |
 | `-Global` | Scrive solo `~/.claude/CLAUDE.md` | Non insieme a `-Package` |
 

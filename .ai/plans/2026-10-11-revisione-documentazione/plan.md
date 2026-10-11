@@ -1,6 +1,6 @@
 # Piano: documentazione della suite corretta, semplice ed esaustiva
 Data: 2026-10-11
-Stato: IN CORSO — avviato da `/dr-professor` (invocazione esplicita = approvazione)
+Stato: COMPLETATO — verificato in contesto isolato il 2026-10-11 (vedi Esito verifica)
 
 ## Obiettivo
 Ogni affermazione della documentazione della suite dr-* corrisponde a codice, catalogo e file reali; niente manca di ciò che i repository contengono; il testo è breve e chiaro.
@@ -59,7 +59,7 @@ Ogni affermazione della documentazione della suite dr-* corrisponde a codice, ca
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: verifica finale in contesto isolato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 4 completata
 - **File**: tutti quelli toccati
 - **Operazione**: verifica
@@ -81,9 +81,21 @@ Non corretti, fuori perimetro (codice o catalogo, da segnalare all'utente):
 - `.template.config/template.json`: template `dotnet new` con identità pre-split, non documentato
 - dr-minimalapi: le istruzioni cercano `db-schema` in `.claude/settings.json`, le skill di scaffolding lo registrano in `.mcp.json`
 
+## Esito verifica (Fase 5)
+
+Verifica isolata: criteri soddisfatti, 12 affermazioni su 14 confermate; 7 divergenze introdotte dalla revisione, tutte corrette:
+- `test-progetto-host.md`: `
+` letterale nell'output atteso; `-SourceRoot ..uori` diventato `..uori` (carattere `` perso)
+- `dr-ux-lcars/README.md`: punto "Stack richiesto" rimesso nell'elenco
+- README core: motivo del consiglio "prima il backend, poi il frontend Vue"
+- README dei pacchetti: eccezione `obsoleteArtifacts` alla frase "l'installer non cancella"
+- `scaffolding-windows-service.md`: cartella `Workers/Options/` (dal prompt di `dr-winsvc`) al posto di "Da verificare"
+- `scaffolding-minimal-api.md`: `.vscode/` obbligatorio per l'istruzione, la skill lo genera in modo guidato
+- README core: `-NoDependencies` senza `-Package` è ignorato, non rifiutato
+
 ## Criteri di verifica finale
-- [ ] Nessun finding ALTA aperto
-- [ ] README core conforme alle 12 sezioni di `readme-structure.instructions.md`
-- [ ] Tabelle dei pacchetti, dei file installati, delle istruzioni, delle skill e dei documenti corrispondono ai file reali e al catalogo
-- [ ] Footer conformi su ogni file toccato
-- [ ] Un commit per repository, nessun push
+- [x] Nessun finding ALTA aperto
+- [x] README core conforme alle 12 sezioni di `readme-structure.instructions.md`
+- [x] Tabelle dei pacchetti, dei file installati, delle istruzioni, delle skill e dei documenti corrispondono ai file reali e al catalogo
+- [x] Footer conformi su ogni file toccato
+- [x] Commit per repository, nessun push

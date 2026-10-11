@@ -113,7 +113,8 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
   Catalogo scaffolding:
   [OK]   dr-scaffolding-catalog.json
   Cartella brief:
-  [OK]   briefs\n  CLAUDE.md:
+  [OK]   briefs\
+  CLAUDE.md:
   [OK]   CLAUDE.md creato con sezione dr-guidelines
   [OK]   Manifest aggiornato: dr-guidelines (a1b2c3d)
   Completato: dr-guidelines
@@ -194,7 +195,7 @@ Ogni prova va in una cartella vuota diversa, per esempio `dr-test-02`, `dr-test-
 |---|---|---|
 | Core implicito | `... -Package dr-fe` | Prima riga: `[dep]  dr-guidelines (richiesta da dr-fe, core implicito)` |
 | Senza dipendenze | `... -Package dr-fe -NoDependencies` | `[skip] dr-guidelines` con avviso; il core non viene installato |
-| `-SourceRoot` non valido | `... -Package dr-fe -SourceRoot ..uori` | Errore prima di scrivere qualsiasi file |
+| `-SourceRoot` non valido | `... -Package dr-fe -SourceRoot ..\fuori` | Errore prima di scrivere qualsiasi file |
 
 ---
 

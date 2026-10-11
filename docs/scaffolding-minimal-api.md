@@ -59,7 +59,7 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
       Program.cs
       <progetto>.csproj
       <progetto>.http                     ← esempi di chiamate HTTP
-  .vscode/                                ← lo genera `/dr-create-launch-profiles`
+  .vscode/                                ← `launch.json` e `tasks.json` (`coreclr`), obbligatori; `/dr-create-launch-profiles` li genera in modo guidato
     launch.json                           ← profili debug http e https (type: coreclr)
     tasks.json                            ← build task
   test/
