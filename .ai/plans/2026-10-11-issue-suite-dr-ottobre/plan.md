@@ -209,7 +209,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 ### Ondata 3 — Perimetro dr-devops, poi rimandi di dr-minimalapi (F, G, H)
 
 ### Fase 12: dichiarare il perimetro di dr-devops (F)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: D4 decisa
 - **File**: `dr-devops/README.md`, voce `dr-devops` in `dr-guidelines/scaffolding-catalog.json`
 - **Operazione**: EDIT
@@ -217,9 +217,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: `/dr-professor` (D4 = no: nessuna nuova issue)
 - **Verifica passo**: la frase di esclusione è presente in entrambi i file
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 12: <cosa>` in plan.md, non procedere
+- ⚠️ **Divergenza Fase 12 (risolta con l'utente, 2026-10-11)**: README e catalogo non arrivano all'agente nell'host. Decisione utente: nuova istruzione minima `dr-devops/.github/instructions/docker-scope.instructions.md` (applyTo su Dockerfile e compose) + README + catalogo + tabella pacchetti del README core
 
 ### Fase 13: rimandi condizionali in dr-minimalapi (G)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 12 completata
 - **File**: `dr-minimalapi/.github/instructions/minimal-api-architecture.instructions.md`
 - **Operazione**: EDIT
@@ -227,9 +228,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: ogni occorrenza di `database-startup-resilience`, `frontend-organization`, `docker-swarm-compose` sta dentro una condizione sul manifest
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 13: <cosa>` in plan.md, non procedere
+- **Esito**: 4 rimandi condizionali (righe ~95, ~179, ~201-206, ~456); `suggests` di dr-minimalapi esteso a dr-fe e dr-devops; `catalog-guard` verde; controllo testo/catalogo (`suggests-text-check`) in locale: 7 pacchetti, 0 divergenze
 
 ### Fase 14: Data Protection, ordine di creazione della tabella (H)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 13 completata
 - **File**: `dr-minimalapi/.github/instructions/minimal-api-architecture.instructions.md`
 - **Operazione**: EDIT
@@ -239,7 +241,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 14: <cosa>` in plan.md, non procedere
 
 ### Fase 15: commit dell'ondata 3
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 12-14 completate e rilette
 - **File**: —
 - **Operazione**: commit (nessun push)
