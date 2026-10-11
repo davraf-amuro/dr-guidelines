@@ -1,6 +1,6 @@
 # Piano: le 10 issue aperte della suite dr-* in un solo percorso ordinato
 Data: 2026-10-11
-Stato: IN CORSO — Fasi 1-23 completate e verificate in contesto isolato (3 giri, ultimo: TUTTO CONFORME); manca la Fase 24 (push/PR), in attesa del via libera dell'utente
+Stato: COMPLETATO — Fasi 1-24 eseguite; verifica isolata TUTTO CONFORME (3 giri). PR aperte il 2026-10-11, merge in attesa del via libera dell'utente (dr-guidelines#16 per prima)
 Issue: davraf-amuro/dr-guidelines#15, davraf-amuro/dr-fe#1, davraf-amuro/dr-dotnet-backend#1, davraf-amuro/dr-dotnet-backend#2, davraf-amuro/dr-minimalapi#1, davraf-amuro/dr-minimalapi#2, davraf-amuro/dr-minimalapi#3, davraf-amuro/dr-efdb#1, davraf-amuro/dr-winsvc#1, davraf-amuro/dr-devops#1
 Branch: issues/2026-10-11 (creato il 2026-10-11 da `main` aggiornato in dr-guidelines, dr-dotnet-backend, dr-minimalapi, dr-winsvc, dr-efdb, dr-fe, dr-devops; solo locale)
 
@@ -338,7 +338,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 23: <cosa>` in plan.md, non procedere
 
 ### Fase 24: rilascio (solo con tuo via libera esplicito)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 23 superata; via libera esplicito dell'utente
 - **File**: —
 - **Operazione**: push + PR
@@ -346,6 +346,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: `/dr-promote-to`
 - **Verifica passo**: una PR per repo, ognuna collegata alle sue issue
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 24: <cosa>` in plan.md, non procedere
+- **Esito (2026-10-11)**: gate di push dichiarato (repository di soli documenti più l'installer PowerShell: nessun target di lint, installer verificato dai test delle Fasi 6 e 9). PR: dr-guidelines#16 (CI `build-and-test` e `catalog-guard` verdi), dr-dotnet-backend#3, dr-minimalapi#4, dr-winsvc#2, dr-efdb#2, dr-fe#2, dr-devops#2 (nessun check configurato). Le issue si chiudono al merge con `Closes`; dr-fe#1 la chiude dr-guidelines#16
 
 ## Esito verifica isolata (Fase 23 — 2026-10-11)
 
