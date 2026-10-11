@@ -50,10 +50,10 @@
 
 ## Configurazione e Hosting
 
-- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Update` (sovrascrive i file presenti) · `-Package <nome>` (pacchetto di dominio con dipendenze, core compreso se manca) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
+- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Update` (sovrascrive i file presenti) · `-Package <nome>` (pacchetto di dominio con dipendenze, core compreso se manca) · `-SourceRoot <cartella>` (con `-Package`: destinazione dei `sourceFiles`) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
 - **Ambiente Test:** non pubblicato
 - **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v2.8 — 2026-10-11 18:00 — claude-opus-5-5*
+*Revisione v2.9 — 2026-10-11 19:30 — claude-opus-5-5*

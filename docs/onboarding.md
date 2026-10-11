@@ -45,6 +45,7 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 | `-Update` | Sovrascrive i file presenti e riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` |
 | `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
 | `-NoDependencies` | Solo con `-Package`: non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
+| `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new` |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
 
 **Da sapere prima di toccare l'installer:**
@@ -174,4 +175,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.5 — 2026-10-11 18:00 — claude-opus-5-5 — `-Package` installa il core se manca (dr-fe#1)*
+*Revisione v3.6 — 2026-10-11 19:30 — claude-opus-5-5 — `-SourceRoot` (#15)*

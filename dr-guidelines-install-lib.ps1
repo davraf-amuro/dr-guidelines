@@ -254,6 +254,22 @@ function Copy-PackageRootFiles {
     }
 }
 
+function Resolve-DrSourceRoot {
+    # Valida -SourceRoot e restituisce il percorso assoluto, con separatore finale.
+    # Si chiama prima di clonare o scrivere qualsiasi cosa: un -SourceRoot sbagliato ferma
+    # l'installazione a host intatto, anche quando nessun pacchetto ha 'sourceFiles'.
+    param([string]$HostRoot, [string]$SourceRoot = ".")
+
+    $sep      = [System.IO.Path]::DirectorySeparatorChar
+    $hostFull = [System.IO.Path]::GetFullPath($HostRoot).TrimEnd($sep) + $sep
+    $relRoot  = Assert-DrRelativePath -Path $SourceRoot -Field "-SourceRoot" -AllowCurrent
+    $rootFull = [System.IO.Path]::GetFullPath((Join-Path $HostRoot $relRoot.Replace('/', $sep))).TrimEnd($sep) + $sep
+    if (-not $rootFull.StartsWith($hostFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "-SourceRoot '$SourceRoot' esce dalla radice dell'host."
+    }
+    return $rootFull
+}
+
 function Copy-PackageSourceFiles {
     <#
     .SYNOPSIS
@@ -278,14 +294,9 @@ function Copy-PackageSourceFiles {
     if (-not $SourceFiles -or $SourceFiles.Count -eq 0) { return }
 
     $sep      = [System.IO.Path]::DirectorySeparatorChar
-    $hostFull = [System.IO.Path]::GetFullPath($HostRoot).TrimEnd($sep) + $sep
-    $relRoot  = Assert-DrRelativePath -Path $SourceRoot -Field "-SourceRoot" -AllowCurrent
-    $rootFull = [System.IO.Path]::GetFullPath((Join-Path $HostRoot $relRoot.Replace('/', $sep))).TrimEnd($sep) + $sep
-    if (-not $rootFull.StartsWith($hostFull, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "-SourceRoot '$SourceRoot' esce dalla radice dell'host."
-    }
+    $rootFull = Resolve-DrSourceRoot -HostRoot $HostRoot -SourceRoot $SourceRoot
 
-    Write-Host "  Sorgenti applicativi (in $relRoot):" -ForegroundColor White
+    Write-Host "  Sorgenti applicativi (in $SourceRoot):" -ForegroundColor White
     $newFiles = @()
     foreach ($sf in $SourceFiles) {
         $src  = Join-Path $TempRoot $sf.From.Replace('/', $sep)
@@ -646,6 +657,8 @@ function Install-DrPackage {
 
     $pkg      = $registry[$PackageName]
     $hostRoot = (Get-Location).Path
+    # Prima di qualsiasi clone o scrittura: un -SourceRoot non valido lascia l'host intatto
+    $null = Resolve-DrSourceRoot -HostRoot $hostRoot -SourceRoot $SourceRoot
 
     Write-Host ""
     Write-Host "=== $PackageName ===" -ForegroundColor Cyan
