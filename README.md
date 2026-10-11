@@ -27,7 +27,7 @@ Le dipendenze si installano prima del pacchetto che le richiede. Il core `dr-gui
 
 Tutto passa da [`scaffolding-catalog.json`](scaffolding-catalog.json), l'unica fonte. L'installer legge da lì l'elenco dei pacchetti. `/dr-scaffold` legge da lì domini e intenti. Per un pacchetto nuovo servono quattro voci nello stesso file:
 
-1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
+1. **`packages`** — nome, repository, dipendenze, `rootFiles` da installare nella radice del progetto host, `sourceFiles` (sorgenti applicativi, vedi sotto) e `suggests`: i pacchetti a cui le istruzioni rimandano senza richiederli, ciascuno con un `reason` di una riga su cosa manca senza (regola in [`cross-package-references.instructions.md`](.github/instructions/cross-package-references.instructions.md))
 2. **`kinds`** — solo se il dominio richiede una toolchain nuova, con i suoi prerequisiti (`dotnet`, `node`, `embedded`, `content`, `any`)
 3. **`domains`** — etichetta leggibile, `kind`, pacchetti che lo compongono
 4. **`intentMap`** — le frasi con cui un utente descriverebbe quel lavoro ("progetto per ESP32", "guida turistica")
@@ -141,6 +141,20 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 **Come si usa `briefs/`.** Scrivi la richiesta in un file, per esempio `briefs/export-contatti.md`, poi indicalo all'agente nel prompt: *"crea il piano da `briefs/export-contatti.md`"*. L'agente legge il brief e, se trova lacune, ti fa domande. Poi scrive sempre un piano in `.ai/plans/` con il link al brief sotto il titolo e aspetta la tua approvazione prima di eseguirlo. Vale anche quando passi il brief come argomento di una skill. La cartella non viene esplorata: l'agente usa solo il brief che gli indichi.
 
 I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/prompts/`, `.claude/skills/` e i **file di radice dichiarati nel catalogo** (campo `rootFiles`). Non toccano `CLAUDE.md` né la configurazione del core.
+
+**Sorgenti applicativi (campo `sourceFiles`).** Un pacchetto può distribuire file di codice, per esempio i CSS di un tema: ogni voce ha `from` (percorso nel pacchetto) e `to` (percorso relativo alla cartella sorgente dell'host). La cartella sorgente si sceglie con `-SourceRoot`, solo insieme a `-Package`; il default è la radice:
+
+```json
+"sourceFiles": [
+  { "from": "src/theme/tokens.css", "to": "src/styles/tokens.css" }
+]
+```
+
+```powershell
+dr-guidelines-install.ps1 -Package <nome> -SourceRoot frontend
+```
+
+Una volta copiati, i sorgenti appartengono all'host e **non si sovrascrivono mai**. Senza `-Update` un file presente si salta. Con `-Update` si saltano i file uguali a quelli del pacchetto; se il contenuto è cambiato a monte, la versione nuova va in `<file>.new` accanto all'originale e l'installer elenca i `.new` da confrontare a mano. Percorsi assoluti o con `..`, nel catalogo come in `-SourceRoot`, fermano l'installazione prima di scrivere. Nessun pacchetto usa ancora il campo: oggi `dr-ux-lcars` distribuisce i sorgenti del tema dentro un prompt con conferma per file. La scelta di una variante (per esempio la palette) al momento dell'installazione non c'è ancora.
 
 > **Il core non è un pacchetto .NET.** `Directory.Build.props` e `global.json` appartengono a `dr-dotnet-backend`. Un frontend, un firmware o un repository di documenti non li riceve. Un progetto .NET li ottiene con quel pacchetto, che arriva da solo con `dr-minimalapi` e `dr-winsvc`.
 
@@ -480,4 +494,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.16 — 2026-10-11 18:00 — claude-opus-5-5 — core come dipendenza implicita di `-Package` (dr-fe#1)*
+*Revisione v3.17 — 2026-10-11 18:30 — claude-opus-5-5 — campo `sourceFiles` e `-SourceRoot` (#15)*

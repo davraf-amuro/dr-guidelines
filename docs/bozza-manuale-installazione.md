@@ -293,6 +293,16 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
+## 📦 Sorgenti applicativi: `sourceFiles` e `-SourceRoot`
+
+Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo file piatti di `.github/instructions/` e `.github/prompts/` e i `rootFiles` alla stessa path della radice. Un frontend con `src/` in una sottocartella non era gestito, e `-Update` sovrascriveva senza confronto.
+
+- **Catalogo**: `sourceFiles: [{ "from": "<percorso nel pacchetto>", "to": "<percorso relativo a -SourceRoot>" }]`. Il campo si valida già quando l'installer legge il catalogo (`Get-DrPackageRegistry`): un `from` o un `to` vuoto, assoluto (`C:/…`, `/…`) o con `..` ferma tutto prima di clonare. La CI (`catalog-guard`) costruisce lo stesso registry, quindi blocca un catalogo malformato.
+- **`-SourceRoot`**: cartella dell'host relativa alla radice, solo con `-Package` (con il core da solo è un errore). Vale per il pacchetto e per le sue dipendenze. Il confine si verifica anche sul percorso risolto: nessun file finisce fuori da `-SourceRoot`.
+- **Esiti per file**: `[OK]` copiato, `[SKIP]` già presente senza `-Update`, `[=]` invariato con `-Update`, `[NEW]` versione cambiata scritta in `<file>.new` (l'originale non si tocca), `[MISS]` voce del catalogo assente nel pacchetto.
+- **Provato il 2026-10-11** con la libreria locale e un pacchetto finto in cartella temporanea: 15 controlli superati, tra cui copia in `frontend/`, salto, `.new`, file invariato, rifiuto di `../fuori`, di `C:/x` e di `/etc/a`. Nessun file scritto fuori dall'host.
+- **Non ancora**: varianti scelte all'installazione (es. palette). Gli installer dei singoli pacchetti non accettano `-SourceRoot`: si passa dall'installer del core con `-Package`.
+
 ## 🔗 Riferimenti
 
 | Documento | Contenuto |
@@ -305,4 +315,4 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
-*Revisione v1.11 — 2026-10-11 18:00 — claude-opus-5-5 — core come dipendenza implicita di `-Package` (dr-fe#1)*
+*Revisione v1.12 — 2026-10-11 18:30 — claude-opus-5-5 — `sourceFiles` e `-SourceRoot` (#15)*

@@ -67,6 +67,25 @@ function Get-DrCatalog {
     return $Script:Catalog
 }
 
+function Assert-DrRelativePath {
+    # Il catalogo e i parametri sono dati: un percorso che esce dalla cartella prevista e' un
+    # errore da fermare prima di scrivere, non un caso da gestire. Restituisce il percorso con '/'.
+    param([string]$Path, [string]$Field, [switch]$AllowCurrent)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { throw "${Field}: percorso vuoto." }
+    $normalized = $Path.Trim() -replace '\\', '/'
+    if ([System.IO.Path]::IsPathRooted($normalized) -or $normalized -match '^[A-Za-z]:' -or $normalized.StartsWith('/')) {
+        throw "${Field}: percorso assoluto non ammesso '$Path'."
+    }
+    if ($normalized -match '(^|/)\.\.(/|$)') {
+        throw "${Field}: risalita '..' non ammessa '$Path'."
+    }
+    if (-not $AllowCurrent -and $normalized -match '^\.?/?$') {
+        throw "${Field}: serve un file, non la cartella corrente."
+    }
+    return $normalized
+}
+
 function Get-DrPackageRegistry {
     if ($Script:PackageRegistry) { return $Script:PackageRegistry }
 
@@ -91,6 +110,13 @@ function Get-DrPackageRegistry {
             CoreOnlyArtifacts = @($p.coreOnlyArtifacts | Where-Object { $_ })
             # Rimandi non vincolanti: mai installati, solo segnalati a fine installazione
             Suggests          = @($p.suggests          | Where-Object { $_ -and $_.package })
+            # Sorgenti applicativi: destinazione relativa alla cartella sorgente dell'host (-SourceRoot)
+            SourceFiles       = @(foreach ($sf in @($p.sourceFiles | Where-Object { $null -ne $_ })) {
+                [PSCustomObject]@{
+                    From = Assert-DrRelativePath -Path $sf.from -Field "pacchetto '$($p.name)', sourceFiles.from"
+                    To   = Assert-DrRelativePath -Path $sf.to   -Field "pacchetto '$($p.name)', sourceFiles.to"
+                }
+            })
         }
     }
 
@@ -225,6 +251,75 @@ function Copy-PackageRootFiles {
     Write-Host "  File di configurazione del pacchetto:" -ForegroundColor White
     foreach ($file in $RootFiles) {
         Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
+    }
+}
+
+function Copy-PackageSourceFiles {
+    <#
+    .SYNOPSIS
+        Copia i sorgenti applicativi di un pacchetto (campo 'sourceFiles' del catalogo).
+    .DESCRIPTION
+        La destinazione di ogni voce e' relativa a SourceRoot, una cartella dell'host
+        (es. 'frontend' quando src/ sta in una sottocartella). Nessun file finisce fuori
+        da SourceRoot ne' fuori dalla radice dell'host.
+
+        I sorgenti appartengono all'host dal momento in cui sono copiati: non si
+        sovrascrivono mai. Senza -Update un file presente si salta; con -Update, se il
+        contenuto e' cambiato a monte, la nuova versione va in '<file>.new' accanto
+        all'originale e il confronto resta a chi conosce il codice.
+    #>
+    param(
+        [string]$TempRoot,
+        [string]$HostRoot,
+        [string]$SourceRoot = ".",
+        [object[]]$SourceFiles,
+        [switch]$Update
+    )
+    if (-not $SourceFiles -or $SourceFiles.Count -eq 0) { return }
+
+    $sep      = [System.IO.Path]::DirectorySeparatorChar
+    $hostFull = [System.IO.Path]::GetFullPath($HostRoot).TrimEnd($sep) + $sep
+    $relRoot  = Assert-DrRelativePath -Path $SourceRoot -Field "-SourceRoot" -AllowCurrent
+    $rootFull = [System.IO.Path]::GetFullPath((Join-Path $HostRoot $relRoot.Replace('/', $sep))).TrimEnd($sep) + $sep
+    if (-not $rootFull.StartsWith($hostFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "-SourceRoot '$SourceRoot' esce dalla radice dell'host."
+    }
+
+    Write-Host "  Sorgenti applicativi (in $relRoot):" -ForegroundColor White
+    $newFiles = @()
+    foreach ($sf in $SourceFiles) {
+        $src  = Join-Path $TempRoot $sf.From.Replace('/', $sep)
+        $dest = [System.IO.Path]::GetFullPath((Join-Path $rootFull $sf.To.Replace('/', $sep)))
+        # Doppio controllo dopo la normalizzazione: Assert-DrRelativePath ha gia' rifiutato '..',
+        # ma il confine si verifica sul percorso risolto, non sulla stringa del catalogo
+        if (-not $dest.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "sourceFiles: '$($sf.To)' esce da -SourceRoot."
+        }
+        if (-not (Test-Path $src -PathType Leaf)) {
+            Write-Host "  [MISS] $($sf.From) non presente nel pacchetto" -ForegroundColor Yellow
+            continue
+        }
+
+        $destDir = Split-Path $dest -Parent
+        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+
+        if (-not (Test-Path $dest)) {
+            Copy-Item -Path $src -Destination $dest
+            Write-Host "  [OK]   $($sf.To)" -ForegroundColor Green
+        } elseif (-not $Update) {
+            Write-Host "  [SKIP] $($sf.To)" -ForegroundColor DarkGray
+        } elseif ((Get-FileHash $src).Hash -eq (Get-FileHash $dest).Hash) {
+            Write-Host "  [=]    $($sf.To) invariato" -ForegroundColor DarkGray
+        } else {
+            Copy-Item -Path $src -Destination "$dest.new" -Force
+            $newFiles += "$($sf.To).new"
+            Write-Host "  [NEW]  $($sf.To).new (l'originale non e' stato toccato)" -ForegroundColor Yellow
+        }
+    }
+
+    if ($newFiles.Count -gt 0) {
+        Write-Host "  Versioni nuove da confrontare a mano con l'originale, poi da eliminare:" -ForegroundColor Yellow
+        $newFiles | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
     }
 }
 
@@ -531,13 +626,17 @@ function Install-DrPackage {
     .PARAMETER NoDependencies
         Non installa le dipendenze mancanti: le elenca come '[skip]' con un avviso e
         installa solo il pacchetto richiesto.
+    .PARAMETER SourceRoot
+        Cartella dell'host, relativa alla radice, dove finiscono i 'sourceFiles' dei
+        pacchetti (default: la radice). Vale per il pacchetto e per le sue dipendenze.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]$PackageName,
         [switch]$Update,
-        [switch]$NoDependencies
+        [switch]$NoDependencies,
+        [string]$SourceRoot = "."
     )
 
     $registry = Get-DrPackageRegistry
@@ -588,14 +687,14 @@ function Install-DrPackage {
         Write-Host ""
         Write-Host "=== $($dep.Name) (dipendenza di $($dep.RequiredBy)) ===" -ForegroundColor Cyan
         Write-Host "  Repo    : $($registry[$dep.Name].Repo)"
-        Install-DrPackageContent -PackageName $dep.Name -Package $registry[$dep.Name] -HostRoot $hostRoot
+        Install-DrPackageContent -PackageName $dep.Name -Package $registry[$dep.Name] -HostRoot $hostRoot -SourceRoot $SourceRoot
     }
 
     if ($missing.Count -gt 0) {
         Write-Host ""
         Write-Host "=== $PackageName ===" -ForegroundColor Cyan
     }
-    Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -Update:$Update
+    Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -SourceRoot $SourceRoot -Update:$Update
 
     # Suggeriti: manifest riletto dopo l'installazione, vale anche con -NoDependencies
     $manifest    = Read-DrManifest -HostRoot $hostRoot
@@ -613,6 +712,7 @@ function Install-DrPackageContent {
         [Parameter(Mandatory)][string]$PackageName,
         [Parameter(Mandatory)][hashtable]$Package,
         [Parameter(Mandatory)][string]$HostRoot,
+        [string]$SourceRoot = ".",
         [switch]$Update
     )
 
@@ -657,6 +757,10 @@ function Install-DrPackageContent {
 
         if ($pkg.RootFiles) {
             Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -Update:$Update
+        }
+
+        if ($pkg.SourceFiles) {
+            Copy-PackageSourceFiles -TempRoot $tempDir -HostRoot $hostRoot -SourceRoot $SourceRoot -SourceFiles $pkg.SourceFiles -Update:$Update
         }
 
         if ($pkg.IsCore) {
