@@ -143,7 +143,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 ### Ondata 2 — Contratto installer e catalogo (D, E)
 
 ### Fase 6: installare il core quando manca (D)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: D2 decisa
 - **File**: `dr-guidelines/dr-guidelines-install-lib.ps1`
 - **Operazione**: EDIT
@@ -151,9 +151,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: in una cartella temporanea con `git init`, `-Package dr-fe` produce un manifest con `dr-guidelines` e `dr-fe`; con `-NoDependencies` solo `dr-fe` e la riga `[skip] dr-guidelines`
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
+- **Esito (2026-10-11)**: `-Package dr-fe` in host vuoto → manifest `dr-guidelines, dr-fe`, riga `[dep]  dr-guidelines (richiesta da dr-fe, core implicito)`; con `-NoDependencies` → solo `dr-fe` e `[skip] dr-guidelines`
 
 ### Fase 7: allineare la documentazione di `-Package` (D)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 6 completata
 - **File**: `dr-guidelines/dr-guidelines-install.ps1` (help `.PARAMETER Package`), `dr-guidelines/README.md`, `dr-guidelines/docs/installazione-semplice.md`, `dr-fe/README.md`, README degli altri pacchetti con "Via core, un solo installer"
 - **Operazione**: EDIT
@@ -161,9 +162,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: `/dr-professor`
 - **Verifica passo**: `grep -rn "al posto del core"` sui repo della suite → nessun risultato in contrasto con il nuovo comportamento
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
+- **Scope esteso in esecuzione**: oltre ai file previsti, help dei wrapper `dr-fe`, `dr-efdb`, `dr-devops`, `dr-dotnet-backend` ("Nessuna dipendenza.") e la frase "l'installer però non lo impone" nei README di 6 pacchetti; `docs/onboarding.md`, `docs/card-dr-guidelines.md`. `dr-ux-lcars` non toccato: il suo testo non era in contrasto
 
 ### Fase 8: campo `sourceFiles` nel catalogo (E)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: D1 decisa; Fase 6 completata
 - **File**: `dr-guidelines/scaffolding-catalog.json`, `dr-guidelines/dr-guidelines-install-lib.ps1` (`Get-DrPackageRegistry`)
 - **Operazione**: EDIT
@@ -171,9 +173,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: catalogo JSON valido (`ConvertFrom-Json` senza errori); il registry espone `SourceFiles` vuoto per tutti i pacchetti
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
+- **Esito**: nessuna modifica al JSON del catalogo (campo opzionale, nessun pacchetto lo usa); validazione `from`/`to` in `Get-DrPackageRegistry` tramite il nuovo `Assert-DrRelativePath`, ereditata dal `catalog-guard` della CI
 
 ### Fase 9: copia dei sorgenti con protezione dell'host (E)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 8 completata
 - **File**: `dr-guidelines/dr-guidelines-install-lib.ps1`, `dr-guidelines/dr-guidelines-install.ps1`
 - **Operazione**: EDIT
@@ -181,9 +184,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: test manuale in cartella temporanea con un pacchetto finto: copia, salto, `.new` in `-Update`, rifiuto di `to: "../x"` e di `to: "C:/x"`
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
+- **Esito**: 15/15 controlli superati (`test-sourcefiles.ps1` nella scratchpad di sessione); guard di catalogo verde; regressione `-Package dr-ux-lcars -SourceRoot frontend` → `dr-guidelines, dr-fe, dr-ux-lcars`
 
 ### Fase 10: documentare `sourceFiles` (E)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 9 completata
 - **File**: `dr-guidelines/README.md`, `dr-guidelines/docs/bozza-manuale-installazione.md`
 - **Operazione**: EDIT
@@ -193,7 +197,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 10: <cosa>` in plan.md, non procedere
 
 ### Fase 11: commit dell'ondata 2
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 6-10 completate e rilette
 - **File**: —
 - **Operazione**: commit (nessun push)
