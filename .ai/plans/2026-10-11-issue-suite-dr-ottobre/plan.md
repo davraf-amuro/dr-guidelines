@@ -1,6 +1,6 @@
 # Piano: le 10 issue aperte della suite dr-* in un solo percorso ordinato
 Data: 2026-10-11
-Stato: IN CORSO — approvato il 2026-10-11
+Stato: IN CORSO — Fasi 1-23 completate e verificate in contesto isolato (3 giri, ultimo: TUTTO CONFORME); manca la Fase 24 (push/PR), in attesa del via libera dell'utente
 Issue: davraf-amuro/dr-guidelines#15, davraf-amuro/dr-fe#1, davraf-amuro/dr-dotnet-backend#1, davraf-amuro/dr-dotnet-backend#2, davraf-amuro/dr-minimalapi#1, davraf-amuro/dr-minimalapi#2, davraf-amuro/dr-minimalapi#3, davraf-amuro/dr-efdb#1, davraf-amuro/dr-winsvc#1, davraf-amuro/dr-devops#1
 Branch: issues/2026-10-11 (creato il 2026-10-11 da `main` aggiornato in dr-guidelines, dr-dotnet-backend, dr-minimalapi, dr-winsvc, dr-efdb, dr-fe, dr-devops; solo locale)
 
@@ -328,7 +328,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 ### Chiusura
 
 ### Fase 23: verifica finale in contesto isolato
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1-22 completate
 - **File**: tutti quelli in Scope
 - **Operazione**: verifica
@@ -346,6 +346,20 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: `/dr-promote-to`
 - **Verifica passo**: una PR per repo, ognuna collegata alle sue issue
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 24: <cosa>` in plan.md, non procedere
+
+## Esito verifica isolata (Fase 23 — 2026-10-11)
+
+Primo giro: 7 divergenze, tutte **risolte** (secondo giro, riscontri file:riga). Secondo giro: 2 incoerenze nel README di dr-dotnet-backend, risolte. Terzo giro: **TUTTO CONFORME**; 3 note minori corrette, 1 riportata all'utente (ordine di rilascio: dr-guidelines va unito su `main` per primo, perché i wrapper scaricano la libreria da `main`).
+
+Divergenze del primo giro (risolte): `-SourceRoot` validato solo dentro `Copy-PackageSourceFiles`: dopo clone, copie e dipendenze, e mai se il pacchetto non ha `sourceFiles` (contraddice help dell'installer e README:157)
+- esempio ModelKit di dr-efdb senza DbContext; dr-minimalapi:457 promette anche DbContext e provider
+- README di dr-dotnet-backend, dr-minimalapi, dr-winsvc elencano `dr-guidelines (core)` fra i file "non installati in automatico" (contraddice D2)
+- footer di `dr-audit-api/SKILL.md` non aggiornato
+- README di dr-minimalapi non elenca `database-provider.instructions.md` (dr-efdb) fra i file citati
+- `-SourceRoot` assente da `docs/onboarding.md` e `docs/card-dr-guidelines.md`
+- help dei wrapper dr-minimalapi e dr-winsvc senza il core implicito
+
+Non corretti, fuori perimetro (da segnalare all'utente): rimando a dr-efdb dalla tabella di rilevamento di `dotnet-project-type` senza `suggests` (stessa forma già esistente per dr-winsvc, dr-minimalapi, dr-fe); confine di `-SourceRoot` verificato con `GetFullPath`, che non risolve junction e symlink.
 
 ## Criteri di verifica finale
 - [ ] `grep -rn "test-guideline"` sui repo della suite → nessun risultato
