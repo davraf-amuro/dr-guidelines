@@ -253,7 +253,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 ### Ondata 4 — dr-dotnet-backend (I, J)
 
 ### Fase 16: tabella "Tipo di progetto" estesa (I)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: `dr-dotnet-backend` su `issues/2026-10-11`
 - **File**: `dr-dotnet-backend/.github/instructions/dotnet-project-type.instructions.md`
 - **Operazione**: EDIT
@@ -261,9 +261,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: le tre righe sono presenti; nessun caso dell'issue finisce più in "tipo non rilevato"
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 16: <cosa>` in plan.md, non procedere
+- **Esito**: righe aggiunte per Windows Service vincolato ad `AddWindowsService`, Minimal API con job in-process, class library, tabella separata per EF Core → `dr-efdb`; rilevamento per singolo `.csproj`
 
 ### Fase 17: rilevamento di dr-audit-api allineato (I)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 16 completata
 - **File**: `dr-dotnet-backend/.claude/skills/dr-audit-api/SKILL.md`
 - **Operazione**: EDIT
@@ -273,7 +274,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 17: <cosa>` in plan.md, non procedere
 
 ### Fase 18: nuova istruzione producer/consumer (J)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: D5 decisa; Fase 16 completata
 - **File**: `dr-dotnet-backend/.github/instructions/producer-consumer-queue.instructions.md`
 - **Operazione**: CREATE
@@ -281,9 +282,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: `/dr-prompt-engineer` (consultivo)
 - **Verifica passo**: tutti i criteri di accettazione dell'issue spuntabili sul file; nessun valore fisso negli esempi (worker e capienza da configurazione)
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 18: <cosa>` in plan.md, non procedere
+- **Esito**: esempio di riferimento estratto dal file, compilato con .NET 10.0.401 e provato su 7 controlli che coprono i 4 test minimi (concorrenza 1 verso la sorgente, elementi accodati elaborati dopo l'errore del produttore, errore fatale del worker risale come tale, errore sul singolo elemento non ferma la coda): tutti superati
 
 ### Fase 19: rimandi a producer/consumer (J)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 18 completata
 - **File**: `dr-dotnet-backend/.github/instructions/dotnet-project-type.instructions.md`, `dr-dotnet-backend/README.md`
 - **Operazione**: EDIT
@@ -293,7 +295,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 19: <cosa>` in plan.md, non procedere
 
 ### Fase 20: controlli producer/consumer in dr-audit-api (J, se D5 lo include)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 19 completata; D5 include i controlli di audit
 - **File**: `dr-dotnet-backend/.claude/skills/dr-audit-api/SKILL.md`
 - **Operazione**: EDIT
@@ -303,7 +305,7 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 20: <cosa>` in plan.md, non procedere
 
 ### Fase 21: principio producer/consumer nel core (J, se D5 lo include)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 19 completata; D5 include il seguito core
 - **File**: `dr-guidelines/.github/instructions/code-organization.instructions.md`
 - **Operazione**: EDIT
@@ -311,9 +313,10 @@ Ogni modifica a un'istruzione rispetta la compatibilità duale Claude Code + Cop
 - **Tool ammessi**: nessuno
 - **Verifica passo**: riga presente, nessun riferimento .NET non condizionale
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 21: <cosa>` in plan.md, non procedere
+- ⚠️ **Divergenza Fase 21 (decisa in esecuzione, da confermare in verifica)**: niente rimando condizionale dal core a dr-dotnet-backend. Sarebbe il primo rimando dal core verso un pacchetto di dominio e richiederebbe `suggests: dr-dotnet-backend` sul core: `[sugg]` .NET stampato in ogni host, anche frontend o firmware. L'issue chiede per il core "il solo principio": scritto solo quello; in un progetto .NET il rimando arriva da `dotnet-project-type.instructions.md`
 
 ### Fase 22: commit dell'ondata 4
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 16-21 completate e rilette
 - **File**: —
 - **Operazione**: commit (nessun push)
