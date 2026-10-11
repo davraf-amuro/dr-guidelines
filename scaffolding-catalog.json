@@ -180,6 +180,9 @@
       "isCore": false,
       "dependencies": ["dr-dotnet-backend"],
       "appliesTo": ["dotnet"],
+      "suggests": [
+        { "package": "dr-efdb", "reason": "senza, provider, filtri e DTO seguono il ripiego della regola 9 invece dell'esempio ModelKit completo" }
+      ],
       "description": "Architettura Minimal API, prompt endpoint e scaffolding CRUD."
     },
     {
