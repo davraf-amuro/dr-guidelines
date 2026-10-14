@@ -752,11 +752,23 @@ function Install-DrPackageContent {
                 Write-Host "  Nessuna novita': gia' al commit $($newCommit.Substring(0,7))" -ForegroundColor DarkGray
             } else {
                 Write-Host "  Aggiornamento: $($oldCommit.Substring(0,7)) -> $($newCommit.Substring(0,7))" -ForegroundColor White
-                # --quiet perche' il clone e' --depth 1: il vecchio commit non e' nella history locale
-                $changed = git -C $tempDir diff --name-only "$oldCommit" HEAD 2>$null
-                if ($LASTEXITCODE -eq 0 -and $changed) {
-                    Write-Host "  File modificati a monte:" -ForegroundColor White
-                    $changed | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+                # Il clone e' --depth 1: il vecchio commit non e' nella history locale, quindi
+                # il diff fallirebbe. Lo si recupera con un fetch mirato per SHA (--depth 1, senza blob:
+                # solo l'albero) e poi si confrontano i due alberi. Se il fetch fallisce (commit non piu'
+                # raggiungibile, rete assente) si dichiara che l'elenco non e' disponibile.
+                git -C $tempDir fetch --quiet --depth 1 --filter=blob:none origin "$oldCommit" 2>$null
+                if ($LASTEXITCODE -eq 0) {
+                    $changed = @(git -C $tempDir diff --name-only --no-renames "$oldCommit" HEAD 2>$null)
+                    if ($LASTEXITCODE -eq 0 -and $changed.Count -gt 0) {
+                        Write-Host "  File modificati a monte:" -ForegroundColor White
+                        $changed | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+                    } elseif ($LASTEXITCODE -eq 0) {
+                        Write-Host "  File modificati a monte: nessun file modificato" -ForegroundColor DarkGray
+                    } else {
+                        Write-Host "  File modificati a monte: elenco non disponibile (diff fallito)" -ForegroundColor DarkGray
+                    }
+                } else {
+                    Write-Host "  File modificati a monte: elenco non disponibile (commit precedente non raggiungibile)" -ForegroundColor DarkGray
                 }
             }
         }
