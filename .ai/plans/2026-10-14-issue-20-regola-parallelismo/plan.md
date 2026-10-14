@@ -1,6 +1,6 @@
 # Piano: Regola trasversale — preferire l'esecuzione parallela quando le operazioni sono indipendenti
 Data: 2026-10-14
-Stato: COMPLETATO — salvo Fase 6 (issue dr-dotnet-backend: testo pronto, apertura in attesa dell'utente)
+Stato: COMPLETATO
 Issue: davraf-amuro/dr-guidelines#20
 
 ## Obiettivo
@@ -112,7 +112,7 @@ Decisioni prese (2026-10-14): D1 `concurrency.instructions.md`; D2 (b) issue col
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
 ### Fase 6: Apri la issue collegata in dr-dotnet-backend (D2-b)
-- **Stato**: testo pronto, apertura in attesa dell'utente (testo in `.ai/plans/2026-10-14-issue-20-regola-parallelismo/issue-dr-dotnet-backend.md` nel checkout principale; issue NON creata)
+- **Stato**: [x] issue aperta dall'utente: davraf-amuro/dr-dotnet-backend#4
 - **Precondizione**: Fasi 2-5 `[x]`; D2 confermata sull'opzione (b); conferma esplicita dell'utente al testo della issue
 - **File**: nessuno (azione su GitHub tramite skill)
 - **Operazione**: CREATE (issue su `davraf-amuro/dr-dotnet-backend`)
@@ -139,7 +139,7 @@ Decisioni prese (2026-10-14): D1 `concurrency.instructions.md`; D2 (b) issue col
 - [x] `README.md` e `docs/onboarding.md` elencano la nuova istruzione una sola volta ciascuno; footer di `docs/onboarding.md` aggiornato
 - [x] `git diff --name-only` coincide con l'elenco dello Scope (nessun file fuori Scope)
 - [x] Compatibilità duale: nessuna sintassi esclusiva di Claude Code nel file e nelle righe aggiunte (niente `$ARGUMENTS`, sub-agenti, `AskUserQuestion`)
-- [ ] Issue collegata in `dr-dotnet-backend` aperta e URL annotato, oppure rinuncia dell'utente annotata
+- [x] Issue collegata in `dr-dotnet-backend` aperta e URL annotato, oppure rinuncia dell'utente annotata
 - [x] Verifica finale eseguita in contesto isolato (`/dr-verify-plan`) senza divergenze
 
-Piano issue-20-regola-parallelismo verificato. Tutti i criteri soddisfatti, salvo la Fase 6 in attesa dell'utente.
+Piano issue-20-regola-parallelismo verificato. Tutti i criteri soddisfatti.
