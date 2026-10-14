@@ -185,7 +185,7 @@
         { "package": "dr-fe", "reason": "senza, la custodia del token lato client si riduce alla sola regola 'in memoria, mai in localStorage'" },
         { "package": "dr-devops", "reason": "senza, volumi e variabili dello stack Swarm per il portachiavi Data Protection restano da configurare a mano" }
       ],
-      "description": "Architettura Minimal API, prompt endpoint e scaffolding CRUD."
+      "description": "Architettura Minimal API, prompt per scheda del progetto e analisi degli endpoint."
     },
     {
       "name": "dr-winsvc",
