@@ -20,10 +20,10 @@ Come si riconosce `db-schema`:
 
 | Fonte | Cosa dice |
 |-------|-----------|
-| Istruzioni `dr-minimalapi` | Il server è attivo se compare nella chiave `mcpServers` di `.claude/settings.json` o `~/.claude/settings.json` |
-| Skill `dr-scaffold-solution` e `dr-scaffold-guidelines` | Con `dr-efdb` propongono di registrarlo in `.mcp.json` |
+| Istruzioni `dr-minimalapi` | Il server è disponibile se i suoi tool sono esposti nella sessione, oppure se è registrato in `.mcp.json`, `.vscode/mcp.json`, `.claude/settings.json` o `~/.claude/settings.json` |
+| Skill `dr-scaffold-solution` e `dr-scaffold-guidelines` | Con `dr-efdb` propongono di registrarlo in `.mcp.json`, una delle posizioni riconosciute |
 
-Da verificare: le due fonti indicano file diversi. Se il server c'è solo in `.mcp.json`, non è chiaro se l'assistente lo rilevi.
+Se non lo trova, Claude dichiara dove ha cercato e chiede i campi all'utente.
 
 Se **MCP `db-schema` è attivo** nel progetto, Claude:
 1. Legge la struttura della tabella automaticamente
@@ -259,4 +259,4 @@ Il flusso cambia così (da `database-provider.instructions.md`):
 
 ---
 
-*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v1.3 — 2026-10-14 16:34 — claude-opus-5-5*
