@@ -239,6 +239,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `mcp-tool-readme.instructions.md` | README per MCP server (`tools/**/README.md`) |
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione di MCP server: cerca prima di creare |
 | `cross-package-references.instructions.md` | Come si cita una regola che vive in un altro pacchetto `dr-*`: rimando condizionale al manifest, mai secco |
+| `concurrency.instructions.md` | Preferire l'esecuzione parallela con operazioni indipendenti: fan-out e coda con N consumer, limite al parallelismo, cancellazione, errori per ramo, nessuna risorsa non thread-safe condivisa; serie dichiarata (tutti i linguaggi) |
 
 ---
 

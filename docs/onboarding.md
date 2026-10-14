@@ -115,6 +115,7 @@ Ricavate da `.github/instructions/`, `.github/copilot-instructions.md` e `CLAUDE
 | Struttura del `README.md` fissa in 12 sezioni | `readme-structure.instructions.md` |
 | Dati sensibili mai in file committati; `.mcp.json` ignorato, `.mcp.example.json` committato | `sensitive-data.instructions.md` |
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
+| Operazioni indipendenti: esecuzione parallela con limite, cancellazione ed errori per ramo; serie dichiarata | `concurrency.instructions.md` |
 | Nessun `git push` senza verifica pulita, o senza dichiarare che non c'è un comando di verifica | `copilot-instructions.md` — Gate di Push |
 
 ---
@@ -179,4 +180,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.8 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v3.9 — 2026-10-14 15:40 — claude-sonnet-5-5*
