@@ -62,6 +62,7 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 
 ```
 dr-guidelines/
+  .ai/handoff/          ← Documentazione di handoff per riprendere il lavoro (/dr-handoff)
   .ai/plans/            ← Piani di lavoro su disco (plan-tracking)
   .claude/
     settings.json       ← Permessi condivisi, fusi nel settings.json dell'host
@@ -73,13 +74,13 @@ dr-guidelines/
     workflows/ci.yml    ← Job build-and-test e catalog-guard
     workflows/suggests-text-check.yml ← Confronto non bloccante dei rimandi nel testo con `suggests`
     copilot-instructions.md   ← Entry point Copilot: individua il dominio dai pacchetti installati
-  .template.config/     ← Template dotnet new (Davraf.Guidelines)
   docs/                 ← Guide, onboarding, card, scaffolding per tipologia
   templates/
     global-claude.md    ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
   dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package, -NoDependencies, -SourceRoot
   dr-guidelines-install-lib.ps1  ← Get-DrCatalog, Get-DrPackageRegistry, Install-DrPackage, Install-DrGlobal
   scaffolding-catalog.json       ← Catalogo: kinds, domains, intentMap, fallback, projectTypes, packages
+  LICENSE               ← Licenza del repository
   CLAUDE.md             ← Istruzioni Claude Code; il corpo diventa la sezione iniettata negli host
   .editorconfig, .gitignore, .gitattributes   ← Copiati negli host
   .mcp.example.json     ← Server MCP consigliati; la config reale è .mcp.json, ignorato da git
@@ -180,4 +181,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v3.9 — 2026-10-14 15:40 — claude-sonnet-5-5*
+*Revisione v4.0 — 2026-10-14 18:10 — claude-sonnet-5-5*
