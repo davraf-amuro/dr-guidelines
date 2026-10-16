@@ -37,7 +37,7 @@ Per ciascuna voce `{ package, installedAt }` nel manifest, esegui:
 & ([scriptblock]::Create((Invoke-RestMethod -Uri "https://raw.githubusercontent.com/davraf-amuro/<package>/main/<package>-install.ps1"))) -Update
 ```
 
-sostituendo `<package>` con il nome del pacchetto. Questo rieseguirà il file-copy con `-Update` (sovrascrive i file già presenti con la versione corrente) e, per `dr-guidelines`, ri-mergia la sezione marcata in `CLAUDE.md`.
+sostituendo `<package>` con il nome del pacchetto. Questo rieseguirà il file-copy con `-Update` (sovrascrive istruzioni, prompt e skill con la versione corrente) e, per `dr-guidelines`, ri-mergia la sezione marcata in `CLAUDE.md`. I file di configurazione che l'host personalizza (`.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md`, `Directory.Build.props`, `global.json` e gli altri `rootFiles`) si sovrascrivono solo se mai modificati: altrimenti l'installer scrive la versione nuova in `<file>.new` (riga `[NEW]`) e non tocca l'originale.
 
 **Repo Private → il comando sopra risponde `404`.** `raw.githubusercontent.com` non serve i Private. Verificalo una volta sola prima del ciclo (`gh auth status`) e, se i repo non sono pubblici, usa questa forma per **tutti** i pacchetti:
 
@@ -57,14 +57,15 @@ Al termine, mostra all'utente:
 
 - Elenco pacchetti aggiornati con successo
 - Elenco pacchetti falliti con il motivo (se presenti)
-- Un promemoria: "Se hai modificato CLAUDE.md manualmente fuori dalle sezioni marcate `<!-- dr-<pacchetto> --> ... <!-- /dr-<pacchetto> -->`, verifica che siano ancora coerenti."
+- I file `.new` scritti (righe `[NEW]` dell'output): per ciascuno, "confronta `<file>.new` con `<file>`, porta a mano le novità che ti servono, poi elimina il `.new`". Non fare il merge al posto dell'utente.
+- Un promemoria: "Se hai modificato CLAUDE.md manualmente fuori dalla sezione marcata `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`, verifica che sia ancora coerente." Solo il core scrive una sezione in `CLAUDE.md`: i pacchetti di dominio non ne hanno.
 
 ---
 
 ## Regole
 
 - Non eseguire `git add` o `git commit` automaticamente dopo l'aggiornamento — lascia all'utente la scelta di committare le modifiche.
-- Non modificare mai contenuto di `CLAUDE.md` fuori dalle sezioni marcate `<!-- dr-<pacchetto> --> ... <!-- /dr-<pacchetto> -->` — quelle sono gestite esclusivamente dal merge automatico di `<pacchetto>-install.ps1`.
+- Non modificare mai contenuto di `CLAUDE.md` fuori dalla sezione marcata `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->` — quella è gestita esclusivamente dal merge automatico dell'installer del core.
 - Nessun versionamento/semver: ogni aggiornamento porta sempre alla versione più recente del branch `main` del pacchetto (default già approvato, nessun pin di versione).
 
 ## Perimetro non negoziabile

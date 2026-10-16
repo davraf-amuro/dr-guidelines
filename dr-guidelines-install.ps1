@@ -10,7 +10,7 @@
     Installazione (repo Private, con gh autenticato):
         & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 
-    Aggiornamento (sovrascrive i file gia presenti, merge sezione CLAUDE.md):
+    Aggiornamento (riscrive istruzioni e skill, merge sezione CLAUDE.md, file di configurazione personalizzati -> '<file>.new'):
         & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
 
     Installazione globale (scrive ~/.claude/CLAUDE.md, non tocca il progetto corrente):
@@ -22,7 +22,11 @@
     dr-guidelines e' il pacchetto core: instructions/skill trasversali, file di
     configurazione radice, sezione CLAUDE.md. Nessuna dipendenza.
 .PARAMETER Update
-    Sovrascrive i file gia presenti con la versione corrente del pacchetto.
+    Sovrascrive istruzioni, prompt e skill gia presenti con la versione corrente del pacchetto
+    e riscrive la sezione marcata in CLAUDE.md. I file di configurazione che l'host personalizza
+    (.gitignore, .editorconfig, .gitattributes, .github/copilot-instructions.md e i rootFiles
+    dei pacchetti) si sovrascrivono solo se mai modificati rispetto alla versione installata;
+    altrimenti la versione nuova va in '<file>.new' e l'originale non si tocca.
     Con -Global, sovrascrive la sezione gia presente in ~/.claude/CLAUDE.md.
 .PARAMETER Global
     Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto

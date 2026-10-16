@@ -200,7 +200,7 @@ Le linee guida migliorano nel tempo. Per ricevere gli aggiornamenti, apri la cha
 
 L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I tuoi documenti non vengono toccati.
 
-> ⚠️ L'aggiornamento sovrascrive i file delle linee guida, compresi `.gitignore`, `.editorconfig` e `.gitattributes`. Se li hai modificati a mano, le modifiche si perdono.
+> ℹ️ L'aggiornamento riscrive i file delle linee guida. Se hai modificato a mano `.gitignore`, `.editorconfig` o `.gitattributes`, le tue modifiche restano: la versione nuova arriva accanto, in un file che finisce in `.new` (per esempio `.gitignore.new`). Confrontali, tieni quello che ti serve, poi cancella il `.new`.
 
 ---
 
@@ -214,4 +214,4 @@ L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I
 
 ---
 
-*Revisione v1.1 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v1.2 — 2026-10-16 18:29 — claude-opus-5-5*

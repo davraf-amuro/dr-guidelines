@@ -59,7 +59,7 @@ Prima di proporre qualsiasi cosa, guarda com'è messo il file di destinazione:
 ```powershell
 $target = Join-Path $HOME ".claude\CLAUDE.md"
 Test-Path $target
-Select-String -Path $target -Pattern "## Davraf Guidelines \(Globale\)", "<!-- /davraf-guidelines -->"
+Select-String -Path $target -Pattern "## Davraf Guidelines \(Globale\)", "<!-- /davraf-guidelines -->", "^## Linee guida globali \(Davraf\)"
 ```
 
 | Cosa trovi | Modalità da proporre |
@@ -68,6 +68,7 @@ Select-String -Path $target -Pattern "## Davraf Guidelines \(Globale\)", "<!-- /
 | File presente, sezione assente | installa — la sezione viene aggiunta in fondo, il resto resta |
 | File presente, sezione **e** sentinel presenti | aggiorna (`-Update`) — la sezione viene riscritta |
 | Intestazione presente ma **sentinel mancante** | **fermati**: l'installer non sa dove finisce il blocco e lascia tutto com'è (`[WARN]`). Mostra all'utente il punto e chiedi come procedere |
+| Blocco **legacy** `## Linee guida globali (Davraf)` (vecchio `davraf-guidelines/setup.ps1`), sezione nuova assente | **fermati**: l'installer non scrive nulla (`[WARN]`), perché accodare darebbe due copie delle regole. Mostra il blocco e proponi all'utente di rimuoverlo a mano (dopo una copia `.bak`), poi rilancia come "installa" |
 
 Se l'argomento dice già "installa" o "aggiorna", rispetta l'indicazione — ma se contraddice lo stato reale (es. "installa" con la sezione già presente), dillo e proponi la modalità corretta.
 
@@ -125,7 +126,7 @@ Chiudi ricordando che il file globale viene letto **all'avvio della sessione**: 
 - Non modificare `templates/global-claude.md` da qui: quello è il contenuto delle linee guida, si cambia nel repo core con un commit.
 - Non editare a mano il blocco nel file globale: si riscrive con `-Update`, altrimenti la prossima esecuzione lo sovrascrive comunque.
 - Nessun `git` sul repo dell'utente: questa skill non committa e non pusha.
-- `[WARN] sentinel mancante` → fermati e chiedi. Non "riparare" il file indovinando dove finisce la sezione.
+- `[WARN] sentinel mancante` o `[WARN] blocco legacy` → fermati e chiedi. Non "riparare" il file indovinando dove finisce la sezione.
 
 ## Perimetro non negoziabile
 

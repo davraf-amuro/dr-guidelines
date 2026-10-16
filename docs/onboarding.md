@@ -44,7 +44,7 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 | Flag | Effetto |
 |---|---|
 | nessuno | Installa il core nella cartella corrente. Salta i file già presenti; una skill già presente si salta per intero. Aggiunge comunque i permessi mancanti a `.claude/settings.json` e la sezione in `CLAUDE.md`, se manca |
-| `-Update` | Sovrascrive i file presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. Per i `sourceFiles` scrive `<file>.new`. Non vale per le dipendenze |
+| `-Update` | Sovrascrive istruzioni, prompt e skill presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e `rootFiles`: sovrascritti solo se mai modificati rispetto al commit installato, altrimenti `<file>.new`. Per i `sourceFiles` scrive `<file>.new` quando la versione del pacchetto differisce da quella dell'host. Non vale per le dipendenze |
 | `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
 | `-NoDependencies` | Solo con `-Package` (senza `-Package` è ignorato): non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
 | `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new`. Gli installer dei singoli pacchetti e `/dr-get-latest` non lo accettano: si usa l'installer del core con `-Package` |
@@ -181,4 +181,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v4.0 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v4.1 — 2026-10-16 18:29 — claude-opus-5-5*

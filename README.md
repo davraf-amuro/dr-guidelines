@@ -149,11 +149,11 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
-| `.editorconfig` | copia, sovrascritta con `-Update` | Stile di codice e naming conventions |
-| `.gitignore` | copia, sovrascritta con `-Update` | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
-| `.gitattributes` | copia, sovrascritta con `-Update` | Normalizzazione dei fine riga |
+| `.editorconfig` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Stile di codice e naming conventions |
+| `.gitignore` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
+| `.gitattributes` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Normalizzazione dei fine riga |
 | `.mcp.json` | copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
-| `.github/copilot-instructions.md` | copia, sovrascritta con `-Update` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
+| `.github/copilot-instructions.md` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
 | `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. Prompt: `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans`, `architecture-doc`, `readme-generator`, `card-project-generator` (scheda del progetto), `card-wiki-generator` (wiki card con valori reali), `onboarding-senior` (onboarding per un senior) |
 | `.claude/skills/` | copia cartella per cartella | Skill Claude Code del core (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) |
 | `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte |
@@ -162,7 +162,7 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati, con il **commit** di provenienza: fa da lock file. A ogni esecuzione l'installer confronta il commit vecchio con il nuovo e lo scrive a schermo |
 | `briefs/` | creata vuota, solo se assente | Le tue richieste per l'agente, in Markdown, con nome e forma liberi. L'installer non ne legge né tocca mai il contenuto, nemmeno con `-Update` |
 
-> ⚠️ **`-Update` riscrive `.gitignore`, `.editorconfig` e `.gitattributes`.** Le righe che hai aggiunto tu si perdono, anche con `/dr-get-latest`. Dopo l'aggiornamento controlla con `git diff` e rimettile.
+> **`-Update` non perde le tue modifiche a `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e ai `rootFiles` dei pacchetti** (`Directory.Build.props`, `global.json`, …). L'installer confronta il file dell'host con la versione del commit installato in precedenza (registrato nel manifest): se non l'hai mai toccato lo aggiorna (`[UPD]`), se l'hai personalizzato e il pacchetto lo ha cambiato scrive la versione nuova in `<file>.new` (`[NEW]`) e lascia l'originale; se l'hai personalizzato e a monte non è cambiato nulla lo lascia com'è (`[SKIP]`). Confronta i due file, porta a mano le novità che ti servono, poi elimina il `.new`. Se la versione precedente non è ricostruibile (manifest senza commit, rete assente) l'installer sceglie la via prudente: `.new`.
 
 **Come si usa `briefs/`.** Scrivi la richiesta in un file, per esempio `briefs/export-contatti.md`, poi indicalo all'agente nel prompt: *"crea il piano da `briefs/export-contatti.md`"*. L'agente legge il brief e, se trova lacune, ti fa domande. Poi scrive sempre un piano in `.ai/plans/` con il link al brief sotto il titolo e aspetta la tua approvazione prima di eseguirlo. Vale anche quando passi il brief come argomento di una skill. La cartella non viene esplorata: l'agente usa solo il brief che gli indichi.
 
@@ -196,7 +196,7 @@ Forma breve:
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
 ```
 
-`-Update` sovrascrive i file già presenti con la versione corrente del pacchetto. Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
+`-Update` sovrascrive istruzioni, prompt e skill già presenti con la versione corrente del pacchetto. I file di configurazione che l'host personalizza seguono la regola del `.new` descritta sotto [Cosa viene configurato](#-cosa-viene-configurato). Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
 
 `-Update` aggiorna solo il pacchetto che indichi, non le sue dipendenze. Per aggiornare tutto usa `/dr-get-latest`.
 
@@ -493,12 +493,12 @@ Poi riavvia Claude Code per caricare il server.
 **A:** In parte. `/dr-install-global` scrive la sezione linee guida in `~/.claude/CLAUDE.md`, caricato in ogni sessione. Non sostituisce l'installazione nel progetto: istruzioni modulari, skill e configurazione radice arrivano solo installando nel repository. In caso di conflitto vale il `CLAUDE.md` del progetto.
 
 ### Q: Posso usare .NET 8 invece di .NET 10?
-**A:** Sì. Dopo l'installazione di `dr-dotnet-backend`, modifica `Directory.Build.props` e `global.json` nel tuo progetto. Attenzione: un `-Update` di quel pacchetto li sovrascrive.
+**A:** Sì. Dopo l'installazione di `dr-dotnet-backend`, modifica `Directory.Build.props` e `global.json` nel tuo progetto. Un `-Update` di quel pacchetto non li sovrascrive: se cambiano a monte, la versione nuova arriva in `Directory.Build.props.new` / `global.json.new`, da confrontare a mano.
 
 ### Q: GitHub Copilot non segue le istruzioni
 **A:** Verifica che `.github/copilot-instructions.md` sia presente e committato, poi riavvia VS o VS Code. L'installer lo copia dal 2026-09-22: se manca, il progetto è stato installato con una versione precedente del core — basta rilanciare l'installer, che lo aggiunge con `[OK]` senza toccare il resto.
 
-> ⚠️ **Se avevi copiato quel file a mano** seguendo la versione precedente di questo README, e poi l'hai personalizzato: ora è gestito dall'installer e un `-Update` lo sovrascrive senza avvisare. Porta le tue modifiche in una istruzione modulare di `.github/instructions/`, oppure aprile come issue sul core.
+> ⚠️ **Se avevi copiato quel file a mano** seguendo la versione precedente di questo README, e poi l'hai personalizzato: ora è gestito dall'installer. Un `-Update` non lo sovrascrive (scrive `copilot-instructions.md.new`), ma finché resta personalizzato non riceve gli aggiornamenti del core in automatico. Meglio portare le tue modifiche in una istruzione modulare di `.github/instructions/`, oppure aprirle come issue sul core.
 
 ### Q: Come personalizzo un'istruzione senza perderla con `-Update`?
 **A:** Scrivila in un file con nome proprio che finisce in `-local.instructions.md`, per esempio `.github/instructions/readme-local.instructions.md`. Non usare mai il nome di un file del pacchetto: `-Update` sovrascrive i file con quel nome, e rimuove quelli che il pacchetto ha dismesso. Nessun pacchetto distribuisce file `*-local.instructions.md`, quindi l'installer non li tocca.
@@ -511,4 +511,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.20 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v3.21 — 2026-10-16 18:29 — claude-opus-5-5*

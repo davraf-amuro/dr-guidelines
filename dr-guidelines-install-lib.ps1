@@ -146,6 +146,73 @@ function Copy-GuidelineFile {
     Write-Host "  $tag  $(Split-Path $DestFile -Leaf)" -ForegroundColor Green
 }
 
+function Copy-ProtectedFile {
+    <#
+    .SYNOPSIS
+        Copia un file di configurazione che l'host puo' aver personalizzato (.gitignore, rootFiles, ...).
+    .DESCRIPTION
+        Senza -Update un file presente si salta. Con -Update il confronto e' a tre vie:
+          - host uguale alla nuova versione                 -> [=], nulla da scrivere
+          - host uguale alla versione del commit di riferimento (quello installato prima)
+                                                             -> mai personalizzato, si sovrascrive
+          - personalizzato, ma invariato a monte dal riferimento
+                                                             -> [SKIP], nulla da proporre
+          - altrimenti                                       -> nuova versione in '<file>.new',
+                                                                l'originale non si tocca
+        Senza commit di riferimento non si sa se il file e' stato personalizzato: si sceglie
+        la via prudente, '.new'. Il confronto col riferimento usa gli id dei blob git (hash-object
+        con gli stessi attributi del pacchetto), quindi regge alle conversioni dei fine riga.
+        Restituisce il percorso relativo del '.new' scritto; altrimenti nulla.
+    #>
+    param(
+        [string]$TempRoot,
+        [string]$HostRoot,
+        [string]$RelativePath,
+        [string]$BaselineCommit,
+        [switch]$Update
+    )
+    $src     = Join-Path $TempRoot $RelativePath
+    $dest    = Join-Path $HostRoot $RelativePath
+    $gitPath = $RelativePath -replace '\\', '/'
+    if (-not (Test-Path $src -PathType Leaf)) { return }
+
+    if (-not (Test-Path $dest)) {
+        Copy-GuidelineFile -SrcFile $src -DestFile $dest
+        return
+    }
+    if (-not $Update) {
+        Write-Host "  [SKIP] $gitPath" -ForegroundColor DarkGray
+        return
+    }
+    if ((Get-FileHash $src).Hash -eq (Get-FileHash $dest).Hash) {
+        Write-Host "  [=]    $gitPath invariato" -ForegroundColor DarkGray
+        return
+    }
+
+    if ($BaselineCommit) {
+        $baseBlob = (git -C $TempRoot rev-parse --verify --quiet "${BaselineCommit}:$gitPath" 2>$null | Out-String).Trim()
+        $hostBlob = (git -C $TempRoot hash-object "--path=$gitPath" $dest 2>$null | Out-String).Trim()
+        if ($baseBlob -and $baseBlob -eq $hostBlob) {
+            Copy-Item -Path $src -Destination $dest -Force
+            Write-Host "  [UPD]  $gitPath" -ForegroundColor Green
+            return
+        }
+        # Personalizzato, ma a monte non e' cambiato nulla dal riferimento: non c'e' niente da
+        # proporre. Senza questo controllo il '.new' ricomparirebbe a ogni aggiornamento.
+        $srcBlob = (git -C $TempRoot rev-parse --verify --quiet "HEAD:$gitPath" 2>$null | Out-String).Trim()
+        if ($baseBlob -and $baseBlob -eq $srcBlob) {
+            Write-Host "  [SKIP] $gitPath personalizzato, invariato a monte" -ForegroundColor DarkGray
+            return
+        }
+    }
+
+    $replaced = Test-Path "$dest.new"
+    Copy-Item -Path $src -Destination "$dest.new" -Force
+    $note = if ($replaced) { "; sostituito il .new precedente" } else { "" }
+    Write-Host "  [NEW]  $gitPath.new (personalizzato nell'host: l'originale non e' stato toccato$note)" -ForegroundColor Yellow
+    return "$gitPath.new"
+}
+
 function Copy-InstructionsAndPrompts {
     param([string]$TempRoot, [string]$HostRoot, [string[]]$CoreOnly = @(), [switch]$Update)
 
@@ -241,16 +308,17 @@ function Remove-ObsoleteArtifacts {
 }
 
 function Copy-PackageRootFiles {
-    param([string]$TempRoot, [string]$HostRoot, [string[]]$RootFiles, [switch]$Update)
+    param([string]$TempRoot, [string]$HostRoot, [string[]]$RootFiles, [string]$BaselineCommit, [switch]$Update)
 
     # File di radice propri di un pacchetto di dominio (es. Directory.Build.props per .NET).
     # Chi installa il pacchetto ha gia' dichiarato il dominio: nessun rilevamento dello stack,
     # altrimenti in una cartella vuota i file verrebbero saltati proprio quando servono.
+    # L'host li personalizza di solito: con -Update si sovrascrivono solo se mai modificati.
     if (-not $RootFiles -or $RootFiles.Count -eq 0) { return }
 
     Write-Host "  File di configurazione del pacchetto:" -ForegroundColor White
     foreach ($file in $RootFiles) {
-        Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
+        Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -Update:$Update
     }
 }
 
@@ -335,19 +403,20 @@ function Copy-PackageSourceFiles {
 }
 
 function Copy-CoreConfigFiles {
-    param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
+    param([string]$TempRoot, [string]$HostRoot, [string]$BaselineCommit, [switch]$Update)
 
+    # File che l'host personalizza di solito (un .gitignore di create-vue, una regola Copilot
+    # locale): con -Update si sovrascrivono solo se mai modificati, altrimenti '<file>.new'.
     Write-Host "  File di configurazione:" -ForegroundColor White
     foreach ($file in @(".editorconfig", ".gitignore", ".gitattributes")) {
-        Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $file) -DestFile (Join-Path $HostRoot $file) -Update:$Update
+        Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -Update:$Update
     }
 
     # copilot-instructions.md sta qui e non in Copy-InstructionsAndPrompts perche' e' contenuto
     # del solo core: questa funzione e' invocata sotto IsCore, quella e' per-pacchetto e
     # duplicherebbe il file a ogni pacchetto di dominio installato. Senza questa copia il
     # riferimento @.github/copilot-instructions.md iniettato in CLAUDE.md punta al nulla.
-    $copilotInstructions = ".github\copilot-instructions.md"
-    Copy-GuidelineFile -SrcFile (Join-Path $TempRoot $copilotInstructions) -DestFile (Join-Path $HostRoot $copilotInstructions) -Update:$Update
+    Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath ".github/copilot-instructions.md" -BaselineCommit $BaselineCommit -Update:$Update
 
     # Directory.Build.props e global.json non stanno piu' nel core: sono contenuto .NET
     # e vivono in dr-dotnet-backend, che li installa quando il progetto e' davvero .NET.
@@ -464,6 +533,14 @@ function New-BriefsFolder {
     Write-Host "  [OK]   briefs\" -ForegroundColor Green
 }
 
+function Write-DrUtf8File {
+    # UTF-8 senza BOM con qualsiasi versione di PowerShell: Set-Content -Encoding UTF8 scrive il
+    # BOM su 5.1 e non su 7, e lo stesso file cambierebbe a seconda di chi lancia l'installer.
+    param([string]$Path, [string]$Content)
+    $full = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+    [System.IO.File]::WriteAllText($full, $Content, [System.Text.UTF8Encoding]::new($false))
+}
+
 function Merge-ClaudeMdSection {
     param(
         [string]$SrcClaudeMd,
@@ -484,7 +561,7 @@ function Merge-ClaudeMdSection {
     $block       = "$startMarker`n$srcBody`n$endMarker"
 
     if (-not (Test-Path $DestClaudeMd)) {
-        Set-Content -Path $DestClaudeMd -Value ($block + "`n") -Encoding UTF8
+        Write-DrUtf8File -Path $DestClaudeMd -Content ($block + "`n")
         Write-Host "  [OK]   CLAUDE.md creato con sezione $PackageName" -ForegroundColor Green
         return
     }
@@ -499,12 +576,14 @@ function Merge-ClaudeMdSection {
             Write-Host "  [SKIP] Sezione $PackageName gia presente in CLAUDE.md (usa -Update per aggiornare)" -ForegroundColor DarkGray
             return
         }
-        $newContent = [regex]::Replace($existing, $pattern, $block)
-        Set-Content -Path $DestClaudeMd -Value $newContent -Encoding UTF8 -NoNewline
+        # MatchEvaluator invece della stringa: '$_' o '$&' nel CLAUDE.md sorgente non vanno
+        # interpretati come riferimenti di sostituzione (incollerebbero l'intero file)
+        $newContent = [regex]::Replace($existing, $pattern, { param($m) $block })
+        Write-DrUtf8File -Path $DestClaudeMd -Content $newContent
         Write-Host "  [UPD]  Sezione $PackageName aggiornata in CLAUDE.md" -ForegroundColor Green
     } else {
         $newContent = $existing.TrimEnd() + "`n`n" + $block + "`n"
-        Set-Content -Path $DestClaudeMd -Value $newContent -Encoding UTF8 -NoNewline
+        Write-DrUtf8File -Path $DestClaudeMd -Content $newContent
         Write-Host "  [OK]   Sezione $PackageName inserita in CLAUDE.md" -ForegroundColor Green
     }
 }
@@ -564,7 +643,7 @@ function Update-DrManifest {
     }
 
     $manifest.installed = $installedList
-    ($manifest | ConvertTo-Json -Depth 5) | Set-Content -Path $path -Encoding UTF8
+    Write-DrUtf8File -Path $path -Content (($manifest | ConvertTo-Json -Depth 5) + "`n")
 
     $shortCommit = if ($Commit) { $Commit.Substring(0, [Math]::Min(7, $Commit.Length)) } else { "sconosciuto" }
     Write-Host "  [OK]   Manifest aggiornato: $PackageName ($shortCommit)" -ForegroundColor Green
@@ -746,9 +825,13 @@ function Install-DrPackageContent {
         # Commit effettivamente installato: e' quello che finisce nel manifest/lock file
         $newCommit = (git -C $tempDir rev-parse HEAD 2>$null | Out-String).Trim()
         $oldCommit = Get-DrInstalledCommit -Manifest $manifest -PackageName $PackageName
+        # Commit di riferimento per Copy-ProtectedFile: la versione che l'host ha ricevuto l'ultima
+        # volta. Resta vuoto se non e' ricostruibile (manifest senza commit, fetch fallito).
+        $baselineCommit = $null
 
         if ($oldCommit -and $newCommit) {
             if ($oldCommit -eq $newCommit) {
+                $baselineCommit = $newCommit
                 Write-Host "  Nessuna novita': gia' al commit $($newCommit.Substring(0,7))" -ForegroundColor DarkGray
             } else {
                 Write-Host "  Aggiornamento: $($oldCommit.Substring(0,7)) -> $($newCommit.Substring(0,7))" -ForegroundColor White
@@ -758,6 +841,7 @@ function Install-DrPackageContent {
                 # raggiungibile, rete assente) si dichiara che l'elenco non e' disponibile.
                 git -C $tempDir fetch --quiet --depth 1 --filter=blob:none origin "$oldCommit" 2>$null
                 if ($LASTEXITCODE -eq 0) {
+                    $baselineCommit = $oldCommit
                     $changed = @(git -C $tempDir diff --name-only --no-renames "$oldCommit" HEAD 2>$null)
                     if ($LASTEXITCODE -eq 0 -and $changed.Count -gt 0) {
                         Write-Host "  File modificati a monte:" -ForegroundColor White
@@ -780,8 +864,9 @@ function Install-DrPackageContent {
             Remove-ObsoleteArtifacts -HostRoot $hostRoot -Artifacts $pkg.ObsoleteArtifacts
         }
 
+        $newFiles = @()
         if ($pkg.RootFiles) {
-            Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -Update:$Update
+            $newFiles += @(Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -BaselineCommit $baselineCommit -Update:$Update)
         }
 
         if ($pkg.SourceFiles) {
@@ -789,12 +874,18 @@ function Install-DrPackageContent {
         }
 
         if ($pkg.IsCore) {
-            Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
+            $newFiles += @(Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -BaselineCommit $baselineCommit -Update:$Update)
             Merge-ClaudeSettings -TempRoot $tempDir -HostRoot $hostRoot
             Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             New-BriefsFolder -HostRoot $hostRoot
             Write-Host "  CLAUDE.md:" -ForegroundColor White
             Merge-ClaudeMdSection -SrcClaudeMd (Join-Path $tempDir "CLAUDE.md") -DestClaudeMd (Join-Path $hostRoot "CLAUDE.md") -PackageName $PackageName -Update:$Update
+        }
+
+        $newFiles = @($newFiles | Where-Object { $_ })
+        if ($newFiles.Count -gt 0) {
+            Write-Host "  File personalizzati nell'host: la versione nuova e' accanto, da confrontare a mano e poi eliminare:" -ForegroundColor Yellow
+            $newFiles | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
         }
 
         Update-DrManifest -HostRoot $hostRoot -PackageName $PackageName -Commit $newCommit
@@ -833,6 +924,7 @@ function Install-DrGlobal {
 
     $sectionTitle = "## Davraf Guidelines (Globale)"
     $endMarker    = "<!-- /davraf-guidelines -->"
+    $legacyTitle  = "## Linee guida globali (Davraf)"
 
     Write-Host ""
     Write-Host "=== dr-guidelines (installazione globale) ===" -ForegroundColor Cyan
@@ -874,7 +966,7 @@ function Install-DrGlobal {
         }
 
         if (-not (Test-Path $ClaudeMdPath)) {
-            Set-Content -Path $ClaudeMdPath -Value ($block + "`n") -Encoding UTF8
+            Write-DrUtf8File -Path $ClaudeMdPath -Content ($block + "`n")
             Write-Host "  [OK]   CLAUDE.md globale creato con la sezione linee guida" -ForegroundColor Green
         } else {
             $existing = Get-Content $ClaudeMdPath -Raw -Encoding UTF8
@@ -884,16 +976,21 @@ function Install-DrGlobal {
                 if ($Update) {
                     # MatchEvaluator invece della stringa: nel blocco un eventuale '$' non va interpretato come riferimento
                     $newContent = [regex]::Replace($existing, $pattern, { param($m) $block })
-                    Set-Content -Path $ClaudeMdPath -Value $newContent -Encoding UTF8 -NoNewline
+                    Write-DrUtf8File -Path $ClaudeMdPath -Content $newContent
                     Write-Host "  [UPD]  Sezione globale aggiornata" -ForegroundColor Green
                 } else {
                     Write-Host "  [SKIP] Sezione globale gia presente (usa -Global -Update per aggiornarla)" -ForegroundColor DarkGray
                 }
             } elseif ($existing -match [regex]::Escape($sectionTitle)) {
                 Write-Host "  [WARN] Intestazione presente ma sentinel '$endMarker' mancante - verifica manualmente" -ForegroundColor Yellow
+            } elseif ($existing -match ("(?m)^" + [regex]::Escape($legacyTitle))) {
+                # Blocco scritto dal vecchio davraf-guidelines/setup.ps1: senza sentinel non se ne
+                # conosce la fine, quindi non si sostituisce. Accodare creerebbe due copie delle regole.
+                Write-Host "  [WARN] Trovato il blocco legacy '$legacyTitle' (vecchio setup.ps1): nulla e' stato scritto." -ForegroundColor Yellow
+                Write-Host "         Rimuovi a mano quel blocco da $ClaudeMdPath, poi rilancia con -Global." -ForegroundColor Yellow
             } else {
                 $newContent = $existing.TrimEnd() + "`n`n" + $block + "`n"
-                Set-Content -Path $ClaudeMdPath -Value $newContent -Encoding UTF8 -NoNewline
+                Write-DrUtf8File -Path $ClaudeMdPath -Content $newContent
                 Write-Host "  [OK]   Sezione globale inserita nel CLAUDE.md esistente" -ForegroundColor Green
             }
         }

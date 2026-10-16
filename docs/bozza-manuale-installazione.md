@@ -181,9 +181,9 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 1 | Riavvio di Claude Code → le skill `dr-*` compaiono davvero | ☐ Da provare |
 | 2 | `/dr-scaffold` su cartella con solo il core installato → delega a `dr-scaffold-solution` | ☐ Da provare |
 | 3 | Creazione di una solution `.slnx` + primo progetto | ☐ Da provare |
-| 4 | Installazione di un pacchetto dominio (`dr-minimalapi`) e risoluzione automatica della dipendenza `dr-dotnet-backend` | ☐ Da provare |
+| 4 | Installazione di un pacchetto dominio (`dr-minimalapi`) e risoluzione automatica della dipendenza `dr-dotnet-backend` | ✅ 2026-10-16, cartella vuota: `[dep] dr-guidelines` (core implicito) → `[dep] dr-dotnet-backend` → `dr-minimalapi`, manifest con 3 voci e SHA completo, righe `[sugg]` per `dr-efdb`/`dr-fe`/`dr-devops`. Stesso esito con `dr-ux-kitt` (→ `dr-fe`) su Windows PowerShell 5.1. Vedi [Verifica installer del 2026-10-16](#-verifica-installer-del-2026-10-16) |
 | 5 | Idempotenza: seconda esecuzione dell'installer senza flag → nessun file sovrascritto (righe `[SKIP]`, più `Nessuna novita'` e `[OK] Manifest aggiornato`, che si riscrive sempre) | ☐ Da provare |
-| 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | ☐ Da provare |
+| 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | 🟡 2026-10-16: sezione ri-mergiata e testo host fuori dai marker preservato. Trovata e corretta la perdita delle personalizzazioni dei file di configurazione (ora `<file>.new`): provato con la libreria del working tree, ☐ da riprovare sul campo dopo il push su `main`. Vedi [Verifica installer del 2026-10-16](#-verifica-installer-del-2026-10-16) |
 | 7 | `/dr-snapshot` eseguita dal progetto host | ☐ Da provare |
 | 8 | `/dr-get-latest` dal progetto host | ☐ Da provare |
 | 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ Tutti e 9 `PUBLIC`: i 7 originali (`dr-guidelines`, `dr-devops`, `dr-fe`, `dr-efdb`, `dr-winsvc`, `dr-minimalapi`, `dr-dotnet-backend`) dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11), `dr-ux-kitt` dalla creazione (2026-10-14). Per i 7 originali: dopo una scansione segreti su tutta la history (solo placeholder documentati). Accesso anonimo verificato con `git ls-remote` senza credenziali. Il 2026-09-16 erano `PRIVATE`. La forma breve `irm ... \| iex` del Passo 1 diventa quindi applicabile: ☐ da provare sul campo |
@@ -248,6 +248,25 @@ Senza quella regola una dipendenza da un pacchetto `node` o `any` verso un pacch
 
 ---
 
+## 🔍 Verifica installer del 2026-10-16
+
+Prove in cartelle temporanee, con gli installer da path locale (la libreria arriva dal `main` remoto) e poi con la libreria del working tree caricata a mano.
+
+**Funzionava già:** risoluzione delle dipendenze e core implicito; rimozione degli `obsoleteArtifacts` (`dr-tattico` → `[DEL]`); merge additivo di `.claude/settings.json` (le chiavi `deny` ed `env` dell'host restano); `.mcp.json` mai sovrascritto; elenco dei file modificati a monte con lo SHA completo del manifest; Windows PowerShell 5.1.
+
+**Difetti trovati e corretti** (piano `.ai/plans/2026-10-16-installer-update-sicuro/`):
+
+| # | Difetto | Correzione |
+|---|---|---|
+| 1 | `-Update` sovrascriveva `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e i `rootFiles`: le righe dell'host sparivano | Confronto a tre vie con la versione del commit installato. File mai modificato → `[UPD]`; personalizzato e cambiato a monte → `<file>.new` (`[NEW]`), originale intatto; personalizzato e invariato a monte → `[SKIP]` (niente `.new` ricorrente); identico → `[=]`. Provati tutti gli esiti |
+| 2 | Un `$_` o `$&` nel `CLAUDE.md` sorgente incollava l'intero file host dentro la sezione | Sostituzione letterale (MatchEvaluator). Provato su PowerShell 7 e 5.1 |
+| 3 | `-Global` non riconosceva il blocco legacy `## Linee guida globali (Davraf)` del vecchio `setup.ps1` e ne accodava un secondo | `[WARN]` e nessuna scrittura: il blocco legacy va rimosso a mano, poi si rilancia |
+| 4 | `CLAUDE.md` e manifest con BOM su PowerShell 5.1, senza su 7 | Scrittura UTF-8 senza BOM con qualsiasi versione |
+
+**Restano aperti** (candidati a issue): il `.gitignore` distribuito è quello del repo core (porta `TODO/` negli host); `-SourceRoot` non è registrato nel manifest e i wrapper dei pacchetti non lo accettano; l'elenco "file modificati a monte" include file che non arrivano all'host (`.ai/plans/`, `docs/`); un file tolto da dentro una skill resta nell'host se non è in `obsoleteArtifacts`; nessun test automatico dell'installer.
+
+---
+
 ## 📦 Sorgenti applicativi: `sourceFiles` e `-SourceRoot`
 
 Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo file piatti di `.github/instructions/` e `.github/prompts/` e i `rootFiles` alla stessa path della radice. Un frontend con `src/` in una sottocartella non era gestito, e `-Update` sovrascriveva senza confronto.
@@ -270,4 +289,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.14 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v1.15 — 2026-10-16 18:29 — claude-opus-5-5*
