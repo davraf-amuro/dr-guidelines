@@ -225,7 +225,7 @@ Per il frontend: lo script `lint` generato da `create-vue` usa `--fix` (corregge
 
 **9. Passi finali:**
 
-- Se tra i pacchetti c'è `dr-efdb`, **proponi** di registrare il server MCP `db-schema` in `.mcp.json`: senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
+- Se tra i pacchetti c'è `dr-efdb`, **proponi** di installare il server MCP `db-schema` ([davraf-amuro/dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)) con il suo `setup.ps1` (`-Client vscode` per Copilot): comandi e limiti in `mcp-server-discovery.instructions.md`, sezione "Server già disponibili nella suite". Senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
 - Genera `launch.json`/`tasks.json` seguendo `dr-create-launch-profiles` (o la procedura equivalente), non a mano qui.
 - Se è stato creato un `.code-workspace`, ricorda di aprirlo: le istruzioni e le skill installate vengono caricate all'apertura.
 
@@ -360,4 +360,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `dotnet format` eseguito dopo l'install del core
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Template v1.3 — 2026-09-22 — claude-opus-5 — root del repository distinta dalle cartelle di progetto (issue #3)*
+*Template v1.4 — 2026-10-16 — claude-opus-5-5 — `db-schema` collegato a `dr-mcp-dbschema` e al suo `setup.ps1` (issue #27)*

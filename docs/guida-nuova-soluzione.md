@@ -211,7 +211,7 @@ La skill esegue queste verifiche da sola e si ferma alla prima che fallisce. Puo
 | Vedere cosa scrive l'assistente quando gli chiedi un worker, seguendo `dr-winsvc` | [`scaffolding-windows-service.md`](scaffolding-windows-service.md) |
 | Segnalare un errore nelle linee guida | `/dr-file-feedback <descrizione>` |
 
-Se hai scelto `dr-efdb`, la skill propone di registrare il server MCP `db-schema` in `.mcp.json`. Senza quel server lo scaffolding CRUD deve chiederti i campi della tabella a mano.
+Se hai scelto `dr-efdb`, la skill propone di installare il server MCP `db-schema` ([dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)): il suo `setup.ps1` scarica il binario e lo registra in `.mcp.json` (o in `.vscode/mcp.json` con `-Client vscode`). Serve un database SQL Server e Windows. Senza quel server lo scaffolding CRUD deve chiederti i campi della tabella a mano.
 
 **Cosa non fa lo scaffolding:** non crea il repository remoto e non fa `git push`. Il primo push lo fai tu, quando vuoi.
 
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.6 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v1.7 — 2026-10-16 18:29 — claude-opus-5-5*
