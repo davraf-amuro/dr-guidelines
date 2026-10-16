@@ -186,7 +186,7 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | ☐ Da provare |
 | 7 | `/dr-snapshot` eseguita dal progetto host | ☐ Da provare |
 | 8 | `/dr-get-latest` dal progetto host | ☐ Da provare |
-| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ Tutti e 8 `PUBLIC`: i 7 originali (`dr-guidelines`, `dr-devops`, `dr-fe`, `dr-efdb`, `dr-winsvc`, `dr-minimalapi`, `dr-dotnet-backend`) dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11). Per i 7 originali: dopo una scansione segreti su tutta la history (solo placeholder documentati). Accesso anonimo verificato con `git ls-remote` senza credenziali. Il 2026-09-16 erano `PRIVATE`. La forma breve `irm ... \| iex` del Passo 1 diventa quindi applicabile: ☐ da provare sul campo |
+| 9 | Visibilità attuale dei repo `davraf-amuro/dr-*` (Public o Private) | ✅ Tutti e 9 `PUBLIC`: i 7 originali (`dr-guidelines`, `dr-devops`, `dr-fe`, `dr-efdb`, `dr-winsvc`, `dr-minimalapi`, `dr-dotnet-backend`) dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11), `dr-ux-kitt` dalla creazione (2026-10-14). Per i 7 originali: dopo una scansione segreti su tutta la history (solo placeholder documentati). Accesso anonimo verificato con `git ls-remote` senza credenziali. Il 2026-09-16 erano `PRIVATE`. La forma breve `irm ... \| iex` del Passo 1 diventa quindi applicabile: ☐ da provare sul campo |
 | 10 | Nome del catalogo dopo la copia: nel repo sorgente il file sta in root e si chiama `scaffolding-catalog.json`; `test-progetto-host.md` lo dà per `.ai/dr-scaffolding-catalog.json` nell'host. Rinomina prevista o discrepanza? | 🟡 Rinomina prevista nel codice: `Copy-ScaffoldingCatalog` in `dr-guidelines-install-lib.ps1` copia il file come `.ai\dr-scaffolding-catalog.json`. ☐ Conferma sul campo con `Get-ChildItem .ai` nella cartella host |
 | 11 | Il test prova sempre il `main` **remoto**: `Install-DrPackage` fa `git clone --depth 1` da `github.com` anche se l'installer è lanciato da path locale. Modifiche non pushate non vengono installate | ☐ Da provare: modifica locale non pushata → assente nella cartella host |
 | 12 | Passi 1 e 2 di questo taccuino dopo la riscrittura della libreria (`aee84a4`, 2026-09-16: catalogo come fonte dei pacchetti, `rootFiles`, nessun rilevamento dello stack). Le prove del 2026-08-12 riguardano la versione precedente | ☐ Da riverificare in una cartella vuota |
@@ -270,4 +270,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.13 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v1.14 — 2026-10-14 18:10 — claude-sonnet-5-5*

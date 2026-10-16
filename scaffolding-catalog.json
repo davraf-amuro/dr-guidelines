@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-11",
+  "updatedAt": "2026-10-14",
   "defaults": {
     "dotnetFramework": "net10.0",
     "solutionFormat": "slnx",
@@ -139,7 +139,7 @@
       "targetPath": ".",
       "defaultNameSuffix": "-fe",
       "suggestedPackages": ["dr-fe"],
-      "optionalPackages": ["dr-ux-lcars"],
+      "optionalPackages": ["dr-ux-lcars", "dr-ux-kitt"],
       "docs": null,
       "notes": "I flag di create-vue sono booleani puri: '--vitest=false' fa fallire il comando. Va creato PRIMA dell'install del core, perche' scrive un proprio .editorconfig/.gitignore/.gitattributes. Lo script 'lint' generato usa --fix, quindi non vale come gate di verifica."
     }
@@ -237,6 +237,15 @@
       "appliesTo": ["node"],
       "rootFiles": ["scripts/lcars-contrast.mjs"],
       "description": "Tema grafico LCARS per frontend Vue 3 + Tailwind v4: palette enterprise-d ed enterprise-e, prompt di applicazione, verifica dei contrasti."
+    },
+    {
+      "name": "dr-ux-kitt",
+      "repo": "davraf-amuro/dr-ux-kitt",
+      "isCore": false,
+      "dependencies": ["dr-fe"],
+      "appliesTo": ["node"],
+      "rootFiles": ["scripts/kitt-contrast.mjs"],
+      "description": "Tema grafico K.I.T.T. (cruscotto Knight Rider) per frontend Vue 3 + Tailwind v4: palette notte e garage diurno, componenti di guscio, prompt di applicazione, verifica dei contrasti."
     }
   ]
 }

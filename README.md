@@ -18,18 +18,19 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, design token, skill `/dr-audit-fe` |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab. Non copre `Dockerfile` né compose per host singolo |
 | dr-ux-lcars | [davraf-amuro/dr-ux-lcars](https://github.com/davraf-amuro/dr-ux-lcars) | Tema grafico LCARS per frontend Vue + Tailwind v4 (palette `enterprise-d` ed `enterprise-e`), verifica dei contrasti. Dipende da `dr-fe` |
+| dr-ux-kitt | [davraf-amuro/dr-ux-kitt](https://github.com/davraf-amuro/dr-ux-kitt) | Tema grafico K.I.T.T. (cruscotto Knight Rider) per frontend Vue + Tailwind v4 (palette notte e garage diurno, componenti di guscio), verifica dei contrasti. Dipende da `dr-fe` |
 
 Come arrivano gli altri pacchetti:
 
 - **Core implicito.** Il core `dr-guidelines` è una dipendenza implicita di ogni pacchetto. Se manca dal manifest si installa per primo, con `-Package` come con l'installer del pacchetto.
-- **Dipendenze dichiarate.** `dr-minimalapi` e `dr-winsvc` portano `dr-dotnet-backend`; `dr-ux-lcars` porta `dr-fe`. Arrivano prima del pacchetto che le chiede. A schermo: righe `[dep]`.
+- **Dipendenze dichiarate.** `dr-minimalapi` e `dr-winsvc` portano `dr-dotnet-backend`; `dr-ux-lcars` e `dr-ux-kitt` portano `dr-fe`. Arrivano prima del pacchetto che le chiede. A schermo: righe `[dep]`.
 - **`-NoDependencies`.** Installa solo il pacchetto chiesto, senza dipendenze e senza core. A schermo: righe `[skip]`.
 - **Suggeriti** (campo `suggests`). Non si installano mai da soli. A fine installazione: una riga `[sugg]` con il motivo per ognuno che manca.
 - **Controllo in CI.** Il guard di catalogo blocca cicli e dipendenze incompatibili con lo stack del pacchetto.
 
 Dettagli e prove sul campo in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
-> **Gli 8 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
+> **I 9 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11; `dr-ux-kitt` dalla creazione, 2026-10-14). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
 ### Aggiungere un dominio nuovo
 
@@ -510,4 +511,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.19 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v3.20 — 2026-10-14 18:10 — claude-sonnet-5-5*

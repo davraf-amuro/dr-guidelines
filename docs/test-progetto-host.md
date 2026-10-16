@@ -34,7 +34,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | VS Code con Claude Code | Per il passo 8 |
 | Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
-**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. Gli 8 repo `dr-*` sono Public (i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione, 2026-10-11): anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
+**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. I 9 repo `dr-*` sono Public (i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione, 2026-10-11, `dr-ux-kitt` dalla creazione, 2026-10-14): anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
 
 **Il workspace `dr-*` clonato serve solo ai passi 7 e 8.4.** Tutti gli altri comandi scaricano da GitHub.
 
@@ -324,4 +324,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.4 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v2.5 — 2026-10-14 18:10 — claude-sonnet-5-5*
