@@ -114,7 +114,7 @@ Prerequisito della seconda forma: `gh auth status` autenticato. `irm ... | iex` 
 
 Nel riepilogo finale riporta: pacchetti installati, pacchetti falliti con il motivo, e due promemoria quando pertinenti:
 
-- se è entrato `dr-efdb`, **proponi** la registrazione del server MCP `db-schema` in `.mcp.json` — senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano;
+- se è entrato `dr-efdb`, **proponi** l'installazione del server MCP `db-schema` ([davraf-amuro/dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)) con il suo `setup.ps1`, che lo registra in `.mcp.json` — comandi e limiti in `mcp-server-discovery.instructions.md`, sezione "Server già disponibili nella suite"; senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano;
 - **riavvia Claude Code**: le skill in `.claude/skills/` vengono lette all'avvio della sessione, quelle appena installate non sono ancora attive.
 
 ---

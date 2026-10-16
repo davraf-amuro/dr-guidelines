@@ -211,7 +211,7 @@ Per il frontend, segnala che lo script `lint` generato da `create-vue` usa `--fi
 
 ### 4.9 Passi finali
 
-- Se tra i pacchetti c'è `dr-efdb`, **proponi** di registrare il server MCP `db-schema` in `.mcp.json`: senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
+- Se tra i pacchetti c'è `dr-efdb`, **proponi** di installare il server MCP `db-schema` ([davraf-amuro/dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)) con il suo `setup.ps1`, che lo registra in `.mcp.json`: comandi e limiti in `mcp-server-discovery.instructions.md`, sezione "Server già disponibili nella suite". Esegui solo dopo la conferma dell'utente. Senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
 - Rimanda a `/dr-create-launch-profiles` per `launch.json` e `tasks.json`: non scriverli qui.
 - Se è stato creato un `.code-workspace`, ricorda che va aperto (`code <nome>.code-workspace`) perché le skill installate vengano caricate.
 

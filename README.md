@@ -11,10 +11,10 @@ Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversa
 | Pacchetto | Repo | Scope |
 |---|---|---|
 | **dr-guidelines** (core) | [davraf-amuro/dr-guidelines](https://github.com/davraf-amuro/dr-guidelines) | Catalogo dei pacchetti, istruzioni e skill trasversali, installer (`dr-guidelines-install.ps1`) |
-| dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Base backend .NET: rilevamento tipo progetto, `Directory.Build.props` e `global.json`, skill `/dr-audit-api` |
+| dr-dotnet-backend | [davraf-amuro/dr-dotnet-backend](https://github.com/davraf-amuro/dr-dotnet-backend) | Base backend .NET: rilevamento tipo progetto, concorrenza (produttore/consumatore con coda bounded, fan-out parallelo), `Directory.Build.props` e `global.json`, skill `/dr-audit-api` |
 | dr-minimalapi | [davraf-amuro/dr-minimalapi](https://github.com/davraf-amuro/dr-minimalapi) | Architettura Minimal API .NET, prompt per endpoint e card. Dipende da `dr-dotnet-backend` |
 | dr-winsvc | [davraf-amuro/dr-winsvc](https://github.com/davraf-amuro/dr-winsvc) | Windows Service / Worker .NET. Dipende da `dr-dotnet-backend` |
-| dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio. Suggerisce il server MCP `db-schema` |
+| dr-efdb | [davraf-amuro/dr-efdb](https://github.com/davraf-amuro/dr-efdb) | Entity Framework Core, provider database, resilienza all'avvio. Suggerisce il server MCP `db-schema` ([dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)) |
 | dr-fe | [davraf-amuro/dr-fe](https://github.com/davraf-amuro/dr-fe) | Organizzazione del frontend, design token, skill `/dr-audit-fe` |
 | dr-devops | [davraf-amuro/dr-devops](https://github.com/davraf-amuro/dr-devops) | Docker Swarm, Portainer, CI/CD GitLab. Non copre `Dockerfile` né compose per host singolo |
 | dr-ux-lcars | [davraf-amuro/dr-ux-lcars](https://github.com/davraf-amuro/dr-ux-lcars) | Tema grafico LCARS per frontend Vue + Tailwind v4 (palette `enterprise-d` ed `enterprise-e`), verifica dei contrasti. Dipende da `dr-fe` |
@@ -511,4 +511,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.21 — 2026-10-16 18:29 — claude-opus-5-5*
+*Revisione v3.22 — 2026-10-16 18:29 — claude-opus-5-5*
