@@ -52,7 +52,7 @@ Invoke-Expression "& { $(irm https://raw.githubusercontent.com/davraf-amuro/dr-m
 Invoke-Expression "& { $(irm https://raw.githubusercontent.com/davraf-amuro/dr-mcp-dbschema/main/setup.ps1) } -Client all"
 ```
 
-Prima di proporlo, dichiara i limiti: il binario è solo `win-x64` e il database deve essere SQL Server raggiungibile in rete. Le operazioni DDL e `run_select` sono disattivate finché non si abilitano nella sezione `Ddl` dell'`appsettings`. Variabili, flag DDL, file da aggiungere al `.gitignore` (`tools/dr-mcp-dbschema/` e i file di configurazione del client) e risoluzione dei problemi: README di `dr-mcp-dbschema`, non questa regola.
+Prima di proporlo, dichiara i limiti: `setup.ps1` installa il binario `win-x64` (le release pubblicano anche `linux-x64`, da installare a mano seguendo il README del server) e il database deve essere SQL Server raggiungibile in rete. Le operazioni DDL e `run_select` sono disattivate finché non si abilitano nella sezione `Ddl` dell'`appsettings`. Variabili, flag DDL, file da aggiungere al `.gitignore` (`tools/dr-mcp-dbschema/` e i file di configurazione del client) e risoluzione dei problemi: README di `dr-mcp-dbschema`, non questa regola.
 
 L'installazione modifica il progetto (binario in `tools/`, file di configurazione del client): si propone e si esegue solo dopo la conferma dell'utente.
 
