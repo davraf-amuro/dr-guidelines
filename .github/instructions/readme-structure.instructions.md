@@ -18,7 +18,7 @@ Il README deve contenere queste sezioni, in questo ordine:
 | # | Sezione | Emoji | Scopo |
 |---|---------|-------|-------|
 | 1 | Titolo + tagline | — | Nome repo + una riga che spiega cos'è |
-| 2 | Pacchetti dr-* disponibili | 🧩 | Tabella degli 8 pacchetti della suite (core + domini), repo e scope |
+| 2 | Pacchetti dr-* disponibili | 🧩 | Tabella dei 9 pacchetti della suite (core + domini), repo e scope |
 | 3 | Avvio Rapido — Nuovo Progetto | 🚀 | Come usarlo su un progetto nuovo |
 | 4 | Progetto Esistente — Aggiungere le Guidelines | 🔧 | Come installare `dr-guidelines` (e opzionalmente altri pacchetti) su un progetto già esistente |
 | 5 | Cosa viene configurato | 📦 | Tabella dei file installati da `dr-guidelines-install.ps1` (pacchetto core) |
@@ -40,9 +40,9 @@ Il README deve contenere queste sezioni, in questo ordine:
 
 ### 2 — Pacchetti dr-* disponibili
 - Tabella con colonne: `Pacchetto | Repo | Scope`
-- Una riga per ciascuno degli 8 pacchetti della suite (`dr-guidelines` core + i 7 pacchetti dominio), incluso quello corrente
+- Una riga per ciascuno dei 9 pacchetti della suite (`dr-guidelines` core + gli 8 pacchetti dominio), incluso quello corrente
 - Link markdown al repo GitHub per ciascun pacchetto (`[dr-nome](https://github.com/davraf-amuro/dr-nome)`)
-- Nota eventuali dipendenze tra pacchetti (es. `dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`, `dr-ux-lcars` → `dr-fe`, installate automaticamente)
+- Nota eventuali dipendenze tra pacchetti (es. `dr-minimalapi`/`dr-winsvc` → `dr-dotnet-backend`, `dr-ux-lcars`/`dr-ux-kitt` → `dr-fe`, installate automaticamente)
 - Aggiorna la tabella se un pacchetto viene aggiunto, rinominato o rimosso dalla suite
 
 ### 3 — Avvio Rapido (nuovo progetto)
@@ -123,4 +123,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v2.4 - dr-guidelines - Last Update 2026-10-11 16:40 — claude-opus-5-5 — suite a 8 pacchetti (dr-ux-lcars)*
+*Template v2.5 - dr-guidelines - Last Update 2026-10-16 — claude-opus-5-5 — suite a 9 pacchetti (dr-ux-kitt)*
