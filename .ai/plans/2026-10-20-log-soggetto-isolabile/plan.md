@@ -1,6 +1,6 @@
 # Piano: Soggetto del log sempre presente e isolabile + riordino regole logging
 Data: 2026-10-20
-Stato: IN CORSO
+Stato: COMPLETATO
 Branch: main (scelta utente) — in tutti i repository toccati
 
 ## Obiettivo
@@ -126,7 +126,7 @@ Quando l'utente individua un soggetto (valore di un campo scelto da lui: ID, Cod
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
 
 ### Fase 9: Verifica finale
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 8 `[x]`
 - **File**: questo `plan.md`
 - **Operazione**: EDIT
@@ -135,14 +135,16 @@ Quando l'utente individua un soggetto (valore di un campo scelto da lui: ID, Cod
 - **Verifica passo**: tutti i criteri `[x]`
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
 
-⚠️ Divergenza Fase 9: verifica indipendente — `dr-minimalapi/README.md:44` presenta ancora `logging` come "fonte unica della configurazione Serilog" e manca la riga `serilog-logging` (`dr-dotnet-backend`); `dr-winsvc/README.md` non cita `serilog-logging`. Entrambi fuori Scope: estensione chiesta all'utente. Corrette in Scope (non ancora committate): cause errate in "Errori comuni" di `serilog-logging` (FromLogContext / ordine enricher), `nameof(orderId)` → costante `OrderId`, errore dell'elemento loggato dentro lo scope, `LoadPendingOrdersAsync` non definito e `WriteTo` dichiarato obbligatorio nell'esempio di `dr-winsvc`.
+## Consuntivo verifica
+- Prima verifica indipendente: divergenza su `dr-minimalapi/README.md` e `dr-winsvc/README.md` (fuori Scope) + imprecisioni negli esempi. Scope esteso con approvazione dell'utente; corretto in 8eae946, 7d79eeb, 8dc1927, 8e1e6ed.
+- Seconda verifica indipendente: 8/8 criteri soddisfatti; rifiniture minori applicate (commento `S:OrderId=42`, nome del campo solo costante, voce `TaskId`, blocco `WriteTo` completo in dr-winsvc).
 
 ## Criteri di verifica finale
-- [ ] `logging.instructions.md` del core è agnostica e contiene la regola del soggetto (D1)
-- [ ] `serilog-logging.instructions.md` esiste in `dr-dotnet-backend` con `FromLogContext`, scope del soggetto e `S:{Subject}` in entrambi i template
-- [ ] Minimal API, Windows Service e override di `dr-devops` usano la stessa forma di configurazione (D4)
-- [ ] Nessun riferimento residuo a `logging.instructions.md` come fonte della configurazione Serilog nella suite
-- [ ] Nessun esempio usa interpolazione nel template di un messaggio di log
-- [ ] Regole condivise compatibili Claude Code / Copilot
-- [ ] Footer aggiornati (versione, 2026-10-20, modello, motivo)
-- [ ] Nessun file fuori Scope modificato
+- [x] `logging.instructions.md` del core è agnostica e contiene la regola del soggetto (D1)
+- [x] `serilog-logging.instructions.md` esiste in `dr-dotnet-backend` con `FromLogContext`, scope del soggetto e `S:{Subject}` in entrambi i template
+- [x] Minimal API, Windows Service e override di `dr-devops` usano la stessa forma di configurazione (D4)
+- [x] Nessun riferimento residuo a `logging.instructions.md` come fonte della configurazione Serilog nella suite
+- [x] Nessun esempio usa interpolazione nel template di un messaggio di log
+- [x] Regole condivise compatibili Claude Code / Copilot
+- [x] Footer aggiornati (versione, 2026-10-20, modello, motivo)
+- [x] Nessun file fuori Scope modificato
