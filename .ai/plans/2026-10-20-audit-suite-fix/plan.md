@@ -76,7 +76,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 3: <cosa>` in plan.md, non procedere
 
 ### Fase 4: Skill Claude Code
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1 completata
 - **File**: `.claude/skills/{dr-scaffold,dr-scaffold-solution,dr-snapshot,dr-create-launch-profiles,dr-promote-to,dr-warroom,dr-file-feedback,dr-install-global,dr-handoff,dr-verify-plan,dr-get-latest,dr-scaffold-guidelines}/SKILL.md`
 - **Operazione**: EDIT
