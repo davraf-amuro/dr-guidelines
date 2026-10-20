@@ -12,6 +12,8 @@ Regola trasversale valida per qualsiasi task di sviluppo. Si integra con `dev-cy
 
 Ogni richiesta di modifica (codice, config, docs, test) con **≥ 2 operazioni**.
 
+**Operazione** = ogni file creato, modificato o cancellato, e ogni comando con effetti (commit, installazione, migrazione, chiamata che scrive su un servizio esterno). Più modifiche allo stesso file contano come una operazione; letture, ricerche e comandi in sola lettura non contano. Esempi: "rinomina una funzione in 3 file" = 3 operazioni; "correggi due refusi nello stesso README" = 1; "modifica un file e committalo" = 2.
+
 Per operazione singola: dichiarazione inline dev-cycle Fase 1 è sufficiente — nessun piano su disco richiesto.
 
 Eccezione: task avviato da un brief → piano sempre obbligatorio, a prescindere dal numero di operazioni (vedi "Piani da un brief").
@@ -30,7 +32,7 @@ Eccezione: task avviato da un brief → piano sempre obbligatorio, a prescindere
 
 - slug: breve descrizione kebab-case del task (es. `add-auth-endpoint`, `fix-ef-projection`)
 - Data: data di inizio in formato `YYYY-MM-DD`
-- Cartella `.ai/` è esente da EnterPlanMode — scrivi senza blocchi
+- Cartella `.ai/` è esente dall'approvazione (su Claude Code: `EnterPlanMode`) — scrivi senza blocchi
 
 ### Template obbligatorio `plan.md`
 
@@ -39,7 +41,7 @@ Eccezione: task avviato da un brief → piano sempre obbligatorio, a prescindere
 Brief: [<nome-file>.md](../../../briefs/<nome-file>.md)   ← solo se il piano nasce da un brief
 Data: <YYYY-MM-DD>
 Stato: IN CORSO
-Branch: <nome-branch> | <branch corrente> (scelta utente)   ← vedi "Branch di esecuzione"
+Branch: <nome del branch scelto dall'utente> (scelta utente)   ← vedi "Branch di esecuzione"
 
 ## Obiettivo
 <descrizione obiettivo — una riga>
@@ -113,7 +115,7 @@ Prima di dichiarare il task completato:
 2. Verifica ogni criterio in "Criteri di verifica finale"
 3. Applica `dev-cycle.instructions.md` — Fase 4 ("tutti i file modificati riletti e verificati") su ogni file di "Scope"
    - 3a. Se lo Scope contiene un documento che descrive il sistema (vedi Fase 0, "Documenti che descrivono il sistema"), le sue affermazioni si confrontano col codice reale: una differenza è una divergenza.
-4. Esegui il controllo del punto 3 (3a compreso) in un contesto isolato dalla conversazione che ha scritto il codice, quando lo strumento usato lo consente (nuova sessione, sub-agente, secondo revisore) — chi ha scritto il codice tende a confermarlo, un controllo a freddo senza cronologia pregressa lo rileva meglio. Su Claude Code: skill `dr-verify-plan`.
+4. Esegui il controllo del punto 3 (3a compreso) in un contesto isolato dalla conversazione che ha scritto il codice, quando lo strumento usato lo consente (nuova sessione, sub-agente, secondo revisore) — chi ha scritto il codice tende a confermarlo, un controllo a freddo senza cronologia pregressa lo rileva meglio. Su Claude Code: skill `dr-verify-plan`. Su Copilot e Codex: nuova chat con in contesto solo `plan.md` e i file di Scope, con la richiesta di confrontarli; se non è possibile, dichiara che la verifica non è isolata.
 5. Se tutti i criteri soddisfatti:
    - Aggiorna `Stato: COMPLETATO`
    - Dichiara esplicitamente: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
@@ -154,13 +156,14 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 
 ### Campo `Issue:`
 
-Campo opzionale d'intestazione, subito dopo `Stato:`, per i piani nati da una issue:
+Campo opzionale d'intestazione, subito dopo `Stato:` e prima di `Branch:`, per i piani nati da una issue:
 
 ```markdown
 # Piano: <titolo task>
 Data: <YYYY-MM-DD>
 Stato: PROPOSTO
 Issue: <owner/repo>#<n>
+Branch: <scelto al passaggio a IN CORSO>
 ```
 
 Prima di scrivere un piano da una issue, cerca `Issue: <owner/repo>#<n>` (anche nella forma `**Issue:**`) nei `plan.md` esistenti: se c'è già, in qualsiasi stato, la issue è pianificata e non va duplicata.
@@ -205,4 +208,4 @@ Vale anche quando il brief è l'argomento di una skill o di un prompt invocato e
 
 ---
 
-*Istruzione v1.8 - Plan Tracking - 2026-10-20 — claude-opus-5-5 — aggiunta la sezione "Branch di esecuzione": ogni piano sottoposto all'approvazione propone un branch dedicato, scelta registrata nel campo `Branch:`*
+*Istruzione v1.9 - Plan Tracking - 2026-10-20 — claude-opus-5-5 — definizione di "operazione" con esempi; riga `Branch:` a valore unico; ordine `Issue:`/`Branch:`; verifica isolata anche su Copilot e Codex*

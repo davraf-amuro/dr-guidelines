@@ -41,7 +41,7 @@ Fonte unica: `dev-cycle.instructions.md` — Fase 0. Compila quella checklist ne
 ## Verifica post-modifica (qualsiasi file)
 
 Dopo ogni modifica a un file:
-1. Rileggi il file modificato
+1. Rileggi la parte modificata — sempre per file scritti da script, generatori o comandi di shell; se lo strumento di modifica fallisce quando il testo non si applica esattamente (es. Edit di Claude Code), la sua conferma vale come riletta del punto modificato
 2. Confronta il contenuto con quanto richiesto
 3. Solo se corrispondono, dichiara la modifica completata
 
@@ -53,8 +53,8 @@ Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza - non assumere silenziosamente
 
-Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` prima di procedere.
-Segui `plan-tracking.instructions.md` per struttura e verifica finale.
+Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` e attendi l'approvazione esplicita prima di procedere.
+Segui `plan-tracking.instructions.md` per definizione di "operazione", struttura e verifica finale.
 Sottoponendo il piano, proponi **sempre** di eseguirlo in un branch dedicato; l'utente sceglie e la scelta va nel campo `Branch:` del piano (`plan-tracking.instructions.md`, sezione "Branch di esecuzione").
 
 ## Brief dell'utente — cartella `briefs/`
@@ -81,4 +81,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Template v2.4 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-20 — claude-opus-5-5 — soggetto del log (`Subject`)
+*Template v2.5 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-20 — claude-opus-5-5 — proposta del branch, approvazione del piano, riletta mirata
