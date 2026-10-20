@@ -5,11 +5,14 @@
     Claude Code e' l'agente primario: .claude/skills/*/SKILL.md e CLAUDE.md sono la fonte.
     Le copie Codex non si modificano a mano: questo script le rigenera identiche alla fonte,
     con un preambolo che dice a Codex come tradurre gli strumenti specifici di Claude Code.
-    Nessuna sostituzione di testo: una sostituzione cieca ("Claude Code" -> "Codex") cambia
-    il significato delle regole e ha gia' prodotto percorsi e URL inesistenti.
+    Nessuna sostituzione di testo nel corpo: una sostituzione cieca ("Claude Code" -> "Codex")
+    cambia il significato delle regole e ha gia' prodotto percorsi e URL inesistenti.
+    Cambia solo il titolo di AGENTS.md. I preamboli stanno in templates/codex-*-preamble.md.
+    Senza -Check riscrive le copie divergenti e rimuove le skill Codex orfane
+    (senza sorgente in .claude/skills).
 .PARAMETER Check
-    Non scrive nulla: confronta e termina con exit code 1 se le copie Codex divergono.
-    Usato dalla CI.
+    Non scrive nulla: confronta e termina con exit code 1 se le copie Codex divergono
+    o se esistono skill Codex orfane. Usato dalla CI.
 .EXAMPLE
     pwsh ./scripts/sync-codex.ps1
     pwsh ./scripts/sync-codex.ps1 -Check

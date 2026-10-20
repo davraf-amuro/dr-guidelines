@@ -136,6 +136,7 @@ Questo è il passo più importante. **L'installatore scrive nella cartella apert
 | `[OK]` verde | File aggiunto |
 | `[SKIP]` grigio | File già presente, lasciato com'è. Normale |
 | `[WARN]` giallo | Avviso: un file esistente non è stato toccato. L'installazione prosegue |
+| `[sugg]` giallo | Suggerimento: un extra facoltativo che non è stato installato. Non richiede nulla |
 | Scritta rossa | Errore: vai a [Se qualcosa va storto](#-se-qualcosa-va-storto) |
 
 L'ultima riga importante è **`Completato: dr-guidelines`**.
@@ -155,6 +156,7 @@ L'assistente legge le skill solo quando VS Code si avvia. Va ricaricato.
    | Elemento | A cosa serve |
    |---|---|
    | Cartella `.claude` | Skill e impostazioni di Claude Code |
+   | Cartella `.agents` | Le stesse skill per Codex. Se non lo usi, ignorala |
    | Cartella `.github` | Istruzioni lette da Claude Code e da GitHub Copilot |
    | Cartella `.ai` | Elenco dei pacchetti installati |
    | Cartella `briefs` | Qui scrivi le richieste per l'assistente. Nasce vuota |
@@ -177,7 +179,7 @@ L'assistente legge le skill solo quando VS Code si avvia. Va ricaricato.
 | `Impossibile caricare dr-guidelines-install-lib.ps1` | Come sopra: GitHub non raggiungibile | Come sopra |
 | Scritta rossa con `irm` o `Invoke-RestMethod` | Collegamento a Internet interrotto o bloccato | Riprova tra un minuto. Se si ripete, come sopra |
 | Nessuna skill con `/dr-` | VS Code non è stato ricaricato | Rifai il passo 6. Se ancora niente, chiudi e riapri VS Code |
-| Le cartelle `.claude`, `.github`, `.ai`, `briefs` sono finite nella cartella sbagliata | Era aperta un'altra cartella | Vedi sotto |
+| Le cartelle `.claude`, `.agents`, `.github`, `.ai`, `briefs` sono finite nella cartella sbagliata | Era aperta un'altra cartella | Vedi sotto |
 
 ### Come togliere un'installazione dalla cartella sbagliata
 
@@ -185,7 +187,7 @@ Vale **solo se quella cartella prima non conteneva questi elementi**. Se hai dub
 
 In Esplora file, nella cartella sbagliata, elimina:
 
-- le cartelle `.claude`, `.github`, `.ai`, `briefs`
+- le cartelle `.claude`, `.agents`, `.github`, `.ai`, `briefs`
 - i file `CLAUDE.md`, `.editorconfig`, `.gitattributes`, `.gitignore` (e `.mcp.json`, solo se l'hai installato con `-WithMcp`)
 
 Poi ripeti dal passo 4 con la cartella giusta.
@@ -216,4 +218,4 @@ L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I
 
 ---
 
-*Revisione v1.3 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v1.4 — 2026-10-20 21:00 — claude-opus-5-5*

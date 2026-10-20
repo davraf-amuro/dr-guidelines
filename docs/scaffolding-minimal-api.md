@@ -2,7 +2,7 @@
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-minimalapi` installati) di creare una nuova Minimal API. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
-`/dr-scaffold` crea il progetto vuoto. Questa struttura la scrive l'assistente dopo, quando chiedi endpoint o entità, seguendo le istruzioni di `dr-minimalapi`. Le regole valide sono in `minimal-api-architecture.instructions.md`. Questo documento è una panoramica: sta nel repo `dr-guidelines` e non viene copiato nel progetto.
+`/dr-scaffold` (che delega a `/dr-scaffold-project` o `/dr-scaffold-solution`) crea il progetto vuoto. Questa struttura la scrive l'assistente dopo, quando chiedi endpoint o entità, seguendo le istruzioni di `dr-minimalapi`. Le regole valide sono in `minimal-api-architecture.instructions.md`. Questo documento è una panoramica: sta nel repo `dr-guidelines` e non viene copiato nel progetto.
 
 ---
 
@@ -14,10 +14,12 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
 |---|---------|-----------------|
 | 1 | Nome entità + campi | Solo se il task coinvolge un'entità e non sono già indicati |
 | 2 | Nome del progetto | `<nomecartella>.api` in lowercase — es. cartella `ordini/` → propone `ordini.api` |
-| 3 | Aggiungere Serilog? | Nessun default — chiede esplicitamente |
-| 4 | Entity Framework Core presente? | Se è già nel `.csproj` lo dichiara; altrimenti chiede. |
-| 5 | Utenti umani con login? | Nessun default. Se sì, lo schema dipende dai client |
-| 6 | Connessione DB (solo se MCP db-schema attivo) | Solo se sono disponibili più connessioni |
+| 3 | Utenti umani con login? | Nessun default. Se sì, lo schema dipende dai client |
+| 4 | Connessione DB (solo se MCP db-schema attivo) | Solo se sono disponibili più connessioni |
+
+Non è una domanda del gate, ma una regola dello stack: **Entity Framework Core**. Se è già nel `.csproj` l'assistente lo dichiara e prosegue; se manca, chiede.
+
+**Serilog non si chiede**: è obbligatorio (configurazione in `serilog-logging.instructions.md` di `dr-dotnet-backend`, dipendenza di `dr-minimalapi`).
 
 > ⚠️ Se il nome progetto non è ricavabile dal contesto, Claude si **ferma** e aspetta risposta. Non inventa nomi come `MyApi` o `WebApi`.
 
@@ -44,6 +46,7 @@ Prima di creare qualsiasi file, Claude raccoglie **tutto in un unico messaggio**
           <Progetto>DbContext.cs          ← DbContext con NoTracking default
           <Progetto>Provider.cs           ← operazioni CRUD con Expression selector
           <Progetto>ProviderExtensions.cs ← Add<Progetto>Provider() per DI
+        Logging/                          ← TaskIdEnricher, LogSubject, SubjectDefaultEnricher (da serilog-logging.instructions.md)
       Properties/
         ApiVersionFactory.cs              ← ApiVersionFactory con Version1
         launchSettings.json               ← obbligatorio: profili IIS Express e Kestrel
@@ -226,7 +229,7 @@ public class ProdottoService(ProdottiProvider provider)
 | Commenti | `///` su tutti i `public` method di provider/service/handler/validator |
 | File sensibili | `appsettings.local.json` in `.gitignore`, mai credenziali reali in file committati |
 | Debug VS Code | `launch.json` + `tasks.json` con `type: coreclr` (http + https) |
-| Serilog | Solo se confermato — `AddSerilog` in Program.cs, sezione in appsettings.json, `logs/` in .gitignore |
+| Serilog | Obbligatorio — `AddSerilog` in Program.cs con `ReadFrom.Configuration` e enricher, sezione `Serilog` in appsettings.json, `logs/` in .gitignore |
 
 ---
 
@@ -240,11 +243,11 @@ public class ProdottoService(ProdottiProvider provider)
 | `Microsoft.AspNetCore.OpenApi` | `AddOpenApi` e transformer. Nome dedotto dal codice: le istruzioni non lo scrivono. Da verificare |
 | `FluentValidation` | Validazione input |
 | `Microsoft.EntityFrameworkCore.SqlServer` | ORM (se richiesto) |
-| `Serilog.AspNetCore` | Logging su file + console (se confermato); include `Serilog.Settings.Configuration` per leggere la sezione `Serilog` di `appsettings.json` |
-| `Serilog.Sinks.File` | Sink file Serilog (se Serilog confermato) |
-| `Serilog.Sinks.Console` | Sink console Serilog (se Serilog confermato) |
-| `Serilog.Enrichers.Thread` | Enricher `ThreadId` (se Serilog confermato, da `serilog-logging.instructions.md` di `dr-dotnet-backend`) |
+| `Serilog.AspNetCore` | Logging su file + console; include `Serilog.Settings.Configuration` per leggere la sezione `Serilog` di `appsettings.json` |
+| `Serilog.Sinks.File` | Sink file Serilog |
+| `Serilog.Sinks.Console` | Sink console Serilog |
+| `Serilog.Enrichers.Thread` | Enricher `ThreadId` (da `serilog-logging.instructions.md` di `dr-dotnet-backend`) |
 
 ---
 
-*Revisione v1.3 — 2026-10-20 18:20 — claude-opus-5-5*
+*Revisione v1.4 — 2026-10-20 21:00 — claude-opus-5-5*

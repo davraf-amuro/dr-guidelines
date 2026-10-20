@@ -22,12 +22,12 @@
     dr-guidelines e' il pacchetto core: instructions/skill trasversali, file di
     configurazione radice, sezione CLAUDE.md. Nessuna dipendenza.
 .PARAMETER Update
-    Sovrascrive istruzioni, prompt e skill gia presenti con la versione corrente del pacchetto
+    Sovrascrive istruzioni, prompt e skill gia' presenti con la versione corrente del pacchetto
     e riscrive la sezione marcata in CLAUDE.md. I file di configurazione che l'host personalizza
     (.gitignore, .editorconfig, .gitattributes, .github/copilot-instructions.md e i rootFiles
     dei pacchetti) si sovrascrivono solo se mai modificati rispetto alla versione installata;
     altrimenti la versione nuova va in '<file>.new' e l'originale non si tocca.
-    Con -Global, sovrascrive la sezione gia presente in ~/.claude/CLAUDE.md.
+    Con -Global, sovrascrive la sezione gia' presente in ~/.claude/CLAUDE.md.
 .PARAMETER Global
     Installa le linee guida personali in ~/.claude/CLAUDE.md invece che nel progetto
     corrente. Il progetto corrente non viene toccato in alcun modo.
@@ -59,6 +59,7 @@
     la libreria e il catalogo locali: e' la versione che stai sviluppando o provando.
     Con questo switch si ignora il clone e si carica la libreria pubblicata su GitHub,
     come farebbe un host con `irm | iex`. Sotto `iex` non ha effetto: il clone non c'e'.
+    Se il download dal raw pubblico fallisce, il clone locale resta comunque un ripiego.
 #>
 
 [CmdletBinding()]
@@ -78,8 +79,8 @@ param(
 #                            Ha la precedenza: lo script e la sua libreria devono essere della stessa versione.
 #                            -ForceRemoteLib lo salta.
 #   2. raw pubblico       -> caso normale a repo Public
-#   3. gh api             -> repo Private con gh autenticato: l'unica via che scarica davvero da GitHub
-#   (4. clone locale come ultimo ripiego, se era stato saltato con -ForceRemoteLib o il raw e' fallito)
+#   3. clone locale       -> ripiego se il punto 1 era stato saltato con -ForceRemoteLib e il raw e' fallito
+#   4. gh api             -> repo Private con gh autenticato: l'unica via che scarica davvero da GitHub
 
 $libName    = "dr-guidelines-install-lib.ps1"
 $libRepo    = "davraf-amuro/dr-guidelines"

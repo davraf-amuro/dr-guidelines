@@ -110,13 +110,15 @@ Estratto indicativo, ricostruito dal codice dell'installer attuale:
 
 La riga `Progetto:` deve mostrare la tua cartella. Se mostra un altro percorso, fermati: vedi [Se qualcosa va storto](#-se-qualcosa-va-storto).
 
+A fine installazione compaiono righe `[sugg]`: sono suggerimenti (per esempio `.mcp.json` si installa solo con `-WithMcp`), non errori.
+
 ### Tre cose da sapere
 
 | Cosa | Dettaglio |
 |---|---|
 | **`Set-Location` è obbligatorio** | L'installer scrive nella cartella in cui ti trovi. Da un'altra cartella i file finiscono lì, senza nessun errore |
 | **Nella tua cartella non arriva nessun repository** | L'installer clona il pacchetto in `%TEMP%`, copia i file che servono e cancella la copia temporanea. Niente submodule, niente `.git` di `dr-guidelines` |
-| **Si installa sempre il `main` pubblicato su GitHub** | Anche se lanci l'installer da un clone locale. Una modifica ai pacchetti non ancora pushata non arriva nel progetto |
+| **Il contenuto è sempre il `main` pubblicato su GitHub** | Anche se lanci l'installer da un clone locale. Una modifica ai pacchetti non ancora pushata non arriva nel progetto. Da un clone locale sono invece locali la libreria e il catalogo; `-ForceRemoteLib` forza quelli pubblicati |
 
 ### Perché non `irm ... | iex`
 
@@ -137,7 +139,9 @@ Claude Code legge le skill **all'avvio della sessione**. Quelle appena installat
 1. `Ctrl+Shift+P` → `Developer: Reload Window`
 2. Apri Claude Code e scrivi `/dr-` : nell'elenco deve comparire `/dr-scaffold`
 
-**Con GitHub Copilot:** lo stesso flusso è nel prompt `.github/prompts/dr-scaffold.prompt.md`, installato dal core.
+**Con GitHub Copilot:** lo stesso flusso è nel prompt `.github/prompts/dr-scaffold.prompt.md`, installato dal core (best-effort).
+
+**Con Codex:** le skill sono le copie in `.agents/skills/`, installate dal core e generate da quelle di Claude Code (best-effort).
 
 ---
 
@@ -278,4 +282,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.9 — 2026-10-20 19:50 — claude-opus-5-5*
+*Revisione v1.10 — 2026-10-20 21:00 — claude-opus-5-5*

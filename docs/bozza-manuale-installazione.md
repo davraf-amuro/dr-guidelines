@@ -41,7 +41,7 @@ npm --version     # solo se il progetto avrà un frontend
 | .NET SDK 10.x | almeno una riga `10.*` | STOP — nessun progetto .NET è creabile |
 | git | qualsiasi versione | STOP — l'installer clona i pacchetti |
 | PowerShell 7+ | `7.*` | STOP — gli installer girano su `pwsh`, che va impostato anche come terminale predefinito di VS Code (profilo **PowerShell**, non "Windows PowerShell") |
-| `gh` autenticato | `Logged in to github.com` | STOP se i repo `dr-*` sono Private |
+| `gh` autenticato | `Logged in to github.com` | STOP per la forma `gh api` e per `/dr-scaffold`, che lo richiede sempre. Con i repo `dr-*` Public la forma `irm ... \| iex` non lo usa |
 | node + npm | qualsiasi versione | Blocca solo il frontend, il resto procede |
 
 **Esito reale rilevato nella sessione del 2026-08-12** — tutto verde:
@@ -76,7 +76,8 @@ git commit -m "chore: init progetto host di prova"
 Con un commit di partenza puoi annullare tutto in due comandi:
 
 ```powershell
-git clean -fd          # rimuove i file non tracciati aggiunti dall'installer
+git clean -nd          # ANTEPRIMA: elenca i file che verrebbero rimossi, non cancella nulla
+git clean -fd          # solo dopo aver controllato l'elenco: rimuove i file non tracciati aggiunti dall'installer
 git checkout -- .      # ripristina i file tracciati modificati
 ```
 
@@ -117,6 +118,8 @@ Punto di confusione emerso durante la sessione, da spiegare a chiare lettere nel
 | Nessun `.git` di `dr-guidelines` | Il `.git` presente è solo il tuo, se hai fatto `git init` |
 
 L'installer **sì** esegue un `git clone --depth 1` al suo interno, ma lo fa in `%TEMP%\dr-install-<guid>`, ne copia i file utili nella tua cartella e poi **cancella la temp dir**. È trasporto interno, invisibile all'utente.
+
+**Libreria e catalogo.** Da stream (`gh api`, `irm | iex`) l'installer scarica libreria e catalogo da GitHub (prima il raw pubblico, poi `gh api`). Lanciato da un clone locale di `dr-guidelines` usa invece quelli locali, che hanno la precedenza; `-ForceRemoteLib` li ignora. Il contenuto dei pacchetti arriva comunque sempre da un clone del `main` remoto.
 
 ### Forma alternativa breve (solo su repo Public)
 
@@ -182,7 +185,7 @@ Passaggi non ancora eseguiti sul campo in questa sessione. Non promuoverli a "ve
 | 2 | `/dr-scaffold` su cartella con solo il core installato → delega a `dr-scaffold-solution` | ☐ Da provare |
 | 3 | Creazione di una solution `.slnx` + primo progetto | ☐ Da provare |
 | 4 | Installazione di un pacchetto dominio (`dr-minimalapi`) e risoluzione automatica della dipendenza `dr-dotnet-backend` | ✅ 2026-10-16, cartella vuota: `[dep] dr-guidelines` (core implicito) → `[dep] dr-dotnet-backend` → `dr-minimalapi`, manifest con 3 voci e SHA completo, righe `[sugg]` per `dr-efdb`/`dr-fe`/`dr-devops`. Stesso esito con `dr-ux-kitt` (→ `dr-fe`) su Windows PowerShell 5.1. Vedi [Verifica installer del 2026-10-16](#-verifica-installer-del-2026-10-16) |
-| 5 | Idempotenza: seconda esecuzione dell'installer senza flag → nessun file sovrascritto (righe `[SKIP]`, più `Nessuna novita'` e `[OK] Manifest aggiornato`, che si riscrive sempre) | ☐ Da provare |
+| 5 | Idempotenza: seconda esecuzione dell'installer senza flag → nessun file sovrascritto (righe `[SKIP]`, più `Nessuna novita'` se il `main` non è avanzato e `[SKIP] Manifest invariato`: senza `-Update` il manifest non avanza) | ☐ Da provare |
 | 6 | `-Update`: sovrascrive i file e ri-mergia la sezione in `CLAUDE.md` preservando il contenuto host fuori dai marker | 🟡 2026-10-16: sezione ri-mergiata e testo host fuori dai marker preservato. Trovata e corretta la perdita delle personalizzazioni dei file di configurazione (ora `<file>.new`): provato con la libreria del working tree, ☐ da riprovare sul campo dopo il push su `main`. Vedi [Verifica installer del 2026-10-16](#-verifica-installer-del-2026-10-16) |
 | 7 | `/dr-snapshot` eseguita dal progetto host | ☐ Da provare |
 | 8 | `/dr-get-latest` dal progetto host | ☐ Da provare |
@@ -263,7 +266,7 @@ Prove in cartelle temporanee, con gli installer da path locale (la libreria arri
 | 3 | `-Global` non riconosceva il blocco legacy `## Linee guida globali (Davraf)` del vecchio `setup.ps1` e ne accodava un secondo | `[WARN]` e nessuna scrittura: il blocco legacy va rimosso a mano, poi si rilancia |
 | 4 | `CLAUDE.md` e manifest con BOM su PowerShell 5.1, senza su 7 | Scrittura UTF-8 senza BOM con qualsiasi versione |
 
-**Restano aperti** (candidati a issue): il `.gitignore` distribuito è quello del repo core (porta `TODO/` negli host); `-SourceRoot` non è registrato nel manifest e i wrapper dei pacchetti non lo accettano; l'elenco "file modificati a monte" include file che non arrivano all'host (`.ai/plans/`, `docs/`); un file tolto da dentro una skill resta nell'host se non è in `obsoleteArtifacts`; nessun test automatico dell'installer.
+**Restano aperti** (candidati a issue): ~~il `.gitignore` distribuito porta `TODO/` negli host~~ (risolto: `Copy-CoreConfigFiles` toglie le voci marcate `solo-core`, quindi `TODO/` non arriva); `-SourceRoot` non è registrato nel manifest e i wrapper dei pacchetti non lo accettano; l'elenco "file modificati a monte" include file che non arrivano all'host (`.ai/plans/`, `docs/`); un file tolto da dentro una skill resta nell'host se non è in `obsoleteArtifacts`; nessun test automatico dell'installer.
 
 ---
 
@@ -289,4 +292,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.16 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v1.17 — 2026-10-20 21:00 — claude-opus-5-5*

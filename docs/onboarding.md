@@ -4,7 +4,7 @@ Per chi sviluppa il core. Chi vuole solo usare le linee guida legga [`guida-nuov
 
 ## 1. Il progetto in tre righe
 
-`dr-guidelines` è il pacchetto **core** e il **catalogo** della suite `dr-*`: istruzioni, prompt e skill per Claude Code e GitHub Copilot, validi per qualsiasi stack. Non ha un entrypoint applicativo: si **installa** in un progetto host con `dr-guidelines-install.ps1`, che clona il pacchetto in `%TEMP%` e ne copia i file nella root del repository. Le regole di dominio vivono in sette pacchetti (base .NET, Minimal API, Windows Service, EF Core, frontend, DevOps, tema LCARS), elencati in `scaffolding-catalog.json`.
+`dr-guidelines` è il pacchetto **core** e il **catalogo** della suite `dr-*`: istruzioni, prompt e skill per Claude Code e GitHub Copilot, validi per qualsiasi stack. Non ha un entrypoint applicativo: si **installa** in un progetto host con `dr-guidelines-install.ps1`, che clona il pacchetto in `%TEMP%` e ne copia i file nella root del repository. Le regole di dominio vivono in otto pacchetti (base .NET, Minimal API, Windows Service, EF Core, frontend, DevOps, tema LCARS, tema K.I.T.T.), elencati in `scaffolding-catalog.json`.
 
 ---
 
@@ -16,8 +16,9 @@ Per chi sviluppa il core. Chi vuole solo usare le linee guida legga [`guida-nuov
 | Markdown | — | Formato leggibile sia da Claude Code che da GitHub Copilot |
 | JSON (`scaffolding-catalog.json`) | `schemaVersion: 2` | **Unica fonte** di pacchetti, domini, intenti e tipologie di progetto. L'installer costruisce il registry da qui, le skill `dr-scaffold*` leggono da qui |
 | `gh` CLI | — | Bootstrap su repo Private: `gh api` scarica installer, libreria e catalogo senza clone locale |
-| Claude Code skills | — | Automazione dei task ripetitivi: scaffolding, documentazione, audit, promozione branch |
-| GitHub Copilot instructions e prompt | — | Stesse regole sull'altro agente: la compatibilità duale è una regola di progetto |
+| Claude Code skills | — | Agente primario. Automazione dei task ripetitivi: scaffolding, documentazione, audit, promozione branch |
+| GitHub Copilot instructions e prompt | — | Stesse regole su un agente secondario, best-effort: le regole condivise restano neutre |
+| Copie Codex (`.agents/skills/`, `AGENTS.md`) | — | Generate da `.claude/skills/` e `CLAUDE.md` con `scripts/sync-codex.ps1`, non si modificano a mano. Agente secondario, best-effort |
 
 **Perché pacchetti e non submodule:** il submodule imponeva tutto il contenuto a ogni host e legava l'aggiornamento a `git submodule update`. Con i pacchetti, ogni repository installa solo ciò che serve al suo dominio e registra cosa ha installato, con il commit di provenienza, in `.ai/dr-guidelines-packages.json`.
 
@@ -43,14 +44,14 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 
 | Flag | Effetto |
 |---|---|
-| nessuno | Installa il core nella cartella corrente. Salta i file già presenti; una skill già presente si salta per intero. Aggiunge comunque i permessi mancanti a `.claude/settings.json` e la sezione in `CLAUDE.md`, se manca |
-| `-Update` | Sovrascrive istruzioni, prompt e skill presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. Il commit nel manifest avanza solo con `-Update` (o alla prima installazione). `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e `rootFiles`: sovrascritti solo se mai modificati rispetto al commit installato, altrimenti `<file>.new`. Per i `sourceFiles` scrive `<file>.new` quando la versione del pacchetto differisce da quella dell'host. Non vale per le dipendenze |
+| nessuno | Installa il core nella cartella corrente. Salta i file già presenti; una skill già presente (in `.claude/skills/` e `.agents/skills/`) si salta per intero. Aggiunge comunque i permessi mancanti a `.claude/settings.json` e la sezione in `CLAUDE.md`, se manca |
+| `-Update` | Sovrascrive istruzioni, prompt e skill presenti (anche `.agents/skills/`), riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. Il commit nel manifest avanza solo con `-Update` (o alla prima installazione). `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e `rootFiles`: sovrascritti solo se mai modificati rispetto al commit installato, altrimenti `<file>.new`. Per i `sourceFiles` scrive `<file>.new` quando la versione del pacchetto differisce da quella dell'host. Non vale per le dipendenze |
 | `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
 | `-NoDependencies` | Solo con `-Package` (senza `-Package` è ignorato): non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
 | `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new`. Gli installer dei singoli pacchetti e `/dr-get-latest` non lo accettano: si usa l'installer del core con `-Package` |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
-| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json` (server MCP attivi). Senza, l'installer stampa `[sugg]`. Non con `-Global` |
-| `-ForceRemoteLib` | Ignora libreria e catalogo del clone locale e usa quelli pubblicati |
+| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json` (server MCP attivi), solo se `.mcp.json` manca. Senza, non crea il file e stampa `[sugg]`. Non con `-Global` |
+| `-ForceRemoteLib` | Ignora libreria e catalogo del clone locale e usa quelli pubblicati. Sotto `irm \| iex` non cambia nulla |
 
 **Da sapere prima di toccare l'installer:**
 
@@ -68,7 +69,8 @@ dr-guidelines/
   .ai/plans/            ← Piani di lavoro su disco (plan-tracking)
   .claude/
     settings.json       ← Permessi condivisi, fusi nel settings.json dell'host
-    skills/             ← Skill Claude Code, una cartella per skill con SKILL.md
+    skills/             ← Skill Claude Code, una cartella per skill con SKILL.md (fonte)
+  .agents/skills/       ← Copie Codex delle skill, generate da sync-codex.ps1: non si modificano a mano
   .github/
     ISSUE_TEMPLATE/     ← miglioria.md, problema.md e nuovo-pacchetto.md, usati da /dr-file-feedback
     instructions/       ← Istruzioni modulari trasversali (.instructions.md)
@@ -77,13 +79,17 @@ dr-guidelines/
     workflows/suggests-text-check.yml ← Confronto non bloccante dei rimandi nel testo con `suggests`
     copilot-instructions.md   ← Entry point Copilot: individua il dominio dai pacchetti installati
   docs/                 ← Guide, onboarding, card, scaffolding per tipologia
+  scripts/
+    sync-codex.ps1      ← Rigenera .agents/skills/ e AGENTS.md dalle fonti Claude Code (-Check in CI)
   templates/
     global-claude.md    ← Contenuto della sezione scritta in ~/.claude/CLAUDE.md
+    codex-*-preamble.md ← Preamboli che sync-codex.ps1 aggiunge alle copie Codex
   dr-guidelines-install.ps1      ← Entrypoint: carica la libreria, gestisce -Update, -Global, -Package, -NoDependencies, -SourceRoot
   dr-guidelines-install-lib.ps1  ← Get-DrCatalog, Get-DrPackageRegistry, Install-DrPackage, Install-DrGlobal
   scaffolding-catalog.json       ← Catalogo: kinds, domains, intentMap, fallback, projectTypes, packages
   LICENSE               ← Licenza del repository
   CLAUDE.md             ← Istruzioni Claude Code; il corpo diventa la sezione iniettata negli host
+  AGENTS.md             ← Copia Codex di CLAUDE.md, generata: non si modifica a mano e non va negli host
   .editorconfig, .gitignore, .gitattributes   ← Copiati negli host
   .mcp.example.json     ← Server MCP consigliati; si copia come .mcp.json solo con -WithMcp (ignorato da git)
 ```
@@ -93,7 +99,7 @@ dr-guidelines/
 | Cosa modificare | Dove |
 |---|---|
 | Nuova istruzione trasversale | `.github/instructions/<nome>.instructions.md` |
-| Nuova skill Claude Code | `.claude/skills/dr-<nome>/SKILL.md` (prefisso `dr-` obbligatorio) |
+| Nuova skill Claude Code | `.claude/skills/dr-<nome>/SKILL.md` (prefisso `dr-` obbligatorio), poi `scripts/sync-codex.ps1` |
 | Nuovo prompt Copilot | `.github/prompts/<nome>.prompt.md` |
 | Nuovo pacchetto, dominio o tipologia di progetto | Solo `scaffolding-catalog.json`. L'installer non va toccato |
 | Contenuto delle linee guida globali | `templates/global-claude.md`, poi `/dr-install-global aggiorna` |
@@ -137,6 +143,7 @@ Ricavate da `.github/instructions/`, `.github/copilot-instructions.md` e `CLAUDE
 2. Aggiungi la voce H3 in "Claude Code Skills" del `README.md`
 3. Aggiungi la riga alla tabella di invocazione automatica in `CLAUDE.md`
 4. Se la capacità serve anche su Copilot, aggiungi il prompt in `.github/prompts/`
+5. Esegui `pwsh ./scripts/sync-codex.ps1`: aggiorna le copie Codex. La CI esegue lo stesso script con `-Check` e fallisce se divergono
 
 **Aggiungere un pacchetto di dominio:** crea il repo `davraf-amuro/dr-<nome>` con il proprio `dr-<nome>-install.ps1` e le cartelle `.github/` e `.claude/`, poi aggiungi le voci `packages`, `domains`, `intentMap` (ed eventualmente `kinds`) al catalogo. L'installer accetta solo repository dell'owner `davraf-amuro`.
 
@@ -183,4 +190,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v4.2 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v4.3 — 2026-10-20 21:00 — claude-opus-5-5*

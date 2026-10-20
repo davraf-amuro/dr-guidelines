@@ -565,7 +565,7 @@ function Copy-CoreConfigFiles {
     # e vivono in dr-dotnet-backend, che li installa quando il progetto e' davvero .NET.
 
     # .mcp.json attiva dei server MCP nel progetto: solo su richiesta (-WithMcp), mai di default.
-    # Mai sovrascritto se il contenuto host diverge (puo contenere server MCP aggiunti dal progetto)
+    # Mai sovrascritto se il contenuto host diverge (puo' contenere server MCP aggiunti dal progetto)
     $mcpSrc  = Join-Path $TempRoot ".mcp.example.json"
     $mcpDest = Join-Path $HostRoot ".mcp.json"
     if (Test-Path $mcpSrc) {
@@ -675,7 +675,7 @@ function New-BriefsFolder {
     $dest = Join-Path $HostRoot "briefs"
     Write-Host "  Cartella brief:" -ForegroundColor White
     if (Test-Path $dest) {
-        Write-Host "  [SKIP] briefs\ gia presente" -ForegroundColor DarkGray
+        Write-Host "  [SKIP] briefs\ gia' presente" -ForegroundColor DarkGray
         return
     }
     New-Item -ItemType Directory -Path $dest -ErrorAction Stop | Out-Null
@@ -722,7 +722,7 @@ function Merge-ClaudeMdSection {
 
     if ($existing -match $pattern) {
         if (-not $Update) {
-            Write-Host "  [SKIP] Sezione $PackageName gia presente in CLAUDE.md (usa -Update per aggiornare)" -ForegroundColor DarkGray
+            Write-Host "  [SKIP] Sezione $PackageName gia' presente in CLAUDE.md (usa -Update per aggiornare)" -ForegroundColor DarkGray
             return
         }
         # MatchEvaluator invece della stringa: '$_' o '$&' nel CLAUDE.md sorgente non vanno
@@ -859,9 +859,13 @@ function Install-DrPackage {
         pacchetto: se manca dal manifest e' il primo '[dep]' dell'albero.
         A fine installazione, per ogni voce 'suggests' del pacchetto assente dal manifest,
         stampa una riga '[sugg]' col motivo: il suggerito non si installa e non si chiede nulla.
+    .PARAMETER PackageName
+        Nome del pacchetto dr-* da installare, come nel catalogo (es. dr-minimalapi).
     .PARAMETER Update
-        Sovrascrive i file gia' presenti. Non si propaga alle dipendenze: riguarda solo
-        il pacchetto richiesto esplicitamente.
+        Sovrascrive istruzioni, prompt e skill gia' presenti. I file di configurazione
+        personalizzati nell'host non si sovrascrivono: la versione nuova va in '<file>.new'
+        (vedi Copy-ProtectedFile); i sorgenti applicativi non si sovrascrivono mai.
+        Non si propaga alle dipendenze: riguarda solo il pacchetto richiesto esplicitamente.
     .PARAMETER NoDependencies
         Non installa le dipendenze mancanti: le elenca come '[skip]' con un avviso e
         installa solo il pacchetto richiesto.
@@ -1141,7 +1145,7 @@ function Install-DrGlobal {
                     Write-DrUtf8File -Path $ClaudeMdPath -Content $newContent
                     Write-Host "  [UPD]  Sezione globale aggiornata" -ForegroundColor Green
                 } else {
-                    Write-Host "  [SKIP] Sezione globale gia presente (usa -Global -Update per aggiornarla)" -ForegroundColor DarkGray
+                    Write-Host "  [SKIP] Sezione globale gia' presente (usa -Global -Update per aggiornarla)" -ForegroundColor DarkGray
                 }
             } elseif ($existing -match [regex]::Escape($sectionTitle)) {
                 Write-Host "  [WARN] Intestazione presente ma sentinel '$endMarker' mancante - verifica manualmente" -ForegroundColor Yellow

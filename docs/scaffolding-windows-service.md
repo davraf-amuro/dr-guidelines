@@ -2,7 +2,7 @@
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-winsvc` installati) di creare un nuovo Windows Service. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
-`/dr-scaffold` crea il progetto `dotnet new worker`. Worker e configurazione li scrive l'assistente seguendo `windows-service.instructions.md` di `dr-winsvc`.
+`/dr-scaffold` (che delega a `/dr-scaffold-project` o `/dr-scaffold-solution`) crea il progetto `dotnet new worker`. Worker e configurazione li scrive l'assistente seguendo `windows-service.instructions.md` di `dr-winsvc`.
 
 ---
 
@@ -16,6 +16,8 @@ Prima di creare qualsiasi file, Claude raccoglie tutto in un unico messaggio:
 | 2 | Nome dei worker da creare | Es. `SyncOrders`, `Cleanup` |
 | 3 | IntervalSeconds per ogni worker | Chiede se non specificato |
 | 4 | Entity Framework Core necessario? | Chiede prima di aggiungere il pacchetto |
+
+Solo la domanda 4 è fissata da `windows-service.instructions.md`. Le domande 1-3 sono la prassi dello scaffolding: le istruzioni non prevedono un gate. Da verificare.
 
 ---
 
@@ -36,6 +38,7 @@ Prima di creare qualsiasi file, Claude raccoglie tutto in un unico messaggio:
           <Progetto>DbContext.cs
           <Progetto>Provider.cs
           <Progetto>ProviderExtensions.cs
+        Logging/                     ← TaskIdEnricher, LogSubject, SubjectDefaultEnricher (da serilog-logging.instructions.md)
       Properties/
       appsettings.json
       appsettings.local.json         ← non committato (.gitignore)
@@ -110,8 +113,13 @@ builder.Services.Configure<SyncOrdersOptions>(
 // Registrazione worker
 builder.Services.AddHostedService<SyncOrdersWorker>();
 
-// Serilog
-builder.Services.AddSerilog((services, cfg) => cfg.ReadFrom.Configuration(builder.Configuration));
+// Serilog: configurazione da serilog-logging.instructions.md (dr-dotnet-backend), fonte unica
+builder.Services.AddSerilog((_, lc) => lc
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.WithThreadId()
+    .Enrich.With<TaskIdEnricher>()
+    .Enrich.With<SubjectDefaultEnricher>());
 
 var host = builder.Build();
 host.Run();
@@ -139,20 +147,14 @@ public class SyncOrdersOptions
       "IntervalSeconds": 60
     }
   },
-  "Serilog": {
-    "MinimumLevel": {
-      "Default": "Information",
-      "Override": {
-        "Microsoft": "Warning",
-        "System": "Warning"
-      }
-    }
-  },
   "ConnectionStrings": {
     "MioDb": "Server=PLACEHOLDER;Database=PLACEHOLDER;Integrated Security=True;TrustServerCertificate=True"
   }
 }
 ```
+
+- `ConnectionStrings` c'è solo se EF Core è confermato; il valore reale sta in `appsettings.local.json`.
+- La sezione `Serilog` non si ricopia qui: si prende da `serilog-logging.instructions.md` (fonte unica). Nel worker l'override `Microsoft.AspNetCore` non serve. Il file di log è uno solo (`logs/app-.log`), non uno per worker.
 
 ---
 
@@ -202,8 +204,10 @@ Ogni worker ha il proprio file `Workers/<Name>Worker.cs` e la propria classe `<N
 |---|---|
 | `Microsoft.Extensions.Hosting.WindowsServices` | `AddWindowsService` + integrazione SCM |
 | `Serilog.Extensions.Hosting` | Serilog su `HostApplicationBuilder` (`AddSerilog`) |
+| `Serilog.Settings.Configuration` | Lettura della sezione `Serilog` di `appsettings.json` |
 | `Serilog.Sinks.File` | Sink file |
 | `Serilog.Sinks.Console` | Sink console |
+| `Serilog.Enrichers.Thread` | Enricher `ThreadId` |
 | `Microsoft.EntityFrameworkCore.SqlServer` | ORM (solo se confermato) |
 
 ---
@@ -217,11 +221,11 @@ Dopo la build:
 dotnet publish src/<progetto>/<progetto>.csproj -c Release -o C:\Services\<nomesvc>
 
 # Installa come servizio SCM
-sc.exe create "<ServiceName>" binPath="C:\Services\<nomesvc>\<progetto>.exe" start=auto
+sc.exe create "<ServiceName>" binPath= "C:\Services\<nomesvc>\<progetto>.exe" start= auto
 sc.exe start "<ServiceName>"
 ```
 
-In PowerShell `sc` è un alias di `Set-Content`: usa sempre `sc.exe`.
+In PowerShell `sc` è un alias di `Set-Content`: usa sempre `sc.exe`. Con `sc.exe` lo spazio dopo `=` (`binPath= `, `start= `) è obbligatorio.
 
 Per disinstallare:
 ```powershell
@@ -231,4 +235,4 @@ sc.exe delete "<ServiceName>"
 
 ---
 
-*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v1.3 — 2026-10-20 21:00 — claude-opus-5-5*

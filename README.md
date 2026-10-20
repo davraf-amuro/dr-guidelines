@@ -1,6 +1,6 @@
 # dr-guidelines
 
-Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversali, skill Claude Code e installer, per progetti di qualsiasi stack seguiti con GitHub Copilot e Claude Code.
+Pacchetto core della suite `dr-*`: catalogo dei pacchetti, linee guida trasversali, skill Claude Code e installer, per progetti di qualsiasi stack seguiti con GitHub Copilot e Claude Code. Claude Code è l'agente primario; GitHub Copilot e Codex sono supportati in modo best-effort.
 
 > 🙋 **Non sei un programmatore?** Segui [`docs/installazione-semplice.md`](docs/installazione-semplice.md): sei passi, un comando da copiare, cosa vedrai a schermo e cosa fare se va storto. Il resto di questo README è per chi sviluppa.
 
@@ -138,7 +138,7 @@ Parametri dell'installer del core:
 | `-NoDependencies` | Installa solo il pacchetto chiesto: niente dipendenze, niente core | Ha effetto solo con `-Package`; senza, è ignorato |
 | `-SourceRoot <cartella>` | Cartella dell'host dove vanno i sorgenti (`sourceFiles`) | Solo con `-Package` |
 | `-Global` | Scrive solo `~/.claude/CLAUDE.md` | Non insieme a `-Package` |
-| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json`, cioè attiva i server MCP dell'esempio | Non con `-Global`. Senza, l'installer stampa `[sugg]` e non crea il file |
+| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json`, cioè attiva i server MCP dell'esempio | Non con `-Global`. Senza, l'installer non crea il file e, se `.mcp.json` manca, stampa `[sugg]` |
 | `-ForceRemoteLib` | Ignora la libreria e il catalogo del clone locale e usa quelli pubblicati su GitHub | Ha senso solo lanciando lo script da un clone; sotto `iex` non cambia nulla |
 
 L'installer di un singolo pacchetto (`<pacchetto>-install.ps1`) accetta solo `-Update`. Per `-NoDependencies`, `-SourceRoot` e `-WithMcp` usa l'installer del core con `-Package`.
@@ -161,7 +161,7 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `.mcp.json` | **solo con `-WithMcp`**: copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Senza `-WithMcp` non viene creato (`[sugg]`). Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
 | `.github/copilot-instructions.md` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
 | `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. Prompt: `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans`, `architecture-doc`, `readme-generator`, `card-project-generator` (scheda del progetto), `card-wiki-generator` (wiki card con valori reali), `onboarding-senior` (onboarding per un senior) |
-| `.claude/skills/`, `.agents/skills/` | copia cartella per cartella; `.agents/skills/` solo se il pacchetto la contiene | Skill del core per Claude Code (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) e la loro versione per Codex |
+| `.claude/skills/`, `.agents/skills/` | copia cartella per cartella; `.agents/skills/` solo se il pacchetto la contiene | Skill del core per Claude Code (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) e le copie per Codex. Le copie sono generate da `scripts/sync-codex.ps1`, non si modificano a mano. `AGENTS.md` non viene installato |
 | `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte. Se il file va riscritto, prima si salva `.claude/settings.json.bak` |
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
 | `.ai/dr-scaffolding-catalog.json` | copia, sovrascritta con `-Update` | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
@@ -252,7 +252,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 
 ## 🤖 Claude Code Skills
 
-Skill **core**, disponibili dopo l'installazione di `dr-guidelines` e un riavvio di Claude Code.
+Skill **core**, disponibili dopo l'installazione di `dr-guidelines` e un riavvio di Claude Code. Le copie in `.agents/skills/` (Codex) sono generate da quelle di `.claude/skills/` con `scripts/sync-codex.ps1`: la fonte è sempre la skill Claude Code.
 
 ### `/dr-scaffold` — Scaffolding Guidato (punto d'ingresso)
 
@@ -517,4 +517,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.24 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v3.25 — 2026-10-20 21:00 — claude-opus-5-5*

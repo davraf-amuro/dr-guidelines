@@ -32,7 +32,7 @@
 | Pacchetto | Versione | Scopo |
 |-----------|----------|-------|
 | `@fabriqa.ai/pdf-reader-mcp` | latest | MCP server per leggere PDF in Claude Code. Riferimento in `.mcp.example.json`; la config reale va in `.mcp.json`, ignorato da git |
-| `gh` (GitHub CLI) | — | Prerequisito del bootstrap su repo Private |
+| `gh` (GitHub CLI) | — | Prerequisito della forma `gh api` (repo Private) e del gate di `/dr-scaffold` |
 | `git` | — | Prerequisito: l'installer clona i pacchetti |
 
 ## Database
@@ -50,10 +50,11 @@
 
 ## Configurazione e Hosting
 
-- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Package <nome>` (pacchetto di dominio; prima installa le dipendenze mancanti e il core, se manca) · `-NoDependencies` (con `-Package`: non installa le dipendenze, le elenca come `[skip]`) · `-Update` (sovrascrive i file presenti; non vale per le dipendenze) · `-SourceRoot <cartella>` (con `-Package`: destinazione dei `sourceFiles`) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
+- **Entrypoint:** `dr-guidelines-install.ps1` (core nella cartella corrente) · `-Package <nome>` (pacchetto di dominio; prima installa le dipendenze mancanti e il core, se manca) · `-NoDependencies` (con `-Package`: non installa le dipendenze, le elenca come `[skip]`) · `-Update` (sovrascrive i file presenti; non vale per le dipendenze) · `-SourceRoot <cartella>` (con `-Package`: destinazione dei `sourceFiles`) · `-WithMcp` (copia `.mcp.example.json` come `.mcp.json`; senza, solo una riga `[sugg]`; non con `-Global`) · `-ForceRemoteLib` (da un clone locale usa la libreria pubblicata invece di quella locale, che ha la precedenza) · `-Global` / `-Global -Update` (sezione in `~/.claude/CLAUDE.md`) · `/dr-scaffold` (scaffolding guidato) · `/dr-install-global` (installazione globale guidata)
+- **Manutenzione:** `pwsh ./scripts/sync-codex.ps1` rigenera le copie Codex (`.agents/skills/`, `AGENTS.md`) dalle fonti Claude Code; con `-Check` non scrive e fallisce se divergono (usato in CI). L'installer porta negli host `.agents/skills/`, non `AGENTS.md`
 - **Ambiente Test:** non pubblicato
 - **Ambiente Produzione:** non pubblicato
 
 ---
 
-*Revisione v2.13 — 2026-10-20 19:50 — claude-opus-5-5*
+*Revisione v2.14 — 2026-10-20 21:00 — claude-opus-5-5*

@@ -83,7 +83,7 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
 
 **Cosa succede dentro:**
 
-1. L'installer carica `dr-guidelines-install-lib.ps1`. Prova prima `raw.githubusercontent.com`, che con i repo Public riesce. Solo se fallisce prova il clone locale (qui assente) e poi `gh api`.
+1. L'installer carica `dr-guidelines-install-lib.ps1`. Lanciato da stream (come qui, con `gh api` o `irm | iex`) non ha un clone locale: prova `raw.githubusercontent.com`, che con i repo Public riesce, e solo se fallisce `gh api`. Lanciato da un clone locale di `dr-guidelines` usa invece la libreria e il catalogo locali, che hanno la precedenza; `-ForceRemoteLib` li ignora e scarica quelli pubblicati
 2. La libreria carica `scaffolding-catalog.json` con la stessa catena e costruisce l'elenco dei pacchetti
 3. `Install-DrPackage` clona il `main` di `dr-guidelines` in `%TEMP%\dr-install-<guid>`
 4. Copia i file nella cartella di prova, fonde `.claude/settings.json` e `CLAUDE.md`, aggiorna il manifest
@@ -208,7 +208,7 @@ Ogni prova va in una cartella vuota diversa, per esempio `dr-test-02`, `dr-test-
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
-Atteso: nessuna riga `[OK]` o `[UPD]` sui file. Compaiono righe `[SKIP]`, `Nessuna novita': gia' al commit <sha>` e `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md (usa -Update per aggiornare)`. Fa eccezione `[OK]   Manifest aggiornato`: il manifest si riscrive a ogni esecuzione, con la data del giorno.
+Atteso: nessuna riga `[OK]` o `[UPD]` sui file. Compaiono righe `[SKIP]`, `Nessuna novita': gia' al commit <sha>` (solo se il `main` non è avanzato), `[SKIP] Sezione dr-guidelines gia presente in CLAUDE.md (usa -Update per aggiornare)` e `[SKIP] Manifest invariato: dr-guidelines gia' registrato (usa -Update per avanzare al commit corrente)`. Senza `-Update` il manifest non avanza: il commit nuovo si registra solo alla prima installazione o con `-Update`.
 
 **`-Update` ripristina un file modificato:**
 
@@ -218,7 +218,7 @@ Add-Content .github\instructions\logging.instructions.md "`n<!-- modifica locale
 Select-String -Path .github\instructions\logging.instructions.md -Pattern "modifica locale di test"
 ```
 
-Atteso: righe `[UPD]`, `[UPD]  Sezione dr-guidelines aggiornata in CLAUDE.md`, e l'ultimo comando **senza risultati**.
+Atteso: righe `[UPD]`, `[UPD]  Sezione dr-guidelines aggiornata in CLAUDE.md`, `[OK]   Manifest aggiornato` (con `-Update` il manifest avanza al commit corrente), e l'ultimo comando **senza risultati**.
 
 **`-Update` preserva il contenuto di `CLAUDE.md` fuori dai marker:**
 
@@ -255,7 +255,7 @@ Atteso: **nessun risultato**. Il contenuto del pacchetto arriva sempre da un clo
 
 1. Nella finestra della cartella di prova: `Developer: Reload Window`. Le skill si leggono all'avvio della sessione
 2. Invoca `/dr-snapshot`. Atteso: nasce `.ai/context/snapshot.md`
-3. Invoca `/dr-get-latest`. Atteso: aggiorna i tre pacchetti del manifest. Su repo Private la skill usa la forma `gh api`
+3. Invoca `/dr-get-latest`. Atteso: aggiorna i tre pacchetti del manifest. Con `gh` autenticato la skill usa la forma `gh api` per tutti i pacchetti, anche su repo Private
 4. Controprova della guard: apri Claude Code su un repo sorgente (per esempio `dr-guidelines`) e invoca `/dr-get-latest`. Atteso, testuale:
 
 > "Sei in un repo sorgente dr-*: qui non esiste un manifest pacchetti da aggiornare. Usa `git pull` per allinearti al remoto."
@@ -273,7 +273,7 @@ Atteso: **nessun risultato**. Il contenuto del pacchetto arriva sempre da un clo
 | 5 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
 | 6 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
 | 7 | `dr-dotnet-backend` installato in automatico | ☐ |
-| 8 | Seconda esecuzione senza flag → nessun file sovrascritto (solo `[SKIP]`, più la riga del manifest) | ☐ |
+| 8 | Seconda esecuzione senza flag → nessun file sovrascritto, manifest invariato (solo `[SKIP]`) | ☐ |
 | 9 | `-Update` sovrascrive e riscrive la sezione | ☐ |
 | 10 | Contenuto di `CLAUDE.md` fuori dai marker preservato | ☐ |
 | 11 | Modifica non pushata non arriva nell'host | ☐ |
@@ -296,7 +296,8 @@ Get-ChildItem -Recurse -Force -Directory -Filter .git | Select-Object FullName  
 
 ```powershell
 Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
-git clean -fd          # rimuove i file non tracciati aggiunti dall'installer
+git clean -nd          # ANTEPRIMA: elenca i file non tracciati che verrebbero rimossi, non cancella nulla
+git clean -fd          # solo dopo aver controllato l'elenco: rimuove i file non tracciati aggiunti dall'installer
 git checkout -- .      # ripristina i file tracciati modificati
 ```
 
@@ -325,4 +326,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.6 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v2.7 — 2026-10-20 21:00 — claude-opus-5-5*

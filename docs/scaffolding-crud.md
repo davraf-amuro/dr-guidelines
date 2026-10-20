@@ -253,10 +253,11 @@ Il flusso cambia così (da `database-provider.instructions.md`):
 | Passo | Cosa succede |
 |-------|--------------|
 | Provider assente | Claude chiede conferma prima di creare i file e attende il tuo sì |
-| Dopo la conferma | Crea un branch git locale e un commit iniziale. Nessun push |
+| Dopo la conferma | Branch e commit seguono il ciclo del core: il branch lo sceglie l'utente nel campo `Branch:` del piano, l'assistente non ne crea di sua iniziativa. Nessun push automatico |
 | Cartella | Il provider sta in `Infrastructure/<NomeProvider>/` |
-| Connection string | Va in `appsettings.Development.json` |
+| Connection string | Valore reale in `appsettings.local.json` (non committato); in `appsettings.json` solo placeholder |
+| Log SQL con valori dei parametri | `EnableSensitiveDataLogging` solo in Development, nella DI Extension |
 
 ---
 
-*Revisione v1.3 — 2026-10-14 16:34 — claude-opus-5-5*
+*Revisione v1.4 — 2026-10-20 21:00 — claude-opus-5-5*
