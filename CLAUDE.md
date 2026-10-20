@@ -15,7 +15,7 @@ GitHub Copilot e Codex sono **secondari, best-effort**:
 - Feature esclusiva di Claude Code in un file condiviso → ammessa solo con l'alternativa per gli altri agenti accanto, oppure con il limite dichiarato (es. "Su Copilot: <alternativa>" / "Su Copilot non disponibile")
 - Compatibilità secondaria costosa o incerta → **dichiara il limite e procedi**: non blocca il lavoro
 
-> **Artefatti specifici per agente.** `.claude/skills/` (Claude Code) usa `$ARGUMENTS`, sub-agenti, `AskUserQuestion`, `EnterPlanMode` *by design*. `.agents/skills/` e `AGENTS.md` (Codex) si **generano** da quelli Claude con `scripts/sync-codex.ps1`: non si modificano a mano. Restano condivisi `.github/instructions/*.md`, `.github/prompts/*.prompt.md` e ogni altra regola/documento non specifico di un agente.
+> **Artefatti specifici per agente.** `.claude/skills/` (Claude Code) usa `$ARGUMENTS`, sub-agenti, `AskUserQuestion`, `EnterPlanMode` *by design*. `.agents/skills/` e `AGENTS.md` (Codex) sono **copie generate** da quelli Claude nel repo `dr-guidelines` con `scripts/sync-codex.ps1` e non si modificano a mano; nei progetti host l'installer porta `.agents/skills/`, non `AGENTS.md`. Restano condivisi `.github/instructions/*.md`, `.github/prompts/*.prompt.md` e ogni altra regola/documento non specifico di un agente.
 
 ## Standard di progetto (trasversali)
 @.github/copilot-instructions.md

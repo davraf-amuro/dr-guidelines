@@ -1,6 +1,6 @@
 # Piano: Correzioni dall'audit completo della suite dr-*
 Data: 2026-10-20
-Stato: IN CORSO
+Stato: COMPLETATO
 Branch: main (scelta utente) — in tutti i repository toccati, un commit per fase, nessun push (scelta utente)
 
 ## Obiettivo
@@ -116,7 +116,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ### Fase 8: Verifica finale
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1-7 completate
 - **File**: questo piano
 - **Operazione**: EDIT
@@ -125,19 +125,22 @@ Pacchetti satellite:
 - **Verifica passo**: tutti i criteri sotto spuntati
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
 
-## Divergenze dalla verifica indipendente (Fase 8)
-- ⚠️ Divergenza Fase 2: footer fuori formato in 4 prompt (card-project-generator, card-wiki-generator, readme-generator, dr-scaffold), in copilot-instructions e assenti in 3 skill (dr-issues-to-plans, dr-prompt-engineer, dr-tech); footer di dr-verify-plan con `$ARGUMENTS` sostituito a ogni invocazione
-- ⚠️ Divergenza Fase 5: lo script non usa una mappa di sostituzioni ma copia identica + preambolo (`templates/codex-*-preamble.md`, fuori Scope). Scelta motivata: la sostituzione cieca "Claude Code" → "Codex" capovolge la regola "Claude Code è l'agente primario". Il piano va aggiornato, non il codice
-- ⚠️ Divergenza criterio 2: il template riformula la regola duale invece di riportarne il testo di CLAUDE.md
-- ⚠️ Divergenza docs: `docs/guida-nuova-soluzione.md` (manifest "riscritto a ogni esecuzione") e `docs/card-dr-guidelines.md` (raw come primo tentativo anche da clone locale)
-- ⚠️ Criterio 6: smoke test non verificabile dal verificatore in sola lettura → da rieseguire
+## Divergenze dalla verifica indipendente (Fase 8) — risolte in 7a2217c e nel commit finale
+- ✅ Risolta — Divergenza Fase 2: footer fuori formato in 4 prompt (card-project-generator, card-wiki-generator, readme-generator, dr-scaffold), in copilot-instructions e assenti in 3 skill (dr-issues-to-plans, dr-prompt-engineer, dr-tech); footer di dr-verify-plan con `$ARGUMENTS` sostituito a ogni invocazione
+- ✅ Risolta — Divergenza Fase 5: lo script non usa una mappa di sostituzioni ma copia identica + preambolo (`templates/codex-*-preamble.md`, fuori Scope). Scelta motivata: la sostituzione cieca "Claude Code" → "Codex" capovolge la regola "Claude Code è l'agente primario". Il piano va aggiornato, non il codice
+- ✅ Risolta — Divergenza criterio 2: il template riformula la regola duale invece di riportarne il testo di CLAUDE.md
+- ✅ Risolta — Divergenza docs: `docs/guida-nuova-soluzione.md` (manifest "riscritto a ogni esecuzione") e `docs/card-dr-guidelines.md` (raw come primo tentativo anche da clone locale)
+- ✅ Risolto — Criterio 6: smoke test non verificabile dal verificatore in sola lettura → da rieseguire
 
 ## Criteri di verifica finale
-- [ ] Soglia "≥ 2 operazioni" identica in CLAUDE.md, AGENTS.md, copilot-instructions, plan-tracking, template e CLAUDE.md globale
-- [ ] Regola duale con lo stesso testo in CLAUDE.md, AGENTS.md e template
-- [ ] Nessun `.Codex/`, `Codex.com`, `Codex-sonnet`, `[MCP_SETUP_URL]` nella suite
-- [ ] `scripts/sync-codex.ps1 -Check` esce 0
-- [ ] Tutti gli script `.ps1` passano il parse; tutti i JSON sono validi
-- [ ] Smoke test dell'installer su cartella temporanea: manifest coerente, nessun errore silenzioso
-- [ ] dr-efdb senza logging sensibile sempre attivo né `ex.Message` in risposta anonima
-- [ ] Ogni repo toccato ha working tree pulito e nessun push eseguito
+- [x] Soglia "≥ 2 operazioni" identica in CLAUDE.md, AGENTS.md, copilot-instructions, plan-tracking, template e CLAUDE.md globale
+- [x] Regola duale con lo stesso testo in CLAUDE.md, AGENTS.md e template
+- [x] Nessun `.Codex/`, `Codex.com`, `Codex-sonnet`, `[MCP_SETUP_URL]` nella suite
+- [x] `scripts/sync-codex.ps1 -Check` esce 0
+- [x] Tutti gli script `.ps1` passano il parse; tutti i JSON sono validi
+- [x] Smoke test dell'installer su cartella temporanea: manifest coerente, nessun errore silenzioso
+- [x] dr-efdb senza logging sensibile sempre attivo né `ex.Message` in risposta anonima
+- [x] Ogni repo toccato ha working tree pulito e nessun push eseguito
+
+## Esito
+Piano verificato: verifica indipendente (sub-agente in sola lettura) + correzioni delle divergenze + smoke test dell'installer su host temporaneo con clone reindirizzato al repo locale (prima installazione, idempotenza, -Update: manifest coerente, nessun .mcp.json senza -WithMcp, 17 skill Claude e 17 Codex, .gitignore senza voci solo-core). Nessun push (scelta utente).
