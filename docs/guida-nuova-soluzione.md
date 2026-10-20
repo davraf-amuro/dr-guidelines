@@ -225,7 +225,7 @@ La procedura cambia poco:
 2. Ricarica la finestra
 3. Scrivi `/dr-scaffold-guidelines`: propone i pacchetti adatti allo stack che trova e segna quelli già installati
 
-L'installer non sovrascrive i file: uno già presente viene saltato con `[SKIP]`. Uniche modifiche a file esistenti: le voci mancanti in `.claude/settings.json`, la sezione `<!-- dr-guidelines -->` in `CLAUDE.md` e il manifest `.ai/dr-guidelines-packages.json`, riscritto a ogni esecuzione. Il resto resta intatto.
+L'installer non sovrascrive i file: uno già presente viene saltato con `[SKIP]`. Uniche modifiche a file esistenti: le voci mancanti in `.claude/settings.json`, la sezione `<!-- dr-guidelines -->` in `CLAUDE.md` e il manifest `.ai/dr-guidelines-packages.json`, che registra un nuovo commit solo alla prima installazione del pacchetto o con `-Update`. Il resto resta intatto.
 
 ---
 
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.8 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v1.9 — 2026-10-20 19:50 — claude-opus-5-5*

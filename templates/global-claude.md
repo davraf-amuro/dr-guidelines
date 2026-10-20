@@ -19,9 +19,12 @@ quelle hanno priorità su queste linee guida generali.
 
 ## Agente primario e compatibilità
 
-⛔ **Claude Code è l'agente primario**: ogni regola, istruzione o linea guida creata o modificata deve funzionare con Claude Code.
+⛔ **Claude Code è l'agente primario**: ogni regola, istruzione, convenzione o linea guida creata o modificata deve funzionare con Claude Code.
 
-GitHub Copilot e Codex sono **secondari, best-effort**: nei file condivisi (`.github/instructions/*.md`, `.github/prompts/*.prompt.md`) preferire sintassi neutra; una feature solo Claude Code va accompagnata dall'alternativa o dal limite dichiarato. Compatibilità secondaria costosa o incerta → dichiara il limite e procedi, senza bloccare il lavoro.
+GitHub Copilot e Codex sono **secondari, best-effort**:
+- Nei file condivisi preferire sintassi e struttura neutra, leggibile da tutti gli agenti
+- Feature esclusiva di Claude Code in un file condiviso → ammessa solo con l'alternativa per gli altri agenti accanto, oppure con il limite dichiarato (es. "Su Copilot: <alternativa>" / "Su Copilot non disponibile")
+- Compatibilità secondaria costosa o incerta → **dichiara il limite e procedi**: non blocca il lavoro
 
 ## Convenzioni essenziali
 

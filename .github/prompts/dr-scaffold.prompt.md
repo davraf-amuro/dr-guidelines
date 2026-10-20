@@ -380,4 +380,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `dotnet format` eseguito dopo l'install del core
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Template v1.5 — 2026-10-20 — claude-opus-5-5 — Sezione C: mappa del workspace per root git, casi multi-repo, monorepo misto e contenitore*
+*Prompt v1.5 - Scaffold - 2026-10-20 — claude-opus-5-5 — Sezione C: mappa del workspace per root git, casi multi-repo, monorepo misto e contenitore*

@@ -45,7 +45,7 @@
 | Tipo | Nome/Endpoint | Protocollo | Autenticazione | Scopo/Descrizione |
 |------|---------------|------------|----------------|-------------------|
 | API | GitHub REST API (`gh api repos/.../contents/...`) | HTTPS | Token di `gh auth login` (scope `repo`) | Download di installer, libreria e catalogo su repo Private |
-| CDN | `raw.githubusercontent.com` | HTTPS | — | Stesso download via `irm`. Primo tentativo dell'installer; risponderebbe `404` se i repo tornassero Private |
+| CDN | `raw.githubusercontent.com` | HTTPS | — | Stesso download via `irm`. Primo tentativo dell'installer lanciato senza clone locale (da un clone vale la libreria locale, salvo `-ForceRemoteLib`); risponderebbe `404` se i repo tornassero Private |
 | VCS | GitHub | HTTPS | Credential manager di git, o `gh auth setup-git` | `git clone --depth 1` del `main` di ogni pacchetto in `%TEMP%` |
 
 ## Configurazione e Hosting
@@ -56,4 +56,4 @@
 
 ---
 
-*Revisione v2.12 — 2026-10-20 19:30 — claude-opus-5-5*
+*Revisione v2.13 — 2026-10-20 19:50 — claude-opus-5-5*

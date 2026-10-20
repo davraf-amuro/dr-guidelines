@@ -22,7 +22,7 @@ Core `dr-guidelines`:
 - [ ] `.github/instructions/doc-versioning.instructions.md` + footer fuori formato — formato unico del footer
 - [ ] `templates/global-claude.md` — regole personali, soglia, MCP, regola duale
 - [ ] `.claude/skills/*` — difetti puntuali (vedi Fase 4)
-- [ ] `scripts/sync-codex.ps1` (nuovo), `.agents/skills/*` — generati da `.claude/skills`
+- [ ] `scripts/sync-codex.ps1` (nuovo), `templates/codex-skill-preamble.md`, `templates/codex-agents-preamble.md` (nuovi), `.agents/skills/*` — generati da `.claude/skills`
 - [ ] `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1` — manifest, errori, temp, regex, MCP opzionale, `.agents/skills`
 - [ ] `scaffolding-catalog.json`, `.github/workflows/ci.yml` — suggests, conflitti tema, intentMap, controlli CI
 - [ ] `README.md`, `docs/*` — politica PowerShell, conteggi, cartelle workspace
@@ -88,9 +88,9 @@ Pacchetti satellite:
 ### Fase 5: Codex generato da Claude (best-effort)
 - **Stato**: [x]
 - **Precondizione**: Fasi 1 e 4 completate
-- **File**: `scripts/sync-codex.ps1` (CREATE), `.agents/skills/*` (EDIT), `AGENTS.md` (EDIT)
+- **File**: `scripts/sync-codex.ps1`, `templates/codex-skill-preamble.md`, `templates/codex-agents-preamble.md` (CREATE), `.agents/skills/*` (EDIT), `AGENTS.md` (EDIT)
 - **Operazione**: CREATE + EDIT
-- **Azione**: script con mappa di sostituzioni dichiarativa (`.claude/skills` → `.agents/skills`, `~/.claude/CLAUDE.md` → `~/.codex/AGENTS.md`, nome agente) e preambolo Codex per i tool Claude (AskUserQuestion → lista numerata, sub-agenti → esecuzione diretta); modalità `-Check` per la CI; rigenerazione di `.agents/skills` e `AGENTS.md`
+- **Azione**: script che copia identiche le skill e CLAUDE.md, senza sostituzioni di testo (una sostituzione "Claude Code" → "Codex" capovolgerebbe la regola sull'agente primario), con un preambolo Codex da template per i tool Claude (AskUserQuestion → lista numerata, EnterPlanMode → piano nel messaggio, sub-agenti → esecuzione diretta, import `@` da leggere a mano); modalità `-Check` per la CI; rigenerazione di `.agents/skills` e `AGENTS.md`
 - **Tool ammessi**: pwsh
 - **Verifica passo**: `sync-codex.ps1 -Check` esce 0; nessun `.Codex/`, `Codex.com`, `Codex-sonnet` nel repo
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
@@ -124,6 +124,13 @@ Pacchetti satellite:
 - **Tool ammessi**: sub-agente in sola lettura
 - **Verifica passo**: tutti i criteri sotto spuntati
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
+
+## Divergenze dalla verifica indipendente (Fase 8)
+- ⚠️ Divergenza Fase 2: footer fuori formato in 4 prompt (card-project-generator, card-wiki-generator, readme-generator, dr-scaffold), in copilot-instructions e assenti in 3 skill (dr-issues-to-plans, dr-prompt-engineer, dr-tech); footer di dr-verify-plan con `$ARGUMENTS` sostituito a ogni invocazione
+- ⚠️ Divergenza Fase 5: lo script non usa una mappa di sostituzioni ma copia identica + preambolo (`templates/codex-*-preamble.md`, fuori Scope). Scelta motivata: la sostituzione cieca "Claude Code" → "Codex" capovolge la regola "Claude Code è l'agente primario". Il piano va aggiornato, non il codice
+- ⚠️ Divergenza criterio 2: il template riformula la regola duale invece di riportarne il testo di CLAUDE.md
+- ⚠️ Divergenza docs: `docs/guida-nuova-soluzione.md` (manifest "riscritto a ogni esecuzione") e `docs/card-dr-guidelines.md` (raw come primo tentativo anche da clone locale)
+- ⚠️ Criterio 6: smoke test non verificabile dal verificatore in sola lettura → da rieseguire
 
 ## Criteri di verifica finale
 - [ ] Soglia "≥ 2 operazioni" identica in CLAUDE.md, AGENTS.md, copilot-instructions, plan-tracking, template e CLAUDE.md globale

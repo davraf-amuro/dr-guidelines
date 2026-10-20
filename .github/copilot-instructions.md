@@ -81,4 +81,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Template v2.5 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-20 — claude-opus-5-5 — proposta del branch, approvazione del piano, riletta mirata
+*Istruzione v2.5 - Copilot Instructions (agnostico dallo stack) - 2026-10-20 — claude-opus-5-5 — proposta del branch, approvazione del piano, riletta mirata*
