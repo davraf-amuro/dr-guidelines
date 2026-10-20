@@ -27,9 +27,11 @@ Quando l'utente individua un soggetto (valore di un campo scelto da lui: ID, Cod
 - [x] `.claude/skills/dr-audit-api/SKILL.md` — fase 0 legge anche `serilog-logging.instructions.md`; controllo `Subject` (esente dalla compatibilità duale)
 
 **dr-minimalapi**
+- [x] `README.md` — tabella file citati: `logging` non più fonte Serilog, riga `serilog-logging` (aggiunto dopo la verifica, approvato dall'utente)
 - [x] `.github/instructions/minimal-api-architecture.instructions.md` — sezione Serilog rimanda a `serilog-logging.instructions.md` come fonte unica; checklist
 
 **dr-winsvc**
+- [x] `README.md` — tabella file citati: riga `serilog-logging` (aggiunto dopo la verifica, approvato dall'utente)
 - [x] `.github/instructions/windows-service.instructions.md` — Program.cs con enricher in codice, sezione `Serilog` di appsettings completa come da D4, rimando alla fonte unica; worker d'esempio con `BeginScope` del soggetto; checklist
 
 ### Perimetro negativo
@@ -113,13 +115,14 @@ Quando l'utente individua un soggetto (valore di un campo scelto da lui: ID, Cod
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 7: <cosa>` in plan.md, non procedere
 
 ### Fase 8: Commit
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1–7 `[x]`
 - **File**: i quattro repository
 - **Operazione**: EDIT (git)
 - **Azione**: un commit per repository su `main`; nessun push (si chiede all'utente; gate: repo di soli documenti → assenza di target dichiarata)
 - **Tool ammessi**: git
 - **Verifica passo**: `git status` pulito nei quattro repo
+- **Nota**: commit dr-dotnet-backend 4d08824, dr-minimalapi 36c9434, dr-winsvc 67ede08, dr-guidelines 0a11b4e. In dr-guidelines restano modifiche di un'altra sessione (branch per piano, install multi-repo): escluse dal commit, compresa la riga "branch dedicato" di `copilot-instructions.md`
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 8: <cosa>` in plan.md, non procedere
 
 ### Fase 9: Verifica finale
@@ -131,6 +134,8 @@ Quando l'utente individua un soggetto (valore di un campo scelto da lui: ID, Cod
 - **Tool ammessi**: skill `dr-verify-plan`
 - **Verifica passo**: tutti i criteri `[x]`
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 9: <cosa>` in plan.md, non procedere
+
+⚠️ Divergenza Fase 9: verifica indipendente — `dr-minimalapi/README.md:44` presenta ancora `logging` come "fonte unica della configurazione Serilog" e manca la riga `serilog-logging` (`dr-dotnet-backend`); `dr-winsvc/README.md` non cita `serilog-logging`. Entrambi fuori Scope: estensione chiesta all'utente. Corrette in Scope (non ancora committate): cause errate in "Errori comuni" di `serilog-logging` (FromLogContext / ordine enricher), `nameof(orderId)` → costante `OrderId`, errore dell'elemento loggato dentro lo scope, `LoadPendingOrdersAsync` non definito e `WriteTo` dichiarato obbligatorio nell'esempio di `dr-winsvc`.
 
 ## Criteri di verifica finale
 - [ ] `logging.instructions.md` del core è agnostica e contiene la regola del soggetto (D1)
