@@ -113,7 +113,7 @@ if (-not $libLoaded) {
     } elseif ($PSScriptRoot) {
         $libFailures += "clone locale: $libName non trovato in $PSScriptRoot"
     } else {
-        $libFailures += "clone locale: nessuno ($PSScriptRoot vuoto, script eseguito da stream)"
+        $libFailures += "clone locale: nessuno (`$PSScriptRoot vuoto, script eseguito da stream)"
     }
 }
 
