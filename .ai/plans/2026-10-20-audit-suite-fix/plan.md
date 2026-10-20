@@ -66,7 +66,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 2: <cosa>` in plan.md, non procedere
 
 ### Fase 3: Template globale e CLAUDE.md globale
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1 completata
 - **File**: `templates/global-claude.md`, `C:\Users\draff\.claude\CLAUDE.md`
 - **Operazione**: EDIT
