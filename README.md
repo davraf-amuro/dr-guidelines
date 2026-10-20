@@ -232,7 +232,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `code-organization.instructions.md` | Struttura di classi e file, commenti obbligatori (tutti i linguaggi) |
 | `no-hardcoded-values.instructions.md` | Centralizzazione dei valori letterali: cosa estrarre, dove, cosa lasciare inline (tutti i linguaggi) |
 | `input-validation.instructions.md` | Un validatore per ogni input esterno (esempi con `IValidator<T>`) |
-| `logging.instructions.md` | Logging strutturato con placeholder, mai interpolazione (esempi Serilog) |
+| `logging.instructions.md` | Logging strutturato con placeholder, mai interpolazione; soggetto del log (`Subject`) per isolare i log di un'entità scelta dall'utente (tutti i linguaggi; la configurazione Serilog è in `dr-dotnet-backend`) |
 | `sensitive-data.instructions.md` | Gestione di credenziali e dati sensibili |
 | `doc-versioning.instructions.md` | Footer di revisione obbligatorio nei documenti in `docs/` |
 | `architecture-doc.instructions.md` | Struttura obbligatoria di `docs/architettura.md`: 8 sezioni, diagrammi solo Mermaid, decisioni D/T/C e riallineamento al codice a fine implementazione. Su Copilot si genera con `.github/prompts/architecture-doc.prompt.md`, su Claude Code con `/dr-professor` |
@@ -511,4 +511,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.22 — 2026-10-16 18:29 — claude-opus-5-5*
+*Revisione v3.23 — 2026-10-20 18:20 — claude-opus-5-5*

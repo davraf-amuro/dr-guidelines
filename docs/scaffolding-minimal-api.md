@@ -240,11 +240,11 @@ public class ProdottoService(ProdottiProvider provider)
 | `Microsoft.AspNetCore.OpenApi` | `AddOpenApi` e transformer. Nome dedotto dal codice: le istruzioni non lo scrivono. Da verificare |
 | `FluentValidation` | Validazione input |
 | `Microsoft.EntityFrameworkCore.SqlServer` | ORM (se richiesto) |
-| `Serilog.AspNetCore` | Logging su file + console (se confermato) |
+| `Serilog.AspNetCore` | Logging su file + console (se confermato); include `Serilog.Settings.Configuration` per leggere la sezione `Serilog` di `appsettings.json` |
 | `Serilog.Sinks.File` | Sink file Serilog (se Serilog confermato) |
 | `Serilog.Sinks.Console` | Sink console Serilog (se Serilog confermato) |
-| `Serilog.Enrichers.Thread` | Enricher `ThreadId` (se Serilog confermato, da `logging.instructions.md`) |
+| `Serilog.Enrichers.Thread` | Enricher `ThreadId` (se Serilog confermato, da `serilog-logging.instructions.md` di `dr-dotnet-backend`) |
 
 ---
 
-*Revisione v1.2 — 2026-10-11 21:30 — claude-opus-5-5*
+*Revisione v1.3 — 2026-10-20 18:20 — claude-opus-5-5*

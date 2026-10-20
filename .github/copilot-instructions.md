@@ -20,6 +20,7 @@ Il rilevamento vale per i task che generano o modificano **codice applicativo**.
 
 - `async`/`await` (o l'equivalente idiomatico del linguaggio) per ogni operazione di I/O
 - Logging strutturato con placeholder — mai interpolazione di stringa dentro il log
+- Soggetto del log indicato dall'utente (valore di un campo come ID o Codice) → ogni log del flusso lo riporta nella proprietà fissa `Subject` (`<Campo>=<valore>`), impostata una volta all'ingresso del flusso, così i log del soggetto si isolano con un filtro; segui `logging.instructions.md`
 - Naming coerente con le convenzioni del linguaggio in uso, applicate in modo uniforme in tutto il progetto
 - Validazione esplicita di ogni input che arriva dall'esterno; segui `input-validation.instructions.md`
 - Valori letterali con significato centralizzati; segui `no-hardcoded-values.instructions.md`
@@ -35,6 +36,7 @@ Fonte unica: `dev-cycle.instructions.md` — Fase 0. Compila quella checklist ne
 - [ ] Dominio individuato dai pacchetti installati, istruzione modulare letta
 - [ ] Ho seguito le istruzioni modulari pertinenti
 - [ ] Logging strutturato e gestione asincrona dell'I/O usati dove servono
+- [ ] Soggetto del log indicato dall'utente presente in ogni log del flusso (`Subject`)
 
 ## Verifica post-modifica (qualsiasi file)
 
@@ -78,4 +80,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Template v2.2 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-14 — claude-sonnet-5-5
+*Template v2.4 - agnostico dallo stack - Token-optimized for AI agents* - Last Update 2026-10-20 — claude-opus-5-5 — soggetto del log (`Subject`)
