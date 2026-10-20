@@ -56,7 +56,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 1: <cosa>` in plan.md, non procedere
 
 ### Fase 2: Istruzioni condivise del core
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 1 completata
 - **File**: `.github/instructions/{input-validation,code-organization,logging,mcp-tool-readme,readme-structure,sensitive-data,dev-cycle,doc-versioning,concurrency,cross-package-references,no-hardcoded-values}.instructions.md`
 - **Operazione**: EDIT

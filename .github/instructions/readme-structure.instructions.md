@@ -90,8 +90,8 @@ Il README deve contenere queste sezioni, in questo ordine:
 
 ### 9 — MCP Servers
 - Una voce H3 per ogni server definito in `.mcp.json`
-- Per ogni server: prerequisito di installazione + snippet `.mcp.json` da copiare
-- Chiudi sempre con: `Poi riavvia Claude Code per caricare il server.`
+- Per ogni server: prerequisito di installazione + snippet `.mcp.json` da copiare (e `.vscode/mcp.json` se il server si usa anche da Copilot)
+- Chiudi sempre con: `Poi riavvia l'agente (Claude Code: nuova sessione; VS Code: ricarica la finestra) per caricare il server.`
 
 ### 10 — Documentazione
 - Tabella con colonne: `File | Contenuto`
@@ -123,4 +123,4 @@ Il README deve contenere queste sezioni, in questo ordine:
 | Nuovo file in `docs/` | Sezione "Documentazione" |
 | Nuova domanda frequente | Sezione FAQ |
 
-*Template v2.5 - dr-guidelines - Last Update 2026-10-16 — claude-opus-5-5 — suite a 9 pacchetti (dr-ux-kitt)*
+*Istruzione v2.6 - README Structure - 2026-10-20 — claude-opus-5-5 — riavvio del server MCP anche per GitHub Copilot*

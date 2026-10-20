@@ -4,7 +4,7 @@ applyTo: "**"
 
 # Structured Logging Rules (AI Agent)
 
-Scopo: regole di logging valide per qualsiasi linguaggio e stack. La configurazione concreta (libreria, sink, template) sta nell'istruzione di dominio: per .NET `serilog-logging.instructions.md` del pacchetto `dr-dotnet-backend`.
+Scopo: regole di logging valide per qualsiasi linguaggio e stack. La configurazione concreta (libreria, sink, template) sta nell'istruzione di dominio. Per .NET: controlla `.ai/dr-guidelines-packages.json`; se elenca `dr-dotnet-backend` segui `serilog-logging.instructions.md`, altrimenti applica solo le regole di questo file con il logger strutturato del linguaggio e dichiara che manca la configurazione di dominio.
 
 ## Regole core (sempre)
 
@@ -44,6 +44,6 @@ Soggetto non chiaro (quale campo, quale flusso) → chiedi all'utente, non scegl
 - [ ] Nessun dato sensibile nei log
 - [ ] Configurazione dei log esterna al codice e sovrascrivibile per ambiente
 - [ ] Soggetto indicato dall'utente: proprietà `Subject` = `<Campo>=<valore>` impostata all'ingresso del flusso, `-` quando assente, slot `S:{Subject}` nei formati testuali
-- [ ] Istruzione di dominio seguita per la configurazione concreta (.NET: `serilog-logging.instructions.md`)
+- [ ] Istruzione di dominio seguita per la configurazione concreta (.NET con `dr-dotnet-backend`: `serilog-logging.instructions.md`), oppure ripiego dichiarato
 
-*Istruzione v2.0 - Logging - 2026-10-20 — claude-opus-5-5 — resa agnostica dallo stack: la configurazione Serilog passa a `serilog-logging.instructions.md` (`dr-dotnet-backend`); aggiunta la regola del soggetto del log (`Subject`)*
+*Istruzione v2.1 - Logging - 2026-10-20 — claude-opus-5-5 — rimando a `serilog-logging` condizionale al manifest, con ripiego dichiarato*
