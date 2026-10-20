@@ -14,30 +14,30 @@ Correggere contraddizioni, riferimenti rotti, difetti di sicurezza e bug emersi 
 ## Scope
 ### File da modificare
 Core `dr-guidelines`:
-- [ ] `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` — regola duale, fonte unica del piano, tabella skill
-- [ ] `.github/instructions/plan-tracking.instructions.md` — definizione di "operazione", riga `Branch:` verificabile
-- [ ] `.github/instructions/{input-validation,code-organization,logging}.instructions.md` — rimandi condizionali fra pacchetti
-- [ ] `.github/instructions/{mcp-tool-readme,readme-structure,sensitive-data}.instructions.md` — variante Copilot (`.vscode/mcp.json`)
-- [ ] `.github/instructions/dev-cycle.instructions.md` — riletta mirata
-- [ ] `.github/instructions/doc-versioning.instructions.md` + footer fuori formato — formato unico del footer
-- [ ] `templates/global-claude.md` — regole personali, soglia, MCP, regola duale
-- [ ] `.claude/skills/*` — difetti puntuali (vedi Fase 4)
-- [ ] `scripts/sync-codex.ps1` (nuovo), `templates/codex-skill-preamble.md`, `templates/codex-agents-preamble.md` (nuovi), `.agents/skills/*` — generati da `.claude/skills`
-- [ ] `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1` — manifest, errori, temp, regex, MCP opzionale, `.agents/skills`
-- [ ] `scaffolding-catalog.json`, `.github/workflows/ci.yml` — suggests, conflitti tema, intentMap, controlli CI
-- [ ] `README.md`, `docs/*` — politica PowerShell, conteggi, cartelle workspace
+- [x] `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` — regola duale, fonte unica del piano, tabella skill
+- [x] `.github/instructions/plan-tracking.instructions.md` — definizione di "operazione", riga `Branch:` verificabile
+- [x] `.github/instructions/{input-validation,code-organization,logging}.instructions.md` — rimandi condizionali fra pacchetti
+- [x] `.github/instructions/{mcp-tool-readme,readme-structure,sensitive-data}.instructions.md` — variante Copilot (`.vscode/mcp.json`)
+- [x] `.github/instructions/dev-cycle.instructions.md` — riletta mirata
+- [x] `.github/instructions/doc-versioning.instructions.md` + footer fuori formato — formato unico del footer
+- [x] `templates/global-claude.md` — regole personali, soglia, MCP, regola duale
+- [x] `.claude/skills/*` — difetti puntuali (vedi Fase 4)
+- [x] `scripts/sync-codex.ps1` (nuovo), `templates/codex-skill-preamble.md`, `templates/codex-agents-preamble.md` (nuovi), `.agents/skills/*` — generati da `.claude/skills`
+- [x] `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1` — manifest, errori, temp, regex, MCP opzionale, `.agents/skills`
+- [x] `scaffolding-catalog.json`, `.github/workflows/ci.yml` — suggests, conflitti tema, intentMap, controlli CI
+- [x] `README.md`, `docs/*` — politica PowerShell, conteggi, cartelle workspace
 
 Fuori repo:
-- [ ] `C:\Users\draff\.claude\CLAUDE.md` — migrazione al formato con sentinel (backup `.bak` prima)
+- [x] `C:\Users\draff\.claude\CLAUDE.md` — migrazione al formato con sentinel (backup `.bak` prima)
 
 Pacchetti satellite:
-- [ ] `dr-efdb` — logging sensibile, `ex.Message` anonimo, connection string, branch/commit autonomi, uso di `db-schema`
-- [ ] `dr-minimalapi` — Serilog obbligatorio, Regola 13, `[AsParameters]`, nomi tool MCP neutri
-- [ ] `dr-winsvc` — blocco Serilog duplicato, dichiarazione serie, struttura cartelle
-- [ ] `dr-dotnet-backend` — `Product` di `Directory.Build.props`, commento wrapper
-- [ ] `dr-fe` — `localStorage`, `dr-audit-fe`, README
-- [ ] `dr-ux-kitt`, `dr-ux-lcars` — README (PR #25, esclusione reciproca)
-- [ ] `dr-devops` — filtro Subject con GELF
+- [x] `dr-efdb` — logging sensibile, `ex.Message` anonimo, connection string, branch/commit autonomi, uso di `db-schema`
+- [x] `dr-minimalapi` — Serilog obbligatorio, Regola 13, `[AsParameters]`, nomi tool MCP neutri
+- [x] `dr-winsvc` — blocco Serilog duplicato, dichiarazione serie, struttura cartelle
+- [x] `dr-dotnet-backend` — `Product` di `Directory.Build.props`, commento wrapper
+- [x] `dr-fe` — `localStorage`, `dr-audit-fe`, README
+- [x] `dr-ux-kitt`, `dr-ux-lcars` — README (PR #25, esclusione reciproca)
+- [x] `dr-devops` — filtro Subject con GELF
 
 ### Perimetro negativo
 - Non toccherò: `davraf-guidelines`, `TODO/`, piani già COMPLETATI, push su qualsiasi remoto.
