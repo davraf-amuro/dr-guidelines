@@ -19,7 +19,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | Si installa il `main` remoto, non il clone locale | Modifica non pushata che non deve arrivare |
 | Skill caricate da Claude Code | `/dr-snapshot` e `/dr-get-latest` dal progetto di prova |
 
-> Aggiornamento 2026-09-22: gli 8 repo `dr-*` sono **pubblici**: i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11). Il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`) è chiuso. Questo collaudo resta una prova del meccanismo su cartella sintetica, non su un progetto host reale.
+> Aggiornamento 2026-09-22: i repo `dr-*` sono **pubblici**: i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione (2026-10-11). Il gate 2b del piano di split (`.ai/plans/2026-07-22-dr-guidelines-split/plan.md`) è chiuso. Questo collaudo resta una prova del meccanismo su cartella sintetica, non su un progetto host reale.
 
 ---
 
@@ -34,7 +34,7 @@ Procedura per verificare che installer, manifest e skill dei pacchetti `dr-*` fu
 | VS Code con Claude Code | Per il passo 8 |
 | Clone locale di `dr-guidelines` e `dr-minimalapi` come cartelle sorelle | Solo per il passo 7 e il punto 4 del passo 8 |
 
-**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. I 9 repo `dr-*` sono Public (i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione, 2026-10-11, `dr-ux-kitt` dalla creazione, 2026-10-14): anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
+**La visibilità dei repo non conta.** L'installer si scarica con `gh api`, che legge i repo sia Public sia Private. I repo `dr-*` sono Public (i 7 originali dal 2026-09-21, `dr-ux-lcars` dalla creazione, 2026-10-11, `dr-ux-kitt` dalla creazione, 2026-10-14): anche la forma `irm https://raw.githubusercontent.com/... | iex` funziona, ma risponderebbe `404` se tornassero Private.
 
 **Il workspace `dr-*` clonato serve solo ai passi 7 e 8.4.** Tutti gli altri comandi scaricano da GitHub.
 
@@ -107,7 +107,7 @@ Set-Location E:\Davide\Progetti\dr-guidelines-workspace\dr-test-01
   File di configurazione:
   [OK]   .editorconfig
   ...
-  [OK]   .mcp.json
+  [sugg] .mcp.json non installato: l'esempio dei server MCP si copia solo con -WithMcp
   .claude/settings.json:
   [OK]   .claude/settings.json
   Catalogo scaffolding:
@@ -142,14 +142,15 @@ git status --short
 | `.claude/settings.json` | Presente. Se esisteva già, solo le voci `permissions.allow` mancanti vengono aggiunte |
 | `.github/copilot-instructions.md` | Presente: lo copia solo il core |
 | `briefs/` | Presente e vuota. Git non la vede finché resta vuota |
-| `.mcp.json` | Generato da `.mcp.example.json`, perché assente |
-| `.github/instructions/` | 12 file `*.instructions.md`: il core ne contiene 13, `readme-structure.instructions.md` non viene installato (`coreOnlyArtifacts`) |
-| `.github/prompts/` | 9 prompt: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `architecture-doc`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
-| `.claude/skills/` | 17 cartelle skill `dr-*` |
+| `.mcp.json` | **Assente**: si crea solo con `-WithMcp` (senza, riga `[sugg]`). Con lo switch viene generato da `.mcp.example.json`, perché assente |
+| `.github/instructions/` | Tutti i `*.instructions.md` del core tranne `readme-structure.instructions.md`, che non viene installato (`coreOnlyArtifacts`) |
+| `.github/prompts/` | I prompt del core: `card-project-generator`, `card-wiki-generator`, `onboarding-senior`, `readme-generator`, `architecture-doc`, `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans` |
+| `.claude/skills/`, `.agents/skills/` | Una cartella per ogni skill `dr-*` del core (e la copia per Codex, se il pacchetto la contiene) |
 | `CLAUDE.md` | Contiene `<!-- dr-guidelines -->` … `<!-- /dr-guidelines -->` |
 | `.ai/dr-scaffolding-catalog.json` | Presente: è `scaffolding-catalog.json` del core, copiato con questo nome |
 | `.ai/dr-guidelines-packages.json` | `{"installed":[{"package":"dr-guidelines","installedAt":"<oggi>","commit":"<sha>"}]}` |
-| `git status --short` | `.mcp.json` **non** compare: il `.gitignore` copiato lo esclude |
+| `.gitignore` | Senza le voci "solo core" (`my-minimalapi.md`, `CLAUDE.original.md`, `docs/*-wiki.md`, `TODO/`) |
+| `git status --short` | `.mcp.json`, se creato con `-WithMcp`, **non** compare: il `.gitignore` copiato lo esclude |
 
 ---
 
@@ -267,8 +268,8 @@ Atteso: **nessun risultato**. Il contenuto del pacchetto arriva sempre da un clo
 |---|----------|-------|
 | 1 | Cartella di prova fuori dal workspace `dr-*`, aperta in finestra separata | ☐ |
 | 2 | Config radice del core presenti; `Directory.Build.props` e `global.json` solo dopo `dr-dotnet-backend` | ☐ |
-| 3 | `.mcp.json` generato e ignorato da git | ☐ |
-| 4 | 12 istruzioni, 9 prompt, 17 skill dopo il solo core | ☐ |
+| 3 | `.mcp.json` assente senza `-WithMcp`; con lo switch generato e ignorato da git | ☐ |
+| 4 | Istruzioni, prompt e skill del core presenti dopo il solo core (nessuna `readme-structure`), nessun conteggio fisso da confrontare | ☐ |
 | 5 | `CLAUDE.md` con sezione `<!-- dr-guidelines -->` | ☐ |
 | 6 | Manifest con 3 pacchetti dopo il passo 5 | ☐ |
 | 7 | `dr-dotnet-backend` installato in automatico | ☐ |
@@ -299,7 +300,7 @@ git clean -fd          # rimuove i file non tracciati aggiunti dall'installer
 git checkout -- .      # ripristina i file tracciati modificati
 ```
 
-`.mcp.json` resta: è ignorato da git e `git clean -fd` non lo tocca. Cancellalo a mano se vuoi ripartire da zero.
+Un `.mcp.json` creato con `-WithMcp` resta: è ignorato da git e `git clean -fd` non lo tocca. Cancellalo a mano se vuoi ripartire da zero.
 
 **Eliminare la cartella di prova:**
 
@@ -324,4 +325,4 @@ Remove-Item .\dr-test-01 -Recurse -Force
 
 ---
 
-*Revisione v2.5 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v2.6 — 2026-10-20 19:30 — claude-opus-5-5*

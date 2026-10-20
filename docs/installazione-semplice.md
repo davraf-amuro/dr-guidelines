@@ -72,6 +72,8 @@ Git serve all'installatore per scaricare le linee guida. PowerShell 7 è la vers
 
 7. **Chiudi VS Code del tutto e riaprilo.** Senza questo passaggio VS Code non vede i programmi appena installati.
 
+8. Imposta PowerShell 7 come terminale di VS Code. Menu **Terminale** → **Nuovo terminale**, poi la freccia accanto al `+` → **Seleziona profilo predefinito** → **PowerShell** (non "Windows PowerShell"). Apri un terminale nuovo e incolla `$PSVersionTable.PSVersion`: la prima cifra deve essere **7**.
+
 > ⚠️ **`winget` non è riconosciuto?** Il tuo Windows non ha lo strumento di installazione di Microsoft. Scarica Git da [git-scm.com](https://git-scm.com/download/win) e PowerShell da [aka.ms/powershell](https://aka.ms/powershell), poi installali con doppio clic e **Avanti** su tutte le schermate.
 
 ---
@@ -184,7 +186,7 @@ Vale **solo se quella cartella prima non conteneva questi elementi**. Se hai dub
 In Esplora file, nella cartella sbagliata, elimina:
 
 - le cartelle `.claude`, `.github`, `.ai`, `briefs`
-- i file `CLAUDE.md`, `.editorconfig`, `.gitattributes`, `.gitignore`, `.mcp.json`
+- i file `CLAUDE.md`, `.editorconfig`, `.gitattributes`, `.gitignore` (e `.mcp.json`, solo se l'hai installato con `-WithMcp`)
 
 Poi ripeti dal passo 4 con la cartella giusta.
 
@@ -214,4 +216,4 @@ L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I
 
 ---
 
-*Revisione v1.2 — 2026-10-16 18:29 — claude-opus-5-5*
+*Revisione v1.3 — 2026-10-20 19:30 — claude-opus-5-5*

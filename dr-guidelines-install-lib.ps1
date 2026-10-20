@@ -16,20 +16,38 @@ $Script:CatalogName   = "scaffolding-catalog.json"
 $Script:AllowedOwner  = "davraf-amuro"
 $Script:Catalog         = $null
 $Script:PackageRegistry = $null
+# Impostato da dr-guidelines-install.ps1 quando la libreria arriva da un clone locale:
+# il catalogo accanto alla libreria ha la precedenza sul raw pubblico, cosi' i due file
+# restano della stessa versione.
+$Script:PreferLocalSource = $false
 
 function Get-DrCatalog {
     if ($Script:Catalog) { return $Script:Catalog }
 
     # Stessa catena di fallback con cui i wrapper caricano questa libreria:
     #   1. raw pubblico   2. copia locale accanto allo script   3. gh api (repo Private)
+    # Con PreferLocalSource la copia locale passa davanti al raw pubblico.
     $failures = @()
     $parsed   = $null
 
-    try {
-        $content = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/$Script:CatalogRepo/main/$Script:CatalogName" -ErrorAction Stop
-        $parsed  = if ($content -is [string]) { $content | ConvertFrom-Json } else { $content }
-    } catch {
-        $failures += "raw pubblico: $($_.Exception.Message)"
+    if ($Script:PreferLocalSource -and $PSScriptRoot) {
+        $firstLocal = Join-Path $PSScriptRoot $Script:CatalogName
+        if (Test-Path $firstLocal) {
+            try {
+                $parsed = Get-Content $firstLocal -Raw | ConvertFrom-Json
+            } catch {
+                $failures += "copia locale: JSON non valido in $firstLocal"
+            }
+        }
+    }
+
+    if (-not $parsed) {
+        try {
+            $content = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/$Script:CatalogRepo/main/$Script:CatalogName" -ErrorAction Stop
+            $parsed  = if ($content -is [string]) { $content | ConvertFrom-Json } else { $content }
+        } catch {
+            $failures += "raw pubblico: $($_.Exception.Message)"
+        }
     }
 
     if (-not $parsed -and $PSScriptRoot) {
@@ -110,6 +128,8 @@ function Get-DrPackageRegistry {
             CoreOnlyArtifacts = @($p.coreOnlyArtifacts | Where-Object { $_ })
             # Rimandi non vincolanti: mai installati, solo segnalati a fine installazione
             Suggests          = @($p.suggests          | Where-Object { $_ -and $_.package })
+            # Pacchetti che non vanno installati insieme (es. due temi grafici): l'installer avvisa, non blocca
+            ConflictsWith     = @($p.conflictsWith     | Where-Object { $_ })
             # Sorgenti applicativi: destinazione relativa alla cartella sorgente dell'host (-SourceRoot)
             SourceFiles       = @(foreach ($sf in @($p.sourceFiles | Where-Object { $null -ne $_ })) {
                 [PSCustomObject]@{
@@ -124,6 +144,27 @@ function Get-DrPackageRegistry {
     return $registry
 }
 
+function Invoke-DrGitClone {
+    # Clona un repo in una cartella nuova. Lo stderr di git si cattura e finisce nel messaggio
+    # d'errore: "repo Private?" da solo non dice se e' rete, autenticazione o nome sbagliato.
+    param([string]$Repo, [string]$Destination)
+
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw "git non trovato nel PATH: serve per clonare $Repo."
+    }
+    $output = & git clone --quiet --depth 1 "https://github.com/$Repo.git" $Destination 2>&1 | Out-String
+    if ($LASTEXITCODE -ne 0) {
+        throw "git clone fallito per $Repo (exit $LASTEXITCODE; repo Private? verifica autenticazione git/gh). Output di git: $($output.Trim())"
+    }
+}
+
+function New-DrTempFolder {
+    # [IO.Path]::GetTempPath() e non $env:TEMP: quest'ultimo non esiste su Linux/macOS
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) ("dr-install-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path $path -Force -ErrorAction Stop | Out-Null
+    return $path
+}
+
 function Copy-GuidelineFile {
     param(
         [string]$SrcFile,
@@ -134,14 +175,15 @@ function Copy-GuidelineFile {
 
     $destDir = Split-Path $DestFile -Parent
     if ($destDir -and -not (Test-Path $destDir)) {
-        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null
     }
     if ((Test-Path $DestFile) -and -not $Update) {
         Write-Host "  [SKIP] $(Split-Path $DestFile -Leaf)" -ForegroundColor DarkGray
         return
     }
     $isUpdate = $Update -and (Test-Path $DestFile)
-    Copy-Item -Path $SrcFile -Destination $DestFile -Force
+    # -ErrorAction Stop: una copia fallita ferma l'installazione prima di scrivere il manifest
+    Copy-Item -Path $SrcFile -Destination $DestFile -Force -ErrorAction Stop
     $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
     Write-Host "  $tag  $(Split-Path $DestFile -Leaf)" -ForegroundColor Green
 }
@@ -163,18 +205,74 @@ function Copy-ProtectedFile {
         la via prudente, '.new'. Il confronto col riferimento usa gli id dei blob git (hash-object
         con gli stessi attributi del pacchetto), quindi regge alle conversioni dei fine riga.
         Restituisce il percorso relativo del '.new' scritto; altrimenti nulla.
+
+        -ContentFilter (opzionale): scriptblock che riceve il testo del file del pacchetto e
+        restituisce quello da distribuire (es. senza le voci "solo core" del .gitignore). Il
+        filtro si applica anche al contenuto del commit di riferimento, cosi' il confronto
+        a tre vie resta valido.
     #>
     param(
         [string]$TempRoot,
         [string]$HostRoot,
         [string]$RelativePath,
         [string]$BaselineCommit,
+        [scriptblock]$ContentFilter,
         [switch]$Update
     )
     $src     = Join-Path $TempRoot $RelativePath
     $dest    = Join-Path $HostRoot $RelativePath
     $gitPath = $RelativePath -replace '\\', '/'
     if (-not (Test-Path $src -PathType Leaf)) { return }
+
+    $filteredTemp = $null
+    try {
+        if ($ContentFilter) {
+            # File intermedio fuori dal clone: la copia usa il contenuto filtrato, non l'originale
+            $filteredTemp = Join-Path ([System.IO.Path]::GetTempPath()) ("dr-filtered-" + [guid]::NewGuid().ToString("N"))
+            $original = [System.IO.File]::ReadAllText($src)
+            [System.IO.File]::WriteAllText($filteredTemp, [string](& $ContentFilter $original), [System.Text.UTF8Encoding]::new($false))
+            $src = $filteredTemp
+        }
+        return Copy-ProtectedFileCore -TempRoot $TempRoot -Src $src -Dest $dest -GitPath $gitPath -BaselineCommit $BaselineCommit -ContentFilter $ContentFilter -Update:$Update
+    }
+    finally {
+        if ($filteredTemp) { Remove-Item -Path $filteredTemp -Force -ErrorAction SilentlyContinue }
+    }
+}
+
+function Get-DrGitBlobText {
+    # Contenuto di un blob git come testo UTF-8, senza passare dalla codifica della console
+    # (che sporcherebbe i caratteri non ASCII e falserebbe il confronto degli id).
+    param([string]$RepoRoot, [string]$Blob)
+    $psi = [System.Diagnostics.ProcessStartInfo]::new('git')
+    # Arguments come stringa: ArgumentList non esiste in Windows PowerShell 5.1
+    $psi.Arguments = "-C `"$RepoRoot`" cat-file blob $Blob"
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError  = $true
+    $psi.UseShellExecute        = $false
+    $psi.StandardOutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    $text = $proc.StandardOutput.ReadToEnd()
+    $null = $proc.StandardError.ReadToEnd()
+    $proc.WaitForExit()
+    if ($proc.ExitCode -ne 0) { return $null }
+    return $text
+}
+
+function Copy-ProtectedFileCore {
+    # Logica a tre vie di Copy-ProtectedFile, separata per poter ripulire il file intermedio in un finally
+    param(
+        [string]$TempRoot,
+        [string]$Src,
+        [string]$Dest,
+        [string]$GitPath,
+        [string]$BaselineCommit,
+        [scriptblock]$ContentFilter,
+        [switch]$Update
+    )
+    $src     = $Src
+    $dest    = $Dest
+    $gitPath = $GitPath
 
     if (-not (Test-Path $dest)) {
         Copy-GuidelineFile -SrcFile $src -DestFile $dest
@@ -191,15 +289,33 @@ function Copy-ProtectedFile {
 
     if ($BaselineCommit) {
         $baseBlob = (git -C $TempRoot rev-parse --verify --quiet "${BaselineCommit}:$gitPath" 2>$null | Out-String).Trim()
+        if ($ContentFilter -and $baseBlob) {
+            # Il riferimento va confrontato filtrato come la versione nuova: si rilegge il blob,
+            # si filtra e se ne ricalcola l'id con gli stessi attributi del file host
+            $baseText = Get-DrGitBlobText -RepoRoot $TempRoot -Blob $baseBlob
+            $baseTemp = Join-Path ([System.IO.Path]::GetTempPath()) ("dr-filtered-" + [guid]::NewGuid().ToString("N"))
+            try {
+                if ($null -ne $baseText) {
+                    [System.IO.File]::WriteAllText($baseTemp, [string](& $ContentFilter $baseText), [System.Text.UTF8Encoding]::new($false))
+                    $baseBlob = (git -C $TempRoot hash-object "--path=$gitPath" $baseTemp 2>$null | Out-String).Trim()
+                }
+            } finally {
+                Remove-Item -Path $baseTemp -Force -ErrorAction SilentlyContinue
+            }
+        }
         $hostBlob = (git -C $TempRoot hash-object "--path=$gitPath" $dest 2>$null | Out-String).Trim()
         if ($baseBlob -and $baseBlob -eq $hostBlob) {
-            Copy-Item -Path $src -Destination $dest -Force
+            Copy-Item -Path $src -Destination $dest -Force -ErrorAction Stop
             Write-Host "  [UPD]  $gitPath" -ForegroundColor Green
             return
         }
         # Personalizzato, ma a monte non e' cambiato nulla dal riferimento: non c'e' niente da
         # proporre. Senza questo controllo il '.new' ricomparirebbe a ogni aggiornamento.
-        $srcBlob = (git -C $TempRoot rev-parse --verify --quiet "HEAD:$gitPath" 2>$null | Out-String).Trim()
+        $srcBlob = if ($ContentFilter) {
+            (git -C $TempRoot hash-object "--path=$gitPath" $src 2>$null | Out-String).Trim()
+        } else {
+            (git -C $TempRoot rev-parse --verify --quiet "HEAD:$gitPath" 2>$null | Out-String).Trim()
+        }
         if ($baseBlob -and $baseBlob -eq $srcBlob) {
             Write-Host "  [SKIP] $gitPath personalizzato, invariato a monte" -ForegroundColor DarkGray
             return
@@ -207,7 +323,7 @@ function Copy-ProtectedFile {
     }
 
     $replaced = Test-Path "$dest.new"
-    Copy-Item -Path $src -Destination "$dest.new" -Force
+    Copy-Item -Path $src -Destination "$dest.new" -Force -ErrorAction Stop
     $note = if ($replaced) { "; sostituito il .new precedente" } else { "" }
     Write-Host "  [NEW]  $gitPath.new (personalizzato nell'host: l'originale non e' stato toccato$note)" -ForegroundColor Yellow
     return "$gitPath.new"
@@ -232,11 +348,11 @@ function Copy-InstructionsAndPrompts {
     }
 
     foreach ($sub in @("instructions", "prompts")) {
-        $srcDir = Join-Path $TempRoot ".github\$sub"
+        $srcDir = [System.IO.Path]::Combine($TempRoot, ".github", $sub)
         if (-not (Test-Path $srcDir)) { continue }
 
-        $destDir = Join-Path $HostRoot ".github\$sub"
-        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+        $destDir = [System.IO.Path]::Combine($HostRoot, ".github", $sub)
+        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null }
 
         Write-Host "  .github/$sub/:" -ForegroundColor White
         foreach ($f in Get-ChildItem $srcDir -File) {
@@ -252,24 +368,30 @@ function Copy-InstructionsAndPrompts {
 function Copy-Skills {
     param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
 
-    $srcDir = Join-Path $TempRoot ".claude\skills"
-    if (-not (Test-Path $srcDir)) { return }
+    # .claude/skills per Claude Code; .agents/skills (gli stessi contenuti generati per Codex)
+    # solo se il pacchetto la contiene: nessun output se manca. Stessa logica per entrambe:
+    # con -Update una skill presente si sovrascrive, e una personalizzata nell'host si perde.
+    foreach ($root in @(".claude/skills", ".agents/skills")) {
+        $parts  = $root -split '/'
+        $srcDir = [System.IO.Path]::Combine($TempRoot, $parts[0], $parts[1])
+        if (-not (Test-Path $srcDir)) { continue }
 
-    $destDir = Join-Path $HostRoot ".claude\skills"
-    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+        $destDir = [System.IO.Path]::Combine($HostRoot, $parts[0], $parts[1])
+        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null }
 
-    Write-Host "  .claude/skills/:" -ForegroundColor White
-    foreach ($dir in Get-ChildItem $srcDir -Directory) {
-        $destSkillDir = Join-Path $destDir $dir.Name
-        if ((Test-Path $destSkillDir) -and -not $Update) {
-            Write-Host "  [SKIP] $($dir.Name)/" -ForegroundColor DarkGray
-            continue
+        Write-Host "  $root/:" -ForegroundColor White
+        foreach ($dir in Get-ChildItem $srcDir -Directory) {
+            $destSkillDir = Join-Path $destDir $dir.Name
+            if ((Test-Path $destSkillDir) -and -not $Update) {
+                Write-Host "  [SKIP] $($dir.Name)/" -ForegroundColor DarkGray
+                continue
+            }
+            $isUpdate = $Update -and (Test-Path $destSkillDir)
+            if (-not (Test-Path $destSkillDir)) { New-Item -ItemType Directory -Path $destSkillDir -Force -ErrorAction Stop | Out-Null }
+            Copy-Item -Path (Join-Path $dir.FullName "*") -Destination $destSkillDir -Recurse -Force -ErrorAction Stop
+            $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
+            Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
         }
-        $isUpdate = $Update -and (Test-Path $destSkillDir)
-        if (-not (Test-Path $destSkillDir)) { New-Item -ItemType Directory -Path $destSkillDir -Force | Out-Null }
-        Copy-Item -Path (Join-Path $dir.FullName "*") -Destination $destSkillDir -Recurse -Force
-        $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
-        Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
     }
 }
 
@@ -289,15 +411,24 @@ function Remove-ObsoleteArtifacts {
         if ($normalized -match '(^|/)\.\.(/|$)' -or [System.IO.Path]::IsPathRooted($normalized)) {
             throw "obsoleteArtifacts: percorso non relativo o con risalita '$relative'."
         }
-        if ($normalized -notmatch '^(\.claude/skills/|\.github/)') {
-            throw "obsoleteArtifacts: '$relative' e' fuori da .claude/skills/ e .github/."
+        # Almeno un segmento dopo la cartella gestita, e mai '.': il prefisso da solo
+        # (.claude/skills/, .github/instructions/) cancellerebbe l'intera cartella.
+        if ($normalized -match '(^|/)\.(/|$)' -or
+            $normalized -notmatch '^(\.(claude|agents)/skills|\.github/(instructions|prompts))/[^/]+(/.*)?$') {
+            throw "obsoleteArtifacts: '$relative' non e' un elemento dentro .claude/skills/, .agents/skills/, .github/instructions/ o .github/prompts/."
         }
 
-        # String.Replace, non -replace: l'operatore e' regex e il separatore di Windows e' un escape
-        $target = Join-Path $HostRoot $normalized.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
-        if (Test-Path $target) {
-            Remove-Item -Path $target -Recurse -Force
-            $removed += $normalized
+        # Una skill obsoleta sta anche nella copia per Codex: stessa pulizia, stessa regola
+        $candidates = @($normalized)
+        if ($normalized -match '^\.claude/skills/') { $candidates += ($normalized -replace '^\.claude/skills/', '.agents/skills/') }
+
+        foreach ($candidate in $candidates) {
+            # String.Replace, non -replace: l'operatore e' regex e il separatore di Windows e' un escape
+            $target = Join-Path $HostRoot $candidate.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+            if (Test-Path $target) {
+                Remove-Item -Path $target -Recurse -Force -ErrorAction Stop
+                $removed += $candidate
+            }
         }
     }
 
@@ -380,17 +511,17 @@ function Copy-PackageSourceFiles {
         }
 
         $destDir = Split-Path $dest -Parent
-        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+        if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null }
 
         if (-not (Test-Path $dest)) {
-            Copy-Item -Path $src -Destination $dest
+            Copy-Item -Path $src -Destination $dest -ErrorAction Stop
             Write-Host "  [OK]   $($sf.To)" -ForegroundColor Green
         } elseif (-not $Update) {
             Write-Host "  [SKIP] $($sf.To)" -ForegroundColor DarkGray
         } elseif ((Get-FileHash $src).Hash -eq (Get-FileHash $dest).Hash) {
             Write-Host "  [=]    $($sf.To) invariato" -ForegroundColor DarkGray
         } else {
-            Copy-Item -Path $src -Destination "$dest.new" -Force
+            Copy-Item -Path $src -Destination "$dest.new" -Force -ErrorAction Stop
             $newFiles += "$($sf.To).new"
             Write-Host "  [NEW]  $($sf.To).new (l'originale non e' stato toccato)" -ForegroundColor Yellow
         }
@@ -402,14 +533,26 @@ function Copy-PackageSourceFiles {
     }
 }
 
+function Remove-DrCoreOnlySection {
+    # Il .gitignore del core contiene voci che valgono solo nel repo del core (file di lavoro del
+    # manutentore, cartella di appunti). Sono racchiuse fra due righe marcatore e non si distribuiscono.
+    param([string]$Text)
+    return [regex]::Replace($Text, '(?ms)^# >>> solo-core\b.*?^# <<< solo-core\b[^\r\n]*(\r?\n)?', '')
+}
+
 function Copy-CoreConfigFiles {
-    param([string]$TempRoot, [string]$HostRoot, [string]$BaselineCommit, [switch]$Update)
+    param([string]$TempRoot, [string]$HostRoot, [string]$BaselineCommit, [switch]$WithMcp, [switch]$Update)
 
     # File che l'host personalizza di solito (un .gitignore di create-vue, una regola Copilot
     # locale): con -Update si sovrascrivono solo se mai modificati, altrimenti '<file>.new'.
     Write-Host "  File di configurazione:" -ForegroundColor White
     foreach ($file in @(".editorconfig", ".gitignore", ".gitattributes")) {
-        Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -Update:$Update
+        if ($file -eq ".gitignore") {
+            # Senza le voci marcate "solo core": non riguardano il progetto host
+            Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -ContentFilter { param($text) Remove-DrCoreOnlySection -Text $text } -Update:$Update
+        } else {
+            Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -Update:$Update
+        }
     }
 
     # copilot-instructions.md sta qui e non in Copy-InstructionsAndPrompts perche' e' contenuto
@@ -421,12 +564,17 @@ function Copy-CoreConfigFiles {
     # Directory.Build.props e global.json non stanno piu' nel core: sono contenuto .NET
     # e vivono in dr-dotnet-backend, che li installa quando il progetto e' davvero .NET.
 
-    # .mcp.json: mai sovrascritto se il contenuto host diverge (puo contenere server MCP aggiunti dal progetto)
+    # .mcp.json attiva dei server MCP nel progetto: solo su richiesta (-WithMcp), mai di default.
+    # Mai sovrascritto se il contenuto host diverge (puo contenere server MCP aggiunti dal progetto)
     $mcpSrc  = Join-Path $TempRoot ".mcp.example.json"
     $mcpDest = Join-Path $HostRoot ".mcp.json"
     if (Test-Path $mcpSrc) {
-        if (-not (Test-Path $mcpDest)) {
-            Copy-Item -Path $mcpSrc -Destination $mcpDest
+        if (-not $WithMcp) {
+            if (-not (Test-Path $mcpDest)) {
+                Write-Host "  [sugg] .mcp.json non installato: l'esempio dei server MCP si copia solo con -WithMcp" -ForegroundColor Yellow
+            }
+        } elseif (-not (Test-Path $mcpDest)) {
+            Copy-Item -Path $mcpSrc -Destination $mcpDest -ErrorAction Stop
             Write-Host "  [OK]   .mcp.json" -ForegroundColor Green
         } elseif ((Get-FileHash $mcpSrc).Hash -ne (Get-FileHash $mcpDest).Hash) {
             Write-Host "  [WARN] .mcp.json esiste con contenuto diverso - non sovrascritto, confronta manualmente" -ForegroundColor Yellow
@@ -435,15 +583,14 @@ function Copy-CoreConfigFiles {
         }
     }
 }
-
 function Merge-ClaudeSettings {
     param([string]$TempRoot, [string]$HostRoot)
 
     # Merge non distruttivo dei permessi condivisi: aggiunge solo le voci permissions.allow
     # mancanti. Le altre chiavi del file host (mcpServers, env, hooks) non vengono toccate.
     # Additivo e idempotente: si esegue anche senza -Update.
-    $src  = Join-Path $TempRoot ".claude\settings.json"
-    $dest = Join-Path $HostRoot ".claude\settings.json"
+    $src  = [System.IO.Path]::Combine($TempRoot, ".claude", "settings.json")
+    $dest = [System.IO.Path]::Combine($HostRoot, ".claude", "settings.json")
 
     Write-Host "  .claude/settings.json:" -ForegroundColor White
 
@@ -453,10 +600,10 @@ function Merge-ClaudeSettings {
     }
 
     $destDir = Split-Path $dest -Parent
-    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null }
 
     if (-not (Test-Path $dest)) {
-        Copy-Item -Path $src -Destination $dest -Force
+        Copy-Item -Path $src -Destination $dest -Force -ErrorAction Stop
         Write-Host "  [OK]   .claude/settings.json" -ForegroundColor Green
         return
     }
@@ -495,9 +642,11 @@ function Merge-ClaudeSettings {
     if ($added -gt 0) {
         $destJson.permissions.allow = $destAllow.ToArray()
         $out = $destJson | ConvertTo-Json -Depth 20
+        # Il file viene riscritto (ConvertTo-Json cambia formattazione e ordine): copia di sicurezza prima
+        Copy-Item -Path $dest -Destination "$dest.bak" -Force -ErrorAction Stop
         # UTF-8 senza BOM: indipendente dalla versione di PowerShell
         [System.IO.File]::WriteAllText($dest, $out, [System.Text.UTF8Encoding]::new($false))
-        Write-Host "  [UPD]  .claude/settings.json - $added voci aggiunte" -ForegroundColor Green
+        Write-Host "  [UPD]  .claude/settings.json - $added voci aggiunte (copia precedente: settings.json.bak)" -ForegroundColor Green
     } else {
         Write-Host "  [SKIP] .claude/settings.json - nessuna voce da aggiungere" -ForegroundColor DarkGray
     }
@@ -515,7 +664,7 @@ function Copy-ScaffoldingCatalog {
     }
 
     Write-Host "  Catalogo scaffolding:" -ForegroundColor White
-    Copy-GuidelineFile -SrcFile $src -DestFile (Join-Path $HostRoot ".ai\dr-scaffolding-catalog.json") -Update:$Update
+    Copy-GuidelineFile -SrcFile $src -DestFile ([System.IO.Path]::Combine($HostRoot, ".ai", "dr-scaffolding-catalog.json")) -Update:$Update
 }
 
 function New-BriefsFolder {
@@ -529,7 +678,7 @@ function New-BriefsFolder {
         Write-Host "  [SKIP] briefs\ gia presente" -ForegroundColor DarkGray
         return
     }
-    New-Item -ItemType Directory -Path $dest | Out-Null
+    New-Item -ItemType Directory -Path $dest -ErrorAction Stop | Out-Null
     Write-Host "  [OK]   briefs\" -ForegroundColor Green
 }
 
@@ -590,7 +739,7 @@ function Merge-ClaudeMdSection {
 
 function Get-DrManifestPath {
     param([string]$HostRoot)
-    return Join-Path $HostRoot ".ai\dr-guidelines-packages.json"
+    return [System.IO.Path]::Combine($HostRoot, ".ai", "dr-guidelines-packages.json")
 }
 
 function Read-DrManifest {
@@ -623,7 +772,7 @@ function Update-DrManifest {
 
     $path = Get-DrManifestPath -HostRoot $HostRoot
     $dir  = Split-Path $path -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force -ErrorAction Stop | Out-Null }
 
     $manifest      = Read-DrManifest -HostRoot $HostRoot
     $installedList = @($manifest.installed)
@@ -719,6 +868,10 @@ function Install-DrPackage {
     .PARAMETER SourceRoot
         Cartella dell'host, relativa alla radice, dove finiscono i 'sourceFiles' dei
         pacchetti (default: la radice). Vale per il pacchetto e per le sue dipendenze.
+    .PARAMETER WithMcp
+        Copia anche .mcp.example.json come .mcp.json (server MCP attivi nel progetto).
+        Senza questo switch il file non si installa e l'installer stampa un '[sugg]'.
+        Riguarda il core, quindi vale anche quando il core arriva come dipendenza.
     #>
     [CmdletBinding()]
     param(
@@ -726,7 +879,8 @@ function Install-DrPackage {
         [string]$PackageName,
         [switch]$Update,
         [switch]$NoDependencies,
-        [string]$SourceRoot = "."
+        [string]$SourceRoot = ".",
+        [switch]$WithMcp
     )
 
     $registry = Get-DrPackageRegistry
@@ -759,6 +913,12 @@ function Install-DrPackage {
         $missing = @([PSCustomObject]@{ Name = $coreName; RequiredBy = "$PackageName, core implicito" }) + $missing
     }
 
+    # Conflitti dichiarati nel catalogo (es. due temi grafici): si avvisa, non si blocca
+    $conflicting = @($pkg.ConflictsWith | Where-Object { Test-DrPackageInstalled -Manifest $manifest -PackageName $_ })
+    foreach ($other in $conflicting) {
+        Write-Host "  [WARN] $PackageName e' in conflitto con $other, gia' installato: i due pacchetti non vanno usati insieme. Procedo, ma valuta quale tenere." -ForegroundColor Yellow
+    }
+
     if ($missing.Count -gt 0) {
         if ($NoDependencies) {
             Write-Host "  Dipendenze mancanti NON installate (-NoDependencies):" -ForegroundColor Yellow
@@ -779,14 +939,14 @@ function Install-DrPackage {
         Write-Host ""
         Write-Host "=== $($dep.Name) (dipendenza di $($dep.RequiredBy)) ===" -ForegroundColor Cyan
         Write-Host "  Repo    : $($registry[$dep.Name].Repo)"
-        Install-DrPackageContent -PackageName $dep.Name -Package $registry[$dep.Name] -HostRoot $hostRoot -SourceRoot $SourceRoot
+        Install-DrPackageContent -PackageName $dep.Name -Package $registry[$dep.Name] -HostRoot $hostRoot -SourceRoot $SourceRoot -WithMcp:$WithMcp
     }
 
     if ($missing.Count -gt 0) {
         Write-Host ""
         Write-Host "=== $PackageName ===" -ForegroundColor Cyan
     }
-    Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -SourceRoot $SourceRoot -Update:$Update
+    Install-DrPackageContent -PackageName $PackageName -Package $pkg -HostRoot $hostRoot -SourceRoot $SourceRoot -WithMcp:$WithMcp -Update:$Update
 
     # Suggeriti: manifest riletto dopo l'installazione, vale anche con -NoDependencies
     $manifest    = Read-DrManifest -HostRoot $hostRoot
@@ -805,6 +965,7 @@ function Install-DrPackageContent {
         [Parameter(Mandatory)][hashtable]$Package,
         [Parameter(Mandatory)][string]$HostRoot,
         [string]$SourceRoot = ".",
+        [switch]$WithMcp,
         [switch]$Update
     )
 
@@ -812,15 +973,11 @@ function Install-DrPackageContent {
     $hostRoot = $HostRoot
     $manifest = Read-DrManifest -HostRoot $hostRoot
 
-    $tempDir = Join-Path $env:TEMP ("dr-install-" + [guid]::NewGuid().ToString("N"))
-    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    $tempDir = New-DrTempFolder
 
     try {
         Write-Host "  Clonazione $($pkg.Repo)..." -ForegroundColor White
-        git clone --quiet --depth 1 "https://github.com/$($pkg.Repo).git" $tempDir 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            throw "git clone fallito per $($pkg.Repo) (repo Private? verifica autenticazione git/gh)"
-        }
+        Invoke-DrGitClone -Repo $pkg.Repo -Destination $tempDir
 
         # Commit effettivamente installato: e' quello che finisce nel manifest/lock file
         $newCommit = (git -C $tempDir rev-parse HEAD 2>$null | Out-String).Trim()
@@ -874,7 +1031,7 @@ function Install-DrPackageContent {
         }
 
         if ($pkg.IsCore) {
-            $newFiles += @(Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -BaselineCommit $baselineCommit -Update:$Update)
+            $newFiles += @(Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -BaselineCommit $baselineCommit -WithMcp:$WithMcp -Update:$Update)
             Merge-ClaudeSettings -TempRoot $tempDir -HostRoot $hostRoot
             Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             New-BriefsFolder -HostRoot $hostRoot
@@ -888,7 +1045,16 @@ function Install-DrPackageContent {
             $newFiles | ForEach-Object { Write-Host "    $_" -ForegroundColor Yellow }
         }
 
-        Update-DrManifest -HostRoot $hostRoot -PackageName $PackageName -Commit $newCommit
+        # Il commit nel manifest e' il lock file: dice da dove arriva il contenuto installato.
+        # Senza -Update i file gia' presenti sono stati saltati ([SKIP]): avanzare il commit farebbe
+        # credere all'host di essere aggiornato, e il prossimo -Update non vedrebbe le novita'.
+        # Si registra quindi solo alla prima installazione o con -Update.
+        $alreadyInManifest = Test-DrPackageInstalled -Manifest $manifest -PackageName $PackageName
+        if ($alreadyInManifest -and -not $Update) {
+            Write-Host "  [SKIP] Manifest invariato: $PackageName gia' registrato (usa -Update per avanzare al commit corrente)" -ForegroundColor DarkGray
+        } else {
+            Update-DrManifest -HostRoot $hostRoot -PackageName $PackageName -Commit $newCommit
+        }
     }
     finally {
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -919,7 +1085,7 @@ function Install-DrGlobal {
     [CmdletBinding()]
     param(
         [switch]$Update,
-        [string]$ClaudeMdPath = (Join-Path $HOME ".claude\CLAUDE.md")
+        [string]$ClaudeMdPath = ([System.IO.Path]::Combine($HOME, ".claude", "CLAUDE.md"))
     )
 
     $sectionTitle = "## Davraf Guidelines (Globale)"
@@ -934,22 +1100,18 @@ function Install-DrGlobal {
     try {
         # $PSScriptRoot e' valorizzato solo quando la libreria e' stata dot-sourced da un clone locale:
         # fetchata via raw o via gh api, il template si prende dal clone temporaneo.
-        $localTemplate = if ($PSScriptRoot) { Join-Path $PSScriptRoot "templates\global-claude.md" } else { $null }
+        $localTemplate = if ($PSScriptRoot) { [System.IO.Path]::Combine($PSScriptRoot, "templates", "global-claude.md") } else { $null }
 
         if ($localTemplate -and (Test-Path $localTemplate)) {
             $templatePath = $localTemplate
             Write-Host "  Sorgente: $templatePath"
         } else {
             $repo    = (Get-DrPackageRegistry)["dr-guidelines"].Repo
-            $tempDir = Join-Path $env:TEMP ("dr-install-" + [guid]::NewGuid().ToString("N"))
-            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+            $tempDir = New-DrTempFolder
 
             Write-Host "  Clonazione $repo..." -ForegroundColor White
-            git clone --quiet --depth 1 "https://github.com/$repo.git" $tempDir 2>$null
-            if ($LASTEXITCODE -ne 0) {
-                throw "git clone fallito per $repo (repo Private? verifica autenticazione git/gh)"
-            }
-            $templatePath = Join-Path $tempDir "templates\global-claude.md"
+            Invoke-DrGitClone -Repo $repo -Destination $tempDir
+            $templatePath = [System.IO.Path]::Combine($tempDir, "templates", "global-claude.md")
         }
 
         if (-not (Test-Path $templatePath)) {
@@ -962,7 +1124,7 @@ function Install-DrGlobal {
 
         $claudeDir = Split-Path $ClaudeMdPath -Parent
         if ($claudeDir -and -not (Test-Path $claudeDir)) {
-            New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+            New-Item -ItemType Directory -Path $claudeDir -Force -ErrorAction Stop | Out-Null
         }
 
         if (-not (Test-Path $ClaudeMdPath)) {

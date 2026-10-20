@@ -96,7 +96,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 5: <cosa>` in plan.md, non procedere
 
 ### Fase 6: Installer, catalogo, CI, docs
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 5 completata
 - **File**: `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1`, `scaffolding-catalog.json`, `.github/workflows/ci.yml`, `README.md`, `docs/*`
 - **Operazione**: EDIT
@@ -106,7 +106,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 6: <cosa>` in plan.md, non procedere
 
 ### Fase 7: Pacchetti satellite
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fase 2 completata; working tree dei repo satellite pulito
 - **File**: istruzioni, skill e README di `dr-efdb`, `dr-minimalapi`, `dr-winsvc`, `dr-dotnet-backend`, `dr-fe`, `dr-ux-kitt`, `dr-ux-lcars`, `dr-devops`
 - **Operazione**: EDIT

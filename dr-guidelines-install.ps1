@@ -49,6 +49,16 @@
     'frontend' quando src/ sta in una sottocartella. Default: la radice. Percorsi
     assoluti o con '..' sono rifiutati. I sorgenti gia' presenti non si sovrascrivono
     mai: con -Update la versione nuova va in '<file>.new'.
+.PARAMETER WithMcp
+    Solo per l'installazione nel progetto (non con -Global). Copia anche .mcp.example.json
+    come .mcp.json, cioe' attiva nel progetto i server MCP dell'esempio. Senza questo
+    switch il file non si installa e l'installer stampa un '[sugg]'. Un .mcp.json gia'
+    presente con contenuto diverso non si sovrascrive mai.
+.PARAMETER ForceRemoteLib
+    Quando lo script gira da un clone locale (cartella con accanto la libreria), si usano
+    la libreria e il catalogo locali: e' la versione che stai sviluppando o provando.
+    Con questo switch si ignora il clone e si carica la libreria pubblicata su GitHub,
+    come farebbe un host con `irm | iex`. Sotto `iex` non ha effetto: il clone non c'e'.
 #>
 
 [CmdletBinding()]
@@ -57,39 +67,53 @@ param(
     [switch]$Global,
     [string]$Package,
     [switch]$NoDependencies,
-    [string]$SourceRoot = "."
+    [string]$SourceRoot = ".",
+    [switch]$WithMcp,
+    [switch]$ForceRemoteLib
 )
 
 # --- Risoluzione della libreria condivisa ---
-# Tre tentativi, in ordine di preferenza. Il primo che riesce vince.
-#   1. raw pubblico       -> caso normale a repo Public
-#   2. clone locale       -> $PSScriptRoot valorizzato (invocazione da path), vuoto sotto `iex`
+# Ordine di preferenza. Il primo tentativo che riesce vince.
+#   1. clone locale       -> $PSScriptRoot valorizzato (invocazione da path), vuoto sotto `iex`.
+#                            Ha la precedenza: lo script e la sua libreria devono essere della stessa versione.
+#                            -ForceRemoteLib lo salta.
+#   2. raw pubblico       -> caso normale a repo Public
 #   3. gh api             -> repo Private con gh autenticato: l'unica via che scarica davvero da GitHub
+#   (4. clone locale come ultimo ripiego, se era stato saltato con -ForceRemoteLib o il raw e' fallito)
 
 $libName    = "dr-guidelines-install-lib.ps1"
 $libRepo    = "davraf-amuro/dr-guidelines"
 $libUrl     = "https://raw.githubusercontent.com/$libRepo/main/$libName"
 $libLoaded  = $false
 $libFailures = @()
+$localLib   = if ($PSScriptRoot) { Join-Path $PSScriptRoot $libName } else { $null }
 
-try {
-    $libContent = Invoke-RestMethod -Uri $libUrl -ErrorAction Stop
-    Invoke-Expression $libContent
+if (-not $ForceRemoteLib -and $localLib -and (Test-Path $localLib)) {
+    . $localLib
     $libLoaded = $true
-} catch {
-    $libFailures += "raw pubblico: $($_.Exception.Message)"
+    $Script:PreferLocalSource = $true
+    Write-Host "  Libreria: copia locale ($localLib). Per usare quella pubblicata: -ForceRemoteLib." -ForegroundColor DarkGray
 }
 
-if (-not $libLoaded -and $PSScriptRoot) {
-    $localLib = Join-Path $PSScriptRoot $libName
-    if (Test-Path $localLib) {
+if (-not $libLoaded) {
+    try {
+        $libContent = Invoke-RestMethod -Uri $libUrl -ErrorAction Stop
+        Invoke-Expression $libContent
+        $libLoaded = $true
+    } catch {
+        $libFailures += "raw pubblico: $($_.Exception.Message)"
+    }
+}
+
+if (-not $libLoaded) {
+    if ($localLib -and (Test-Path $localLib)) {
         . $localLib
         $libLoaded = $true
-    } else {
+    } elseif ($PSScriptRoot) {
         $libFailures += "clone locale: $libName non trovato in $PSScriptRoot"
+    } else {
+        $libFailures += "clone locale: nessuno ($PSScriptRoot vuoto, script eseguito da stream)"
     }
-} elseif (-not $libLoaded) {
-    $libFailures += "clone locale: nessuno ($PSScriptRoot vuoto, script eseguito da stream)"
 }
 
 if (-not $libLoaded) {
@@ -124,11 +148,14 @@ if ($Global -and $Package) {
 if ($PSBoundParameters.ContainsKey('SourceRoot') -and -not $Package) {
     throw "-SourceRoot vale solo con -Package: il core non distribuisce sorgenti applicativi."
 }
+if ($Global -and $WithMcp) {
+    throw "-WithMcp vale solo per l'installazione nel progetto: -Global non tocca il progetto corrente."
+}
 
 if ($Global) {
     Install-DrGlobal -Update:$Update
 } elseif ($Package) {
-    Install-DrPackage -PackageName $Package -Update:$Update -NoDependencies:$NoDependencies -SourceRoot $SourceRoot
+    Install-DrPackage -PackageName $Package -Update:$Update -NoDependencies:$NoDependencies -SourceRoot $SourceRoot -WithMcp:$WithMcp
 } else {
-    Install-DrPackage -PackageName "dr-guidelines" -Update:$Update
+    Install-DrPackage -PackageName "dr-guidelines" -Update:$Update -WithMcp:$WithMcp
 }

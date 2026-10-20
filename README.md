@@ -30,7 +30,7 @@ Come arrivano gli altri pacchetti:
 
 Dettagli e prove sul campo in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
-> **I 9 repo sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11; `dr-ux-kitt` dalla creazione, 2026-10-14). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
+> **I repo `dr-*` sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11; `dr-ux-kitt` dalla creazione, 2026-10-14). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
 
 ### Aggiungere un dominio nuovo
 
@@ -68,13 +68,15 @@ Set-Location C:\Progetti\ordini
 & ([scriptblock]::Create((gh api repos/davraf-amuro/dr-guidelines/contents/dr-guidelines-install.ps1 -H "Accept: application/vnd.github.raw" | Out-String)))
 ```
 
+> PowerShell 7 (`pwsh`) è il requisito unico per gli installer. In VS Code imposta `pwsh` come terminale predefinito: **Terminale** → freccia accanto al `+` → **Seleziona profilo predefinito** → **PowerShell** (non "Windows PowerShell"), poi apri un terminale nuovo. Controlla con `$PSVersionTable.PSVersion`: la versione principale deve essere 7.
+
 3. Ricarica la finestra: `Developer: Reload Window` (le skill si leggono all'avvio)
 4. In Claude Code: `/dr-scaffold crea una Minimal API per gli ordini`
 
 Lo scaffolding non è uno script: è guidato dall'agente. Il flusso di `/dr-scaffold`:
 
 1. **Dominio** — ricava il dominio dalla richiesta leggendo la `intentMap` del catalogo. Nessuna corrispondenza → lo dichiara e propone una issue, invece di assumere uno stack
-2. **Gate prerequisiti** — git, PowerShell 7 e `gh` autenticato sempre; SDK .NET 10 solo per i domini .NET; node/npm solo per il frontend. Nessuna scrittura finché il gate non passa
+2. **Gate prerequisiti** — git, PowerShell 7 (requisito unico, vedi sopra) e `gh` autenticato sempre; SDK .NET 10 solo per i domini .NET; node/npm solo per il frontend. Nessuna scrittura finché il gate non passa
 3. **Stato della cartella** — delega al pezzo giusto: cartella con solo il core → `/dr-scaffold-solution`; solution esistente → `/dr-scaffold-project`; progetti senza pacchetti → `/dr-scaffold-guidelines`
 4. **Raccolta risposte** — nome e formato della solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository, eventuale workspace multi-repo
 5. **Dry-run e conferma unica** — mostra l'albero e i comandi, chiede una sola conferma
@@ -103,15 +105,15 @@ Forma breve, senza `gh` (funziona perché i repo sono Public):
 irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1 | iex
 ```
 
-L'installer copia file di configurazione, istruzioni e skill trasversali, e la sezione `<!-- dr-guidelines -->` in `CLAUDE.md`. **Non è distruttivo:** un file già presente viene saltato (`[SKIP]`) e senza `-Update` nessun file viene sovrascritto. Uniche modifiche a file esistenti: le voci mancanti in `.claude/settings.json`, la sezione marcata in `CLAUDE.md` e il manifest `.ai/dr-guidelines-packages.json`, riscritto a ogni esecuzione.
+L'installer copia file di configurazione, istruzioni e skill trasversali, e la sezione `<!-- dr-guidelines -->` in `CLAUDE.md`. **Non è distruttivo:** un file già presente viene saltato (`[SKIP]`) e senza `-Update` nessun file viene sovrascritto. Uniche modifiche a file esistenti: le voci mancanti in `.claude/settings.json` (con copia `settings.json.bak` prima di riscriverlo), la sezione marcata in `CLAUDE.md` e il manifest `.ai/dr-guidelines-packages.json`. Il manifest registra il commit installato solo alla prima installazione e con `-Update`: una rilettura senza `-Update` salta i file presenti e non lo avanza, così il prossimo `-Update` vede le novità.
 
 Tre cose da sapere:
 
 | Cosa | Dettaglio |
 |---|---|
 | La cartella corrente è la destinazione | Da un'altra cartella i file finiscono lì, senza errori. `Set-Location` prima di tutto |
-| Nessun repo finisce nel progetto | L'installer clona il pacchetto in `%TEMP%`, copia i file e cancella la copia |
-| Si installa il `main` di GitHub | Anche lanciando l'installer da un clone locale. Le modifiche non pushate non arrivano |
+| Nessun repo finisce nel progetto | L'installer clona il pacchetto in una cartella temporanea del sistema, copia i file e cancella la copia. Se la copia di un file fallisce, l'installazione si ferma prima di scrivere il manifest |
+| Il contenuto è il `main` di GitHub | Il pacchetto si clona sempre da GitHub: le modifiche non pushate non arrivano. Lanciando lo script da un clone locale, però, la libreria e il catalogo usati sono quelli locali (stessa versione dello script); `-ForceRemoteLib` forza la libreria pubblicata |
 
 **Pacchetti di dominio.** Dopo il core, scegli i pacchetti adatti allo stack dalla tabella [Pacchetti dr-* disponibili](#-pacchetti-dr--disponibili). Il modo più semplice è ricaricare la finestra e chiedere `/dr-scaffold-guidelines`: propone i pacchetti e segna quelli già installati. A mano, con il flag `-Package` sul core:
 
@@ -136,8 +138,12 @@ Parametri dell'installer del core:
 | `-NoDependencies` | Installa solo il pacchetto chiesto: niente dipendenze, niente core | Ha effetto solo con `-Package`; senza, è ignorato |
 | `-SourceRoot <cartella>` | Cartella dell'host dove vanno i sorgenti (`sourceFiles`) | Solo con `-Package` |
 | `-Global` | Scrive solo `~/.claude/CLAUDE.md` | Non insieme a `-Package` |
+| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json`, cioè attiva i server MCP dell'esempio | Non con `-Global`. Senza, l'installer stampa `[sugg]` e non crea il file |
+| `-ForceRemoteLib` | Ignora la libreria e il catalogo del clone locale e usa quelli pubblicati su GitHub | Ha senso solo lanciando lo script da un clone; sotto `iex` non cambia nulla |
 
-L'installer di un singolo pacchetto (`<pacchetto>-install.ps1`) accetta solo `-Update`. Per `-NoDependencies` e `-SourceRoot` usa l'installer del core con `-Package`.
+L'installer di un singolo pacchetto (`<pacchetto>-install.ps1`) accetta solo `-Update`. Per `-NoDependencies`, `-SourceRoot` e `-WithMcp` usa l'installer del core con `-Package`.
+
+Se un pacchetto dichiara `conflictsWith` (oggi `dr-ux-lcars` e `dr-ux-kitt`, due temi grafici alternativi) e l'altro è già nel manifest, l'installer stampa un `[WARN]` e procede: scegliere quale tenere resta a te.
 
 **Se `git clone` fallisce:** vedi la [FAQ](#q-git-clone-fallito-per-davraf-amuro--cosa-faccio).
 
@@ -150,16 +156,16 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | File/Cartella | Provenienza | Scopo |
 |---------------|-------------|-------|
 | `.editorconfig` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Stile di codice e naming conventions |
-| `.gitignore` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | File ignorati da Git, compresi `.mcp.json` e `.claude/settings.local.json` |
+| `.gitignore` | copia **senza le voci "solo core"** (le righe fra `# >>> solo-core` e `# <<< solo-core` del file sorgente: file di lavoro e appunti di questo repo); con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | File ignorati da Git, compresi `.mcp.json`, `.claude/settings.local.json` e la copia `.claude/settings.json.bak` |
 | `.gitattributes` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Normalizzazione dei fine riga |
-| `.mcp.json` | copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
+| `.mcp.json` | **solo con `-WithMcp`**: copia da `.mcp.example.json`, solo se assente | Server MCP consigliati. Senza `-WithMcp` non viene creato (`[sugg]`). Se esiste con contenuto diverso: `[WARN]`, mai sovrascritto |
 | `.github/copilot-instructions.md` | copia; con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Istruzioni principali lette da Copilot. È il file che la sezione `CLAUDE.md` iniettata richiama con `@.github/copilot-instructions.md` |
 | `.github/instructions/`, `.github/prompts/` | copia file per file, esclusi i file elencati in `coreOnlyArtifacts` del catalogo | Istruzioni e prompt del core, per Copilot e Claude Code. Prompt: `dr-scaffold`, `dr-get-latest`, `dr-file-feedback`, `dr-issues-to-plans`, `architecture-doc`, `readme-generator`, `card-project-generator` (scheda del progetto), `card-wiki-generator` (wiki card con valori reali), `onboarding-senior` (onboarding per un senior) |
-| `.claude/skills/` | copia cartella per cartella | Skill Claude Code del core (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) |
-| `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte |
+| `.claude/skills/`, `.agents/skills/` | copia cartella per cartella; `.agents/skills/` solo se il pacchetto la contiene | Skill del core per Claude Code (`/dr-scaffold`, `/dr-professor`, `/dr-get-latest`, …) e la loro versione per Codex |
+| `.claude/settings.json` | copia se assente, altrimenti merge additivo | Permessi condivisi: aggiunge solo le voci `permissions.allow` mancanti. Le altre chiavi (`mcpServers`, `env`, `hooks`) restano intatte. Se il file va riscritto, prima si salva `.claude/settings.json.bak` |
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
 | `.ai/dr-scaffolding-catalog.json` | copia, sovrascritta con `-Update` | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
-| `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati, con il **commit** di provenienza: fa da lock file. A ogni esecuzione l'installer confronta il commit vecchio con il nuovo e lo scrive a schermo |
+| `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati, con il **commit** di provenienza: fa da lock file. A ogni esecuzione l'installer confronta il commit vecchio con il nuovo e lo scrive a schermo; il commit si aggiorna solo alla prima installazione e con `-Update` |
 | `briefs/` | creata vuota, solo se assente | Le tue richieste per l'agente, in Markdown, con nome e forma liberi. L'installer non ne legge né tocca mai il contenuto, nemmeno con `-Update` |
 
 > **`-Update` non perde le tue modifiche a `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e ai `rootFiles` dei pacchetti** (`Directory.Build.props`, `global.json`, …). L'installer confronta il file dell'host con la versione del commit installato in precedenza (registrato nel manifest): se non l'hai mai toccato lo aggiorna (`[UPD]`), se l'hai personalizzato e il pacchetto lo ha cambiato scrive la versione nuova in `<file>.new` (`[NEW]`) e lascia l'originale; se l'hai personalizzato e a monte non è cambiato nulla lo lascia com'è (`[SKIP]`). Confronta i due file, porta a mano le novità che ti servono, poi elimina il `.new`. Se la versione precedente non è ricostruibile (manifest senza commit, rete assente) l'installer sceglie la via prudente: `.new`.
@@ -196,7 +202,7 @@ Forma breve:
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/davraf-amuro/dr-guidelines/main/dr-guidelines-install.ps1))) -Update
 ```
 
-`-Update` sovrascrive istruzioni, prompt e skill già presenti con la versione corrente del pacchetto. I file di configurazione che l'host personalizza seguono la regola del `.new` descritta sotto [Cosa viene configurato](#-cosa-viene-configurato). Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
+`-Update` sovrascrive istruzioni, prompt e skill già presenti (`.claude/skills/` e `.agents/skills/`) con la versione corrente del pacchetto: una skill che hai modificato nella cartella della skill viene sostituita, quindi le personalizzazioni vanno in file con nome proprio. I file di configurazione che l'host personalizza seguono la regola del `.new` descritta sotto [Cosa viene configurato](#-cosa-viene-configurato). Per il core riscrive anche la sezione in `CLAUDE.md`, lasciando intatto il resto. Per un pacchetto di dominio sostituisci nome del repo e dell'installer.
 
 `-Update` aggiorna solo il pacchetto che indichi, non le sue dipendenze. Per aggiornare tutto usa `/dr-get-latest`.
 
@@ -415,7 +421,7 @@ Lancia un subagente senza il contesto di chi ha implementato: rilegge i file di 
 
 ## 🔌 MCP Servers
 
-Il repository include `.mcp.example.json` come riferimento. La configurazione reale sta in `.mcp.json`, ignorato da git perché può contenere credenziali. L'installer lo genera la prima volta e non lo sovrascrive più.
+Il repository include `.mcp.example.json` come riferimento. La configurazione reale sta in `.mcp.json`, ignorato da git perché può contenere credenziali. L'installer lo genera solo se lo chiedi con `-WithMcp`, solo la prima volta, e non lo sovrascrive più.
 
 ### `pdf-reader` — Lettura di file PDF
 
@@ -426,7 +432,7 @@ Permette a Claude Code di leggere e interrogare file PDF del progetto.
 npm install -g @fabriqa.ai/pdf-reader-mcp
 ```
 
-**Setup nel progetto** — lascia fare all'installer, oppure aggiungi al `.mcp.json` esistente:
+**Setup nel progetto** — installa il core con `-WithMcp`, oppure aggiungi al `.mcp.json` esistente:
 ```json
 {
   "mcpServers": {
@@ -469,13 +475,13 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata. Non serve avere `dr-guidelines` clonato sul PC. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
 
 ### Q: Non sono un programmatore: posso installare le guidelines?
-**A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7, installabili con due comandi `winget`. Non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md).
+**A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7 (da impostare come terminale predefinito di VS Code), installabili con due comandi `winget`. Non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md).
 
 ### Q: Creo prima la solution e poi installo le guidelines?
 **A:** No, al contrario. Prima il core in una cartella vuota, poi ricarichi la finestra, poi `/dr-scaffold` crea la solution. Vedi [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md).
 
 ### Q: Ho corretto un pacchetto `dr-*` ma il progetto host non cambia. Perché?
-**A:** L'installer clona sempre il `main` da GitHub, anche se lo lanci da un clone locale. Fai push della correzione nel repo del pacchetto, poi `/dr-get-latest` nel progetto host.
+**A:** L'installer clona sempre il `main` da GitHub: lanciandolo da un clone locale usi la libreria e il catalogo locali, ma il contenuto del pacchetto arriva comunque da GitHub. Fai push della correzione nel repo del pacchetto, poi `/dr-get-latest` nel progetto host.
 
 ### Q: Posso usare le guidelines su un progetto già esistente?
 **A:** Sì. Dalla root del repository installa il core (vedi [Progetto Esistente](#-progetto-esistente--aggiungere-le-guidelines)), ricarica la finestra e usa `/dr-scaffold-guidelines` per i pacchetti di dominio.
@@ -507,8 +513,8 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Descrive solo il README di questo repo e negli host contraddiceva `readme-generator.prompt.md`, che è la regola per il README dei progetti. Ora l'installer non lo copia più e con `-Update` lo rimuove. Se lo avevi adattato al tuo progetto **mantenendo lo stesso nome**, rinominalo prima di lanciare `-Update` (per esempio in `readme-local.instructions.md`), altrimenti viene cancellato.
 
 ### Q: L'installer fallisce a metà — come ripristino?
-**A:** Rilancia l'installer: è idempotente e salta i file già a posto. Se vuoi annullare, guarda prima `git status`: ripristina i file modificati con `git checkout -- <file>` e cancella a mano i file nuovi. Non usare `git clean -fd`: cancella anche i tuoi file non committati, compresi i brief.
+**A:** Rilancia l'installer: senza `-Update` è idempotente, cioè salta i file e le skill già presenti (`[SKIP]`) e non avanza il commit del manifest, quindi puoi ripeterlo senza danni. Con `-Update` no: sovrascrive istruzioni, prompt e skill (anche quelle che hai personalizzato nella cartella della skill) e riscrive la sezione di `CLAUDE.md`; solo i file di configurazione protetti passano da `<file>.new`. Se vuoi annullare, guarda prima `git status`: ripristina i file modificati con `git checkout -- <file>` e cancella a mano i file nuovi. Non usare `git clean -fd`: cancella anche i tuoi file non committati, compresi i brief.
 
 ---
 
-*Revisione v3.23 — 2026-10-20 18:20 — claude-opus-5-5*
+*Revisione v3.24 — 2026-10-20 19:30 — claude-opus-5-5*

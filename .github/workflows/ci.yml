@@ -6,7 +6,54 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
+  powershell-and-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse all PowerShell scripts
+        shell: pwsh
+        run: |
+          # Parse senza eseguire: intercetta errori di sintassi in tutti gli .ps1 del repo
+          $failed = 0
+          $files  = Get-ChildItem -Path . -Recurse -Filter '*.ps1' -File |
+                    Where-Object { $_.FullName -notmatch '[\/]\.git[\/]' }
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
+            foreach ($e in $errors) {
+              Write-Host "::error file=$($file.FullName),line=$($e.Extent.StartLineNumber)::$($e.Message)"
+              $failed++
+            }
+          }
+          if ($failed -gt 0) { exit 1 }
+          Write-Host "Parse OK: $(@($files).Count) script."
+
+      - name: Validate JSON files
+        shell: pwsh
+        run: |
+          $failed = 0
+          foreach ($path in @('scaffolding-catalog.json', '.mcp.example.json', '.claude/settings.json')) {
+            try {
+              $null = Get-Content $path -Raw | ConvertFrom-Json -ErrorAction Stop
+              Write-Host "JSON OK: $path"
+            } catch {
+              Write-Host "::error file=$path::JSON non valido: $($_.Exception.Message)"
+              $failed++
+            }
+          }
+          if ($failed -gt 0) { exit 1 }
+
+      - name: Codex skills in sync with Claude skills
+        shell: pwsh
+        run: pwsh ./scripts/sync-codex.ps1 -Check
+
   build-and-test:
     runs-on: ubuntu-latest
 
@@ -72,6 +119,43 @@ jobs:
 
           foreach ($dup in @($catalogNames | Group-Object | Where-Object { $_.Count -gt 1 })) {
             $problems += "pacchetto duplicato: '$($dup.Name)'"
+          }
+
+          # conflictsWith: pacchetti che non vanno installati insieme. Il bersaglio deve esistere
+          # e il rapporto deve essere simmetrico (A in conflitto con B implica B in conflitto con A):
+          # l'installer avvisa guardando solo il pacchetto che si sta installando.
+          foreach ($pkg in $catalog.packages) {
+            foreach ($other in @($pkg.conflictsWith | Where-Object { $_ })) {
+              $otherPkg = $catalog.packages | Where-Object { $_.name -eq $other } | Select-Object -First 1
+              if (-not $otherPkg) {
+                $problems += "conflictsWith non risolvibile: '$($pkg.name)' -> '$other'"
+                continue
+              }
+              if ($other -eq $pkg.name) { $problems += "pacchetto '$($pkg.name)': conflictsWith verso se stesso" }
+              if (@($otherPkg.conflictsWith) -notcontains $pkg.name) {
+                $problems += "conflictsWith non simmetrico: '$($pkg.name)' -> '$other', ma '$other' non cita '$($pkg.name)'"
+              }
+              if (@($pkg.dependencies) -contains $other) {
+                $problems += "pacchetto '$($pkg.name)': '$other' e' sia in dependencies sia in conflictsWith"
+              }
+            }
+          }
+
+          # Pacchetto core: i file che il catalogo dichiara devono esistere in questo repo.
+          # rootFiles e coreOnlyArtifacts sono file veri del core; un obsoleteArtifact che esiste ancora
+          # e non e' coreOnly verrebbe installato e subito rimosso a ogni -Update.
+          foreach ($core in @($catalog.packages | Where-Object { $_.isCore })) {
+            foreach ($file in @($core.rootFiles | Where-Object { $_ })) {
+              if (-not (Test-Path -LiteralPath $file)) { $problems += "core '$($core.name)': rootFiles '$file' non esiste" }
+            }
+            foreach ($file in @($core.coreOnlyArtifacts | Where-Object { $_ })) {
+              if (-not (Test-Path -LiteralPath $file)) { $problems += "core '$($core.name)': coreOnlyArtifacts '$file' non esiste" }
+            }
+            foreach ($file in @($core.obsoleteArtifacts | Where-Object { $_ })) {
+              if ((Test-Path -LiteralPath $file) -and (@($core.coreOnlyArtifacts) -notcontains $file)) {
+                $problems += "core '$($core.name)': obsoleteArtifacts '$file' esiste ancora nel repo e non e' coreOnly"
+              }
+            }
           }
 
           foreach ($pkg in $catalog.packages) {

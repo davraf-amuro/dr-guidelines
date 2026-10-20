@@ -59,7 +59,7 @@ npm --version        # solo se ci sarà un frontend
 | Requisito | Cosa devi vedere | Se manca |
 |---|---|---|
 | git | una versione qualsiasi | Installalo: l'installer scarica i pacchetti con `git clone` |
-| PowerShell 7+ | `7.*` | Installalo: gli installer girano su `pwsh` |
+| PowerShell 7+ | `7.*` | Installalo: gli installer girano su `pwsh`. Imposta anche `pwsh` come terminale predefinito di VS Code: **Terminale** → freccia accanto al `+` → **Seleziona profilo predefinito** → **PowerShell** (non "Windows PowerShell"), poi apri un terminale nuovo |
 | `gh` autenticato | `Logged in to github.com` | Esegui `gh auth login` con scope `repo`: la forma `gh api` del passo 3 lo richiede |
 | .NET SDK 10 | almeno una riga `10.*` | Solo per progetti .NET: senza, nessun progetto .NET è creabile |
 | node + npm | una versione qualsiasi | Solo per il frontend: il resto del progetto procede lo stesso |
@@ -195,7 +195,7 @@ La skill esegue queste verifiche da sola e si ferma alla prima che fallisce. Puo
 | `dotnet sln ordini.slnx list` | Tutti i progetti elencati |
 | `dotnet build ordini.slnx --nologo` | `Avvisi: 0  Errori: 0` |
 | `Get-Content .ai\dr-guidelines-packages.json` | Una voce per ogni pacchetto installato, con la data di oggi |
-| `git status --short` | `.mcp.json` **non** compare: è ignorato apposta, può contenere credenziali |
+| `git status --short` | `.mcp.json`, se l'hai installato con `-WithMcp`, **non** compare: è ignorato apposta, può contenere credenziali |
 | `dotnet format ordini.slnx --verify-no-changes` | Exit code `0` |
 
 ---
@@ -278,4 +278,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.7 — 2026-10-16 18:29 — claude-opus-5-5*
+*Revisione v1.8 — 2026-10-20 19:30 — claude-opus-5-5*

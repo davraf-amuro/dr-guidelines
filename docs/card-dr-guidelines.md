@@ -4,7 +4,7 @@
 
 - **Progetto:** dr-guidelines — pacchetto **core** e catalogo della suite `dr-*`
 - **Solution:** —
-- **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, che apre 7 cartelle: `dr-guidelines`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-dotnet-backend` e `../davraf-guidelines`. Non include `dr-devops`, `dr-ux-lcars` né `dr-ux-kitt`
+- **Workspace:** `dr-guidelines.code-workspace` nella cartella padre, che apre le cartelle del core e di tutti i pacchetti di dominio del catalogo: `dr-guidelines`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-dotnet-backend`, `dr-devops`, `dr-ux-lcars` e `dr-ux-kitt`. Il vecchio `davraf-guidelines` (deprecato) non è più nel workspace
 - **Repository:** https://github.com/davraf-amuro/dr-guidelines (Public)
 - **Tipo Applicazione:** Repository di linee guida e configurazioni, distribuito come pacchetto installabile con `dr-guidelines-install.ps1`
 - **Pattern Architetturale:** Configuration-as-Code / Guidelines-as-Code, catalogo JSON come fonte unica dei pacchetti
@@ -25,7 +25,7 @@
 ### Progetti Interni
 
 - Nessuna dipendenza in ingresso: è il provider.
-- Consumato dagli 8 pacchetti di dominio (`dr-dotnet-backend`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-ux-lcars`, `dr-ux-kitt`), i cui installer caricano `dr-guidelines-install-lib.ps1` e il catalogo da questo repo.
+- Consumato dai pacchetti di dominio del catalogo (`dr-dotnet-backend`, `dr-minimalapi`, `dr-winsvc`, `dr-efdb`, `dr-fe`, `dr-devops`, `dr-ux-lcars`, `dr-ux-kitt`), i cui installer caricano `dr-guidelines-install-lib.ps1` e il catalogo da questo repo.
 
 ### Pacchetti Esterni
 
@@ -56,4 +56,4 @@
 
 ---
 
-*Revisione v2.11 — 2026-10-14 18:10 — claude-sonnet-5-5*
+*Revisione v2.12 — 2026-10-20 19:30 — claude-opus-5-5*

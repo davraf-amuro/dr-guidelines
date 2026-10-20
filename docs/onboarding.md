@@ -44,16 +44,18 @@ I repo `dr-*` sono **Public** dal 2026-09-21: `irm https://raw.githubusercontent
 | Flag | Effetto |
 |---|---|
 | nessuno | Installa il core nella cartella corrente. Salta i file già presenti; una skill già presente si salta per intero. Aggiunge comunque i permessi mancanti a `.claude/settings.json` e la sezione in `CLAUDE.md`, se manca |
-| `-Update` | Sovrascrive istruzioni, prompt e skill presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e `rootFiles`: sovrascritti solo se mai modificati rispetto al commit installato, altrimenti `<file>.new`. Per i `sourceFiles` scrive `<file>.new` quando la versione del pacchetto differisce da quella dell'host. Non vale per le dipendenze |
+| `-Update` | Sovrascrive istruzioni, prompt e skill presenti, riscrive la sezione `<!-- dr-guidelines -->` di `CLAUDE.md` e toglie gli artefatti obsoleti del catalogo. Non tocca `.mcp.json`. Il commit nel manifest avanza solo con `-Update` (o alla prima installazione). `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e `rootFiles`: sovrascritti solo se mai modificati rispetto al commit installato, altrimenti `<file>.new`. Per i `sourceFiles` scrive `<file>.new` quando la versione del pacchetto differisce da quella dell'host. Non vale per le dipendenze |
 | `-Package <nome>` | Installa un pacchetto di dominio con le dipendenze mancanti; il core, se manca dal manifest, arriva per primo come dipendenza implicita. Prima di scrivere annuncia le dipendenze in arrivo (righe `[dep]`) |
 | `-NoDependencies` | Solo con `-Package` (senza `-Package` è ignorato): non installa le dipendenze mancanti, le elenca come `[skip]` con un avviso |
 | `-SourceRoot <cartella>` | Solo con `-Package`: cartella dell'host dove finiscono i sorgenti applicativi dei pacchetti (campo `sourceFiles`). Validata prima di scrivere; i sorgenti presenti non si sovrascrivono mai, con `-Update` la versione nuova va in `<file>.new`. Gli installer dei singoli pacchetti e `/dr-get-latest` non lo accettano: si usa l'installer del core con `-Package` |
 | `-Global` | Scrive la sezione linee guida in `~/.claude/CLAUDE.md`, non tocca il progetto. Incompatibile con `-Package` |
+| `-WithMcp` | Copia anche `.mcp.example.json` come `.mcp.json` (server MCP attivi). Senza, l'installer stampa `[sugg]`. Non con `-Global` |
+| `-ForceRemoteLib` | Ignora libreria e catalogo del clone locale e usa quelli pubblicati |
 
 **Da sapere prima di toccare l'installer:**
 
 - `Install-DrPackage` fa **sempre** `git clone --depth 1` del `main` da github.com, anche se l'installer è lanciato da un clone locale. Una modifica non pushata non arriva mai in un host.
-- La libreria e il catalogo arrivano prima da `raw.githubusercontent.com`. Il clone locale si usa solo se quel download fallisce. Quindi anche da un clone locale gira la libreria del `main` pubblicato: una modifica non pushata alla libreria non viene usata.
+- Lanciato da un clone locale, l'installer usa la libreria e il catalogo locali (stessa versione dello script), così una modifica non pushata alla libreria si prova subito. Sotto `irm | iex` (o con `-ForceRemoteLib`) la libreria arriva da `raw.githubusercontent.com`, con ripiego su `gh api`. Il clone locale è anche l'ultimo ripiego se il download fallisce.
 - Il contenuto dei pacchetti arriva sempre dal clone temporaneo.
 
 ---
@@ -83,7 +85,7 @@ dr-guidelines/
   LICENSE               ← Licenza del repository
   CLAUDE.md             ← Istruzioni Claude Code; il corpo diventa la sezione iniettata negli host
   .editorconfig, .gitignore, .gitattributes   ← Copiati negli host
-  .mcp.example.json     ← Server MCP consigliati; la config reale è .mcp.json, ignorato da git
+  .mcp.example.json     ← Server MCP consigliati; si copia come .mcp.json solo con -WithMcp (ignorato da git)
 ```
 
 **Dove vivono le cose che tocchi più spesso:**
@@ -181,4 +183,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v4.1 — 2026-10-16 18:29 — claude-opus-5-5*
+*Revisione v4.2 — 2026-10-20 19:30 — claude-opus-5-5*
