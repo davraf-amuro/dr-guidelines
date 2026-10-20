@@ -86,7 +86,7 @@ Pacchetti satellite:
 - **Su divergenza**: STOP — scrivi `⚠️ Divergenza Fase 4: <cosa>` in plan.md, non procedere
 
 ### Fase 5: Codex generato da Claude (best-effort)
-- **Stato**: [ ]
+- **Stato**: [x]
 - **Precondizione**: Fasi 1 e 4 completate
 - **File**: `scripts/sync-codex.ps1` (CREATE), `.agents/skills/*` (EDIT), `AGENTS.md` (EDIT)
 - **Operazione**: CREATE + EDIT
