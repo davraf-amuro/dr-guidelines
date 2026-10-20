@@ -55,6 +55,7 @@ Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 
 Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` prima di procedere.
 Segui `plan-tracking.instructions.md` per struttura e verifica finale.
+Sottoponendo il piano, proponi **sempre** di eseguirlo in un branch dedicato; l'utente sceglie e la scelta va nel campo `Branch:` del piano (`plan-tracking.instructions.md`, sezione "Branch di esecuzione").
 
 ## Brief dell'utente — cartella `briefs/`
 

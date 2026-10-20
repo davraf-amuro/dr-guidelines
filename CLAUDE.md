@@ -78,9 +78,10 @@ Brief indicato → leggilo, chiedi approfondimenti se trovi lacune o problemi, c
 Segui `plan-tracking.instructions.md`:
 1. Crea `.ai/plans/<YYYY-MM-DD>-<slug>/plan.md` con obiettivo, scope, fasi, criteri di verifica
 2. Entra in EnterPlanMode e proponi piano all'utente
-3. Durante esecuzione, marca `[x]` ogni fase completata nel piano
-4. A task completato, verifica ogni criterio → aggiorna `Stato: COMPLETATO`
-5. Dichiara: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
+3. Proponi **sempre** di eseguire il piano in un branch dedicato (`plan/<slug>`); l'utente sceglie, la scelta va nel campo `Branch:` del piano — sezione "Branch di esecuzione"
+4. Durante esecuzione, marca `[x]` ogni fase completata nel piano
+5. A task completato, verifica ogni criterio → aggiorna `Stato: COMPLETATO`
+6. Dichiara: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
 
 Piano `IN CORSO` in `.ai/plans/` all'avvio sessione → riprendi da ultima fase incompleta.
 

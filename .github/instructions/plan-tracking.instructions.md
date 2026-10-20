@@ -39,6 +39,7 @@ Eccezione: task avviato da un brief → piano sempre obbligatorio, a prescindere
 Brief: [<nome-file>.md](../../../briefs/<nome-file>.md)   ← solo se il piano nasce da un brief
 Data: <YYYY-MM-DD>
 Stato: IN CORSO
+Branch: <nome-branch> | <branch corrente> (scelta utente)   ← vedi "Branch di esecuzione"
 
 ## Obiettivo
 <descrizione obiettivo — una riga>
@@ -80,6 +81,17 @@ In questi casi:
 
 1. Aggiungi la fase "Riallinea il documento al codice" **subito prima** della verifica finale (penultima fase). Il documento va in Scope.
 2. Cosa confrontare col codice lo stabilisce l'istruzione del documento (es. `architecture-doc.instructions.md`, sezione "Riallineamento a fine implementazione"). Revisione e footer seguono `doc-versioning.instructions.md`.
+
+### Branch di esecuzione
+
+Quando sottoponi un piano all'approvazione dell'utente, **proponi sempre** di eseguirlo in un branch dedicato:
+
+1. Nome suggerito: `plan/<slug>`, creato da `main` (o dal branch principale del repository) aggiornato. Se il piano fissa già un nome (es. `issues/<repo>-<n>-<slug>`), proponi quello.
+2. L'utente sceglie: branch dedicato oppure branch corrente. Senza risposta esplicita non crei nessun branch.
+3. Scrivi la scelta nel campo d'intestazione `Branch:` del piano.
+4. Branch dedicato accettato → crealo prima della prima fase di esecuzione.
+
+La proposta vale anche per i piani da un brief e per quelli da una issue. Per i piani `PROPOSTO` si fa al passaggio a `IN CORSO`, non alla scrittura.
 
 ---
 
@@ -137,6 +149,7 @@ Piano `INTERROTTO` esistente: decidi con l'utente se riprendere o archiviare pri
 | Avvio sessione | Non si riprende: la regola "Piano `IN CORSO` → riprendi" non vale. Al più, segnalalo all'utente |
 | Altri piani | Non blocca l'apertura di altri piani e può coesistere con un piano `IN CORSO` |
 | Esecuzione | Passa a `IN CORSO` solo su approvazione esplicita dell'utente per quel piano; da lì valgono tutte le regole di questo file |
+| Branch | La proposta del branch di esecuzione (vedi "Branch di esecuzione") si fa al passaggio a `IN CORSO` |
 | File | Nessuna modifica fuori da `.ai/plans/` finché resta `PROPOSTO` |
 
 ### Campo `Issue:`
@@ -192,4 +205,4 @@ Vale anche quando il brief è l'argomento di una skill o di un prompt invocato e
 
 ---
 
-*Istruzione v1.7 - Plan Tracking - 2026-10-09 — claude-opus-5-5 — aggiunti la fase di riallineamento penultima per i documenti che descrivono il sistema e il punto 3a della verifica finale (differenza documento/codice = divergenza)*
+*Istruzione v1.8 - Plan Tracking - 2026-10-20 — claude-opus-5-5 — aggiunta la sezione "Branch di esecuzione": ogni piano sottoposto all'approvazione propone un branch dedicato, scelta registrata nel campo `Branch:`*
