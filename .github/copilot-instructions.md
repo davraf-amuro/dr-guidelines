@@ -77,8 +77,24 @@ In caso di blocco:
 2. Chiedi conferma prima di applicare correzioni automatiche
 3. Riesegui il check, poi procedi con la push
 
+### Controllo fine riga (sempre, qualsiasi stack)
+
+Oltre al comando di dominio, verifica che i file nel working tree rispettino il fine riga imposto da `.gitattributes`:
+
+```powershell
+git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'
+```
+
+Nessuna riga → controllo pulito. Righe presenti → **blocca la push** e:
+1. Elenca i file (ultimo campo di ogni riga)
+2. Chiedi conferma prima di normalizzare
+3. Normalizza **solo il working tree** dei file senza modifiche in corso (`git diff --quiet -- <file>` esce `0`): elimina il file e ripristinalo con `git checkout -- <file>`, che lo riscrive col fine riga di `.gitattributes`. File con modifiche in corso → segnalali, non toccarli
+4. Riesegui il controllo. Commit solo se cambia anche l'index (`git ls-files --eol` con `i/crlf` dove serve `eol=lf`): in quel caso `git add --renormalize <file>`
+
+Un `.editorconfig` con `end_of_line` diverso da `.gitattributes` rigenera il problema a ogni salvataggio: allineali.
+
 Nessun comando di verifica applicabile al progetto (per esempio un repository di soli documenti) → **dichiaralo esplicitamente nell'output** prima della push. L'assenza di target si dichiara, non si salta in silenzio.
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Istruzione v2.5 - Copilot Instructions (agnostico dallo stack) - 2026-10-20 — claude-opus-5-5 — proposta del branch, approvazione del piano, riletta mirata*
+*Istruzione v2.6 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-opus-5-5 — Gate di Push: controllo fine riga con `git ls-files --eol` e normalizzazione del solo working tree (davraf-amuro/dr-guidelines#30)*

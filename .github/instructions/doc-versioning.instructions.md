@@ -22,7 +22,7 @@ Esempi:
 
 | Campo | Regola |
 |-------|--------|
-| `v{N}` | Incrementa di 0.1 ad ogni modifica, di 1.0 se la struttura cambia radicalmente |
+| `v{N}` | Formato `major.minor` con due contatori interi: il minore cresce di 1 a ogni modifica (v1.9 → v1.10, v3.24 → v3.25, non v2.0); il maggiore cresce di 1 e il minore torna a 0 se la struttura cambia radicalmente (v3.25 → v4.0) |
 | `{YYYY-MM-DD HH:MM}` | Data e ora locale al momento della modifica |
 | `{modello-llm}` | ID del modello usato (es. `claude-sonnet-4-6`, `claude-opus-4-8`) |
 
@@ -35,7 +35,7 @@ Vale per `.github/instructions/*.md`, `.github/prompts/*.prompt.md`, `.claude/sk
 ```
 
 - `{Tipo}`: `Istruzione`, `Prompt` o `Skill`
-- `{X.Y}`: minor a ogni modifica, major se cambia il comportamento richiesto in modo incompatibile
+- `{X.Y}`: stessi contatori interi di `v{N}`: `Y` +1 a ogni modifica (v1.9 → v1.10), `X` +1 e `Y` a 0 se cambia il comportamento richiesto in modo incompatibile
 - `{nota}`: cosa è cambiato in questa versione, in breve (obbligatoria; `prima versione` alla creazione)
 - Un solo paio di asterischi attorno all'intera riga
 
@@ -45,4 +45,4 @@ Vale per `.github/instructions/*.md`, `.github/prompts/*.prompt.md`, `.claude/sk
 - Il footer va in fondo al file, come ultima riga
 - Se il documento non ha ancora un footer, aggiungilo alla prima modifica partendo da `v1.0`
 
-*Istruzione v1.1 - Doc Versioning - 2026-10-20 — claude-opus-5-5 — formato unico anche per istruzioni, prompt e skill*
+*Istruzione v1.2 - Doc Versioning - 2026-10-29 — claude-opus-5-5 — versione come contatore minore intero (v1.9 → v1.10), non incremento decimale di 0.1*

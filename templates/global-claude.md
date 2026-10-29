@@ -66,6 +66,8 @@ Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente da
 
 Exit code non-zero → **blocca push**, elenca file con violazioni, chiedi conferma prima di correggere. Nessun comando applicabile (repo di soli documenti) → dichiaralo prima della push.
 
+Sempre, qualsiasi stack: `git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'` deve restituire zero righe. Righe presenti → blocca push, elenca i file, chiedi conferma, normalizza solo il working tree (file senza modifiche: elimina + `git checkout -- <file>`).
+
 ## MCP Server — Ricerca prima di creare
 
 Prima di proporre un nuovo MCP server, cerca nell'ordine:

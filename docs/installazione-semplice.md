@@ -141,7 +141,7 @@ Questo è il passo più importante. **L'installatore scrive nella cartella apert
 
 L'ultima riga importante è **`Completato: dr-guidelines`**.
 
-> 🧪 **Stato delle prove.** Questo comando breve funziona da quando i repository sono pubblici (21 settembre 2026), ma non è ancora stato provato sul campo da un utente non tecnico. Se non funziona, segnalalo a chi ti ha proposto le linee guida: esiste una forma alternativa già verificata, descritta nel [README](../README.md#-progetto-esistente--aggiungere-le-guidelines).
+> 🧪 **Stato delle prove.** Questo comando breve funziona da quando i repository sono pubblici (21 settembre 2026) ed è stato provato il 29 ottobre 2026 in una cartella vuota, senza errori. Non è ancora stato provato da un utente non tecnico. Se non funziona, segnalalo a chi ti ha proposto le linee guida: esiste una forma alternativa già verificata, descritta nel [README](../README.md#-progetto-esistente--aggiungere-le-guidelines).
 
 ---
 
@@ -218,4 +218,4 @@ L'assistente aggiorna tutti i pacchetti installati e ti dice cosa è cambiato. I
 
 ---
 
-*Revisione v1.4 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v1.5 — 2026-10-29 19:05 — claude-opus-5-5*

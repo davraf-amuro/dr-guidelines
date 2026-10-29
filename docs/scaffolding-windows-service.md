@@ -17,7 +17,7 @@ Prima di creare qualsiasi file, Claude raccoglie tutto in un unico messaggio:
 | 3 | IntervalSeconds per ogni worker | Chiede se non specificato |
 | 4 | Entity Framework Core necessario? | Chiede prima di aggiungere il pacchetto |
 
-Solo la domanda 4 è fissata da `windows-service.instructions.md`. Le domande 1-3 sono la prassi dello scaffolding: le istruzioni non prevedono un gate. Da verificare.
+Le quattro domande sono il gate formale di `windows-service.instructions.md` (sezione "Gate preliminare"): finché mancano risposte, nessun file viene creato. Le risposte già presenti nella richiesta non vengono richieste di nuovo; per aggiungere un worker a un servizio esistente valgono solo le domande 2-4.
 
 ---
 
@@ -235,4 +235,4 @@ sc.exe delete "<ServiceName>"
 
 ---
 
-*Revisione v1.3 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v1.4 — 2026-10-29 19:05 — claude-opus-5-5*

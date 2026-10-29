@@ -30,7 +30,7 @@ Come arrivano gli altri pacchetti:
 
 Dettagli e prove sul campo in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
-> **I repo `dr-*` sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11; `dr-ux-kitt` dalla creazione, 2026-10-14). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano, ma non sono ancora state provate sul campo.
+> **I repo `dr-*` sono Public** (dal 2026-09-21; `dr-ux-lcars` dalla creazione, 2026-10-11; `dr-ux-kitt` dalla creazione, 2026-10-14). I comandi di questo README sono in forma `gh api`: è la forma provata sul campo e funziona anche se i repo tornassero Private, purché `gh` sia autenticato con scope `repo` e `gh auth setup-git` sia stato eseguito. Le forme brevi `irm` compaiono come alternativa: con i repo Public funzionano (installazione del core provata il 2026-10-29 in una cartella vuota).
 
 ### Aggiungere un dominio nuovo
 
@@ -475,7 +475,7 @@ Poi riavvia Claude Code per caricare il server.
 **A:** Sì, finché i repo restano Public. Su un repo Private no: `raw.githubusercontent.com` risponde `404`. In quel caso usa la forma `gh api`, che è autenticata. Non serve avere `dr-guidelines` clonato sul PC. Vale anche per `-Update`, `-Package` e `-Global`: basta aggiungere il flag in coda al comando.
 
 ### Q: Non sono un programmatore: posso installare le guidelines?
-**A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7 (da impostare come terminale predefinito di VS Code), installabili con due comandi `winget`. Non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md).
+**A:** Sì. Servono VS Code con Claude Code o GitHub Copilot, Git e PowerShell 7 (da impostare come terminale predefinito di VS Code), installabili con due comandi `winget`. Per installare non servono `gh`, .NET né Node.js. La procedura passo passo è in [`docs/installazione-semplice.md`](docs/installazione-semplice.md). Se poi vuoi creare una solution con `/dr-scaffold`, serve anche GitHub CLI autenticata: `winget install --id GitHub.cli -e`, poi `gh auth login` (lo scaffolding scarica gli installer con `gh api`).
 
 ### Q: Creo prima la solution e poi installo le guidelines?
 **A:** No, al contrario. Prima il core in una cartella vuota, poi ricarichi la finestra, poi `/dr-scaffold` crea la solution. Vedi [`docs/guida-nuova-soluzione.md`](docs/guida-nuova-soluzione.md).
@@ -517,4 +517,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.25 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v3.26 — 2026-10-29 19:05 — claude-opus-5-5*
