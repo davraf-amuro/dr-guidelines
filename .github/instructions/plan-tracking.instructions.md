@@ -42,6 +42,7 @@ Brief: [<nome-file>.md](../../../briefs/<nome-file>.md)   ← solo se il piano n
 Data: <YYYY-MM-DD>
 Stato: IN CORSO
 Branch: <nome del branch scelto dall'utente> (scelta utente)   ← vedi "Branch di esecuzione"
+Agenti paralleli: <n>   ← opzionale, default 3; vedi "Esecuzione con più agenti"
 
 ## Obiettivo
 <descrizione obiettivo — una riga>
@@ -59,6 +60,8 @@ Ogni fase è un passo atomico, eseguibile da un agente senza interpretazione.
 
 ### Fase <n>: <titolo>
 - **Stato**: [ ]
+- **Dipende da**: <numeri delle fasi che devono essere [x] prima> | —
+- **Modello**: <sessione | opus | sonnet | haiku> — <motivo se diverso da sessione>
 - **Precondizione**: <cosa deve essere vero prima — verificabile>
 - **File**: `<percorso esatto>`
 - **Operazione**: CREATE | EDIT | DELETE
@@ -97,6 +100,59 @@ La proposta vale anche per i piani da un brief e per quelli da una issue. Per i 
 
 ---
 
+## Esecuzione con più agenti
+
+Un piano approvato può essere eseguito da più agenti. Ruoli:
+
+- **Orchestratore**: l'agente della sessione che ha il piano approvato. Lancia gli esecutori, integra il loro lavoro, è l'**unico committer** e l'**unico che scrive `plan.md`** (marca `[x]`, registra le divergenze).
+- **Esecutore**: sub-agente che esegue una fase e riporta l'esito all'orchestratore. Niente commit, niente push, niente modifica di `plan.md`; valgono le "Regole esecutore".
+
+### Quando si parallelizza
+
+Fasi senza dipendenza reciproca e con **file scritti disgiunti**. Il piano mostra quali fasi vanno in parallelo: si ricava da `Dipende da` e `File` di ogni fase.
+
+Serie obbligata, dichiarata nel piano (come chiede `concurrency.instructions.md` per la serie):
+
+- stesso file;
+- file che si citano a vicenda (una regola e la skill che la richiama);
+- schema database, migrazioni, DDL, seed;
+- token, tema e componenti condivisi del design system: fase 0 seriale prima delle fasi parallele;
+- file generati da script (es. `scripts/sync-codex.ps1`);
+- `plan.md`, CHANGELOG e file d'indice condivisi: li tocca l'orchestratore o una fase finale unica.
+
+**Tetto**: al massimo `Agenti paralleli` esecutori insieme (default 3), mai "tutti insieme".
+
+### Isolamento
+
+- Esecutori che scrivono in parallelo → un worktree per esecutore (Claude Code: tool `Agent` con `isolation: "worktree"`). L'orchestratore integra con merge in sequenza nel branch del piano.
+- Stesso working tree ammesso solo se i file scritti sono disgiunti e nessuna fase parallela esegue build, test o generatori.
+- Build, lint e test girano una volta sul branch integrato, prima della verifica finale e del Gate di Push.
+- Worktree e rami degli esecutori si cancellano subito dopo l'integrazione.
+
+### Modello
+
+Default: il modello della sessione. Un modello più leggero si dichiara nel campo `Modello` della fase, con il motivo (es. `sonnet` per modifiche testuali date, `haiku` per lavoro meccanico di un solo passo con esempio di output). Fasi che toccano installer, permessi, dati sensibili, schema o decisioni di design restano sul modello della sessione o su `opus`.
+
+Su Claude Code il modello si passa col parametro `model` del tool `Agent`. Un `fork` lo ignora (eredita il modello della sessione): una fase con modello diverso va lanciata con un sub-agente nuovo.
+
+### Brief dell'esecutore
+
+L'esecutore parte a freddo: non vede la conversazione né, necessariamente, `CLAUDE.md`. Il brief contiene:
+
+1. obiettivo e "Verifica passo" della fase;
+2. file da scrivere e file vietati;
+3. file da leggere, con il path;
+4. le 5–8 direttive pertinenti estratte dalle istruzioni (non "leggi tutto");
+5. i termini da usare, se più fasi scrivono testo correlato;
+6. il formato dell'output: file toccati + esito della Verifica passo;
+7. il divieto di commit e push.
+
+### Copilot e Codex
+
+Nessun lancio di sub-agenti con modello scelto → le fasi si eseguono in serie nell'ordine di `Dipende da`, dichiarandolo. Il campo `Modello` resta informativo.
+
+---
+
 ## Fase 1–3: Esecuzione
 
 Segui `dev-cycle.instructions.md` (Dichiara → Esegui → Verifica).
@@ -115,7 +171,7 @@ Prima di dichiarare il task completato:
 2. Verifica ogni criterio in "Criteri di verifica finale"
 3. Applica `dev-cycle.instructions.md` — Fase 4 ("tutti i file modificati riletti e verificati") su ogni file di "Scope"
    - 3a. Se lo Scope contiene un documento che descrive il sistema (vedi Fase 0, "Documenti che descrivono il sistema"), le sue affermazioni si confrontano col codice reale: una differenza è una divergenza.
-4. Esegui il controllo del punto 3 (3a compreso) in un contesto isolato dalla conversazione che ha scritto il codice, quando lo strumento usato lo consente (nuova sessione, sub-agente, secondo revisore) — chi ha scritto il codice tende a confermarlo, un controllo a freddo senza cronologia pregressa lo rileva meglio. Su Claude Code: skill `dr-verify-plan`. Su Copilot e Codex: nuova chat con in contesto solo `plan.md` e i file di Scope, con la richiesta di confrontarli; se non è possibile, dichiara che la verifica non è isolata.
+4. Esegui il controllo del punto 3 (3a compreso) in un contesto isolato dalla conversazione che ha scritto il codice, quando lo strumento usato lo consente (nuova sessione, sub-agente, secondo revisore) — chi ha scritto il codice tende a confermarlo, un controllo a freddo senza cronologia pregressa lo rileva meglio. La verifica isolata gira sul **modello migliore disponibile** e riceve, oltre a `plan.md` e ai file di Scope, il diff delle modifiche (`git diff --stat`, diff completo e `git status --porcelain` per i file nuovi) come mappa di cosa è cambiato; mai il ragionamento o i report degli esecutori. Su Claude Code: skill `dr-verify-plan`, che lancia il sub-agente con `model: opus`. Su Copilot e Codex: nuova chat con in contesto solo `plan.md`, i file di Scope e il diff, con la richiesta di confrontarli; se non è possibile, dichiara che la verifica non è isolata.
 5. Se tutti i criteri soddisfatti:
    - Aggiorna `Stato: COMPLETATO`
    - Dichiara esplicitamente: `"Piano [slug] verificato. Tutti i criteri soddisfatti."`
@@ -208,4 +264,4 @@ Vale anche quando il brief è l'argomento di una skill o di un prompt invocato e
 
 ---
 
-*Istruzione v1.9 - Plan Tracking - 2026-10-20 — claude-opus-5-5 — definizione di "operazione" con esempi; riga `Branch:` a valore unico; ordine `Issue:`/`Branch:`; verifica isolata anche su Copilot e Codex*
+*Istruzione v1.10 - Plan Tracking - 2026-10-29 — claude-opus-5-5 — esecuzione con più agenti (orchestratore ed esecutori, parallelo, isolamento, modello, brief); campi `Dipende da`, `Modello` e `Agenti paralleli`; verifica isolata sul modello migliore con il diff*

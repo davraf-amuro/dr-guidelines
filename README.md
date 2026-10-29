@@ -234,7 +234,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 |------|---------------|
 | `.github/copilot-instructions.md` | Istruzioni principali, lette automaticamente da Copilot. Individuano il dominio dai pacchetti installati |
 | `dev-cycle.instructions.md` | Ciclo obbligatorio per ogni task AI: dichiara, esegui, verifica |
-| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni |
+| `plan-tracking.instructions.md` | Piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` per ogni task con ≥ 2 operazioni; fasi con `Dipende da` e `Modello`, esecuzione parallela fra più agenti con verifica finale sul modello migliore |
 | `code-organization.instructions.md` | Struttura di classi e file, commenti obbligatori (tutti i linguaggi) |
 | `no-hardcoded-values.instructions.md` | Centralizzazione dei valori letterali: cosa estrarre, dove, cosa lasciare inline (tutti i linguaggi) |
 | `input-validation.instructions.md` | Un validatore per ogni input esterno (esempi con `IValidator<T>`) |
@@ -410,7 +410,7 @@ Genera la documentazione di handoff per far continuare il lavoro a un altro svil
 
 ### `/dr-verify-plan` — Verifica Indipendente di un Piano
 
-Lancia un subagente senza il contesto di chi ha implementato: rilegge i file di Scope, li confronta con il piano e valuta i criteri di verifica prima dello stato `COMPLETATO`. Se lo Scope contiene un documento che descrive il sistema (es. `docs/architettura.md`), ne confronta a campione le affermazioni col codice reale. Chi ha scritto il codice tende a confermarlo; un controllo a freddo no.
+Lancia un sub-agente sul modello `opus`, senza il contesto di chi ha implementato, che riceve piano, diff e `git status`. Legge per intero i file di Scope, cerca prima i controesempi, controlla le direttive delle istruzioni pertinenti a ogni file toccato, segnala i file cambiati fuori Scope e porta un'evidenza `path:riga` per ogni giudizio (esito NON VERIFICABILE ammesso), prima dello stato `COMPLETATO`. Se lo Scope contiene un documento che descrive il sistema (es. `docs/architettura.md`), ne confronta a campione le affermazioni col codice reale. Chi ha scritto il codice tende a confermarlo; un controllo a freddo no.
 
 **Uso:**
 ```
@@ -517,4 +517,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.26 — 2026-10-29 19:05 — claude-opus-5-5*
+*Revisione v3.27 — 2026-10-29 19:28 — claude-opus-5-5*

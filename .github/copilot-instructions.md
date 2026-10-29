@@ -49,13 +49,14 @@ Dopo ogni modifica a un file:
 
 Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Dichiara** scope e file prima di agire
-- **Esegui** un'operazione alla volta
+- **Esegui** un'operazione alla volta per agente
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza - non assumere silenziosamente
 
 Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` e attendi l'approvazione esplicita prima di procedere.
 Segui `plan-tracking.instructions.md` per definizione di "operazione", struttura e verifica finale.
 Sottoponendo il piano, proponi **sempre** di eseguirlo in un branch dedicato; l'utente sceglie e la scelta va nel campo `Branch:` del piano (`plan-tracking.instructions.md`, sezione "Branch di esecuzione").
+Fasi con file scritti disgiunti possono andare a più agenti in parallelo, con il modello dichiarato per fase: segui `plan-tracking.instructions.md`, sezione "Esecuzione con più agenti". Su Copilot e Codex le fasi si eseguono in serie, dichiarandolo.
 
 ## Brief dell'utente — cartella `briefs/`
 
@@ -97,4 +98,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Istruzione v2.6 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-opus-5-5 — Gate di Push: controllo fine riga con `git ls-files --eol` e normalizzazione del solo working tree (davraf-amuro/dr-guidelines#30)*
+*Istruzione v2.7 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-sonnet-5-5 — Ciclo di sviluppo: un'operazione alla volta per agente, fasi parallele fra agenti secondo plan-tracking*
