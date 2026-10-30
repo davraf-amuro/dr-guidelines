@@ -98,4 +98,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Istruzione v2.7 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-sonnet-5-5 — Ciclo di sviluppo: un'operazione alla volta per agente, fasi parallele fra agenti secondo plan-tracking*
+*Istruzione v2.7 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-sonnet-5-5, claude-opus-5-5 — Ciclo di sviluppo: un'operazione alla volta per agente, fasi parallele fra agenti secondo plan-tracking; su Copilot e Codex in serie*
