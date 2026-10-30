@@ -652,6 +652,38 @@ function Merge-ClaudeSettings {
     }
 }
 
+function Test-DrEolConsistency {
+    param([string]$HostRoot)
+
+    # .editorconfig e .gitattributes sono protetti: se l'host li ha personalizzati la versione del
+    # core finisce in '<file>.new' e l'host resta con i suoi. Se i due fine riga divergono, l'editor
+    # salva in un formato e git ne impone un altro: il formatter (dotnet format) blocca il Gate di Push.
+    # Solo avviso: non si corregge nulla nei file dell'host.
+    $editorConfig = Join-Path $HostRoot ".editorconfig"
+    $gitAttributes = Join-Path $HostRoot ".gitattributes"
+    if (-not (Test-Path $editorConfig) -or -not (Test-Path $gitAttributes)) { return }
+
+    $editorEol = $null
+    $inGlobalSection = $false
+    foreach ($line in Get-Content -Path $editorConfig) {
+        if ($line -match '^\s*\[(.+)\]\s*$') { $inGlobalSection = ($Matches[1] -eq '*'); continue }
+        if ($inGlobalSection -and $line -match '^\s*end_of_line\s*=\s*(\w+)') { $editorEol = $Matches[1].ToLowerInvariant() }
+    }
+
+    $attributesEol = $null
+    foreach ($line in Get-Content -Path $gitAttributes) {
+        if ($line -match '^\s*\*\s+.*\beol=(\w+)') { $attributesEol = $Matches[1].ToLowerInvariant() }
+    }
+
+    if (-not $editorEol -or -not $attributesEol) { return }
+    Write-Host "  Fine riga:" -ForegroundColor White
+    if ($editorEol -ne $attributesEol) {
+        Write-Host "  [WARN] .editorconfig [*] end_of_line = $editorEol, .gitattributes * eol=$attributesEol - allinea i due file, poi esegui il controllo fine riga del Gate di Push" -ForegroundColor Yellow
+    } else {
+        Write-Host "  [OK]   .editorconfig e .gitattributes concordano ($editorEol)" -ForegroundColor Green
+    }
+}
+
 function Copy-ScaffoldingCatalog {
     param([string]$TempRoot, [string]$HostRoot, [switch]$Update)
 
@@ -1036,6 +1068,7 @@ function Install-DrPackageContent {
 
         if ($pkg.IsCore) {
             $newFiles += @(Copy-CoreConfigFiles -TempRoot $tempDir -HostRoot $hostRoot -BaselineCommit $baselineCommit -WithMcp:$WithMcp -Update:$Update)
+            Test-DrEolConsistency -HostRoot $hostRoot
             Merge-ClaudeSettings -TempRoot $tempDir -HostRoot $hostRoot
             Copy-ScaffoldingCatalog -TempRoot $tempDir -HostRoot $hostRoot -Update:$Update
             New-BriefsFolder -HostRoot $hostRoot

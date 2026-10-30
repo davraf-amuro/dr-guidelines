@@ -90,21 +90,17 @@ Vedi `.ai/handoff/DECISIONI.md`.
 
 - **Limitazione** — il core ha `suggests` (dr-minimalapi, dr-dotnet-backend): 2 righe `[sugg]` a ogni installazione, anche su host non .NET
 - **Limitazione** — `AGENTS.md` non installato negli host
-- **Attività incompleta** — numerazione footer: `doc-versioning` prescrive +0.1, i file usano contatore minore (v3.24 → v3.25). Decisione utente mancante
-- **Attività incompleta** — `docs/scaffolding-windows-service.md`: domande 1-3 del gate non fissate da istruzioni, marcate "Da verificare". Decidere se `dr-winsvc` ha un gate formale
-- **Attività incompleta** — `README.md` FAQ "Non sono un programmatore": dice che `gh` non serve, ma `/dr-scaffold` lo richiede
-- **Attività incompleta** — forma `irm | iex` dichiarata "non provata sul campo" in `docs/installazione-semplice.md`
-- **Limitazione** — `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1`, `scripts/sync-codex.ps1`, installer kitt/lcars: LF su disco, `.gitattributes` impone CRLF al checkout (warning git, nessun effetto funzionale osservato)
+- **Limitazione** — `dr-guidelines-install-lib.ps1`, `dr-guidelines-install.ps1`, `scripts/sync-codex.ps1`, installer kitt/lcars: LF su disco, `.gitattributes` impone CRLF al checkout. Dal 2026-10-29 il nuovo controllo fine riga del Gate di Push li segnala (insieme a ~17 `plan.md` in `.ai/plans/` in CRLF): normalizzare il working tree prima del prossimo push
+- **Attività incompleta** — `irm | iex` provata da terminale, non ancora da un utente non tecnico
+
+Chiusi il 2026-10-29 (piano `2026-10-29-pending-handoff-e-issue-30`): CI verde; FAQ `gh`; footer = contatore minore (`doc-versioning` v1.2); gate formale `dr-winsvc` v1.6; `irm | iex` provata; issue #30 (controllo fine riga nel Gate, avviso dell'installer, `.editorconfig` CRLF per `*.ps1`/`*.sln`)
 
 ---
 
 # TODO
 
-1. Controllare l'esito della CI su GitHub dopo il push del 2026-10-20
-2. Aggiungere a `README.md` (FAQ) la nota: `gh` autenticato richiesto da `/dr-scaffold`
-3. Decidere e applicare lo schema di numerazione footer (regola o file)
-4. Decidere gate formale per `dr-winsvc` e aggiornare `docs/scaffolding-windows-service.md`
-5. Provare sul campo `irm | iex` e aggiornare `docs/installazione-semplice.md`
+1. Push di `dr-guidelines` e `dr-winsvc` (chiude #30), previa normalizzazione fine riga del working tree
+2. Prova con un utente non tecnico di `docs/installazione-semplice.md`
 
 ---
 
@@ -113,24 +109,24 @@ Vedi `.ai/handoff/DECISIONI.md`.
 - Build: non applicabile (nessun progetto compilabile)
 - Test: smoke test installer su host temporaneo (prima installazione, riesecuzione, `-Update`) — superato
 - Lint: nessun comando di lint applicabile (repo di documenti e script PowerShell), dichiarato prima del push; parse di tutti i `.ps1` — 0 errori; JSON validi; YAML CI valido; `sync-codex.ps1 -Check` — exit 0; script `.ps1` solo ASCII
-- CI su GitHub dopo il push: Sconosciuto
+- CI su GitHub dopo il push del 2026-10-20: verde (`Suggests text check`, 2026-10-26)
+- 2026-10-29: parse di `dr-guidelines-install-lib.ps1` — 0 errori; `Test-DrEolConsistency` provata su host temporanei (incoerente → `[WARN]`, coerente → `[OK]`); `irm | iex` in cartella vuota — exit 0
 
 ---
 
 # Rischi
 
-- CI non ancora osservata dopo il push: eventuale fallimento non noto
+- Host già installati con `.editorconfig` CRLF: l'installer lo segnala a `/dr-get-latest`, la correzione resta manuale
 - `~/.claude/CLAUDE.md`: modifiche manuali dentro il blocco sentinel si perdono al prossimo `-Global -Update`
 
 ---
 
 # Prossimo passo consigliato
 
-Controllare l'esito della CI di `davraf-amuro/dr-guidelines` con `gh run list --repo davraf-amuro/dr-guidelines --limit 3`.
+Normalizzare i fine riga del working tree (controllo del Gate di Push), poi push di `dr-guidelines` e `dr-winsvc`.
 
 ---
 
 # Informazioni mancanti
 
-- Schema di numerazione footer preferito dall'utente
-- Esito della CI dopo il push
+- Nessuna

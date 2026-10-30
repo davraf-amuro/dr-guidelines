@@ -50,6 +50,8 @@ Prima di scrivere codice, una riga:
 3. Marca `[x]` ogni fase completata nel piano
 4. A task completato: verifica ogni criterio → aggiorna `Stato: COMPLETATO`
 
+Fasi indipendenti (file scritti disgiunti) → indica per ognuna `Dipende da` e `Modello` (default: il modello della sessione) ed eseguile in parallelo con sub-agenti, al massimo 3 insieme; committa e aggiorna il piano solo l'orchestratore (l'agente principale). Verifica finale in un sub-agente isolato sul modello migliore (`opus`), con piano e diff delle modifiche.
+
 Piano `IN CORSO` in `.ai/plans/` all'avvio sessione → riprendi da ultima fase incompleta.
 
 Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente dall'utente con `/nome` — l'invocazione è l'approvazione.
@@ -65,6 +67,8 @@ Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente da
 | Python | `ruff check .` oppure `flake8` |
 
 Exit code non-zero → **blocca push**, elenca file con violazioni, chiedi conferma prima di correggere. Nessun comando applicabile (repo di soli documenti) → dichiaralo prima della push.
+
+Sempre, qualsiasi stack: `git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'` deve restituire zero righe. Righe presenti → blocca push, elenca i file, chiedi conferma, normalizza solo il working tree (file senza modifiche: elimina + `git checkout -- <file>`).
 
 ## MCP Server — Ricerca prima di creare
 

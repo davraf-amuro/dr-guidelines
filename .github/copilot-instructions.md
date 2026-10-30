@@ -49,13 +49,14 @@ Dopo ogni modifica a un file:
 
 Ogni task segue il ciclo definito in `dev-cycle.instructions.md`:
 - **Dichiara** scope e file prima di agire
-- **Esegui** un'operazione alla volta
+- **Esegui** un'operazione alla volta per agente
 - **Verifica** (rileggi) dopo ogni modifica
 - **Segnala** incertezza - non assumere silenziosamente
 
 Task con >= 2 operazioni: crea piano su disco in `.ai/plans/<YYYY-MM-DD>-<slug>/` e attendi l'approvazione esplicita prima di procedere.
 Segui `plan-tracking.instructions.md` per definizione di "operazione", struttura e verifica finale.
 Sottoponendo il piano, proponi **sempre** di eseguirlo in un branch dedicato; l'utente sceglie e la scelta va nel campo `Branch:` del piano (`plan-tracking.instructions.md`, sezione "Branch di esecuzione").
+Fasi con file scritti disgiunti possono andare a più agenti in parallelo, con il modello dichiarato per fase: segui `plan-tracking.instructions.md`, sezione "Esecuzione con più agenti". Su Copilot e Codex le fasi si eseguono in serie, dichiarandolo.
 
 ## Brief dell'utente — cartella `briefs/`
 
@@ -77,8 +78,24 @@ In caso di blocco:
 2. Chiedi conferma prima di applicare correzioni automatiche
 3. Riesegui il check, poi procedi con la push
 
+### Controllo fine riga (sempre, qualsiasi stack)
+
+Oltre al comando di dominio, verifica che i file nel working tree rispettino il fine riga imposto da `.gitattributes`:
+
+```powershell
+git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'
+```
+
+Nessuna riga → controllo pulito. Righe presenti → **blocca la push** e:
+1. Elenca i file (ultimo campo di ogni riga)
+2. Chiedi conferma prima di normalizzare
+3. Normalizza **solo il working tree** dei file senza modifiche in corso (`git diff --quiet -- <file>` esce `0`): elimina il file e ripristinalo con `git checkout -- <file>`, che lo riscrive col fine riga di `.gitattributes`. File con modifiche in corso → segnalali, non toccarli
+4. Riesegui il controllo. Commit solo se cambia anche l'index (`git ls-files --eol` con `i/crlf` dove serve `eol=lf`): in quel caso `git add --renormalize <file>`
+
+Un `.editorconfig` con `end_of_line` diverso da `.gitattributes` rigenera il problema a ogni salvataggio: allineali.
+
 Nessun comando di verifica applicabile al progetto (per esempio un repository di soli documenti) → **dichiaralo esplicitamente nell'output** prima della push. L'assenza di target si dichiara, non si salta in silenzio.
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Istruzione v2.5 - Copilot Instructions (agnostico dallo stack) - 2026-10-20 — claude-opus-5-5 — proposta del branch, approvazione del piano, riletta mirata*
+*Istruzione v2.7 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-sonnet-5-5, claude-opus-5-5 — Ciclo di sviluppo: un'operazione alla volta per agente, fasi parallele fra agenti secondo plan-tracking; su Copilot e Codex in serie*

@@ -36,11 +36,12 @@ Se il task richiede più file, elencali in ordine prima di iniziare.
 
 ---
 
-## Fase 2: ESEGUI un'operazione alla volta
+## Fase 2: ESEGUI un'operazione alla volta per agente
 
 - Un intento per passo: una modifica alla volta, verificata prima della successiva
 - Più file nello stesso passo solo se dichiarati in Fase 1 (letture e ricerche indipendenti possono andare in parallelo)
 - Segui l'ordine dichiarato — non saltare passaggi
+- Piano con fasi assegnate a più agenti: ogni agente esegue le sue fasi una alla volta; quali fasi vanno in parallelo e come si integrano lo stabilisce `plan-tracking.instructions.md`, sezione "Esecuzione con più agenti"
 
 ---
 
@@ -108,4 +109,4 @@ Se ti accorgi di aver proceduto senza verificare il file precedente:
 → Fermati. Dichiara: "Ho saltato la verifica di [file]. Torno indietro."
 → Rileggi il file saltato → verifica → poi riprendi da dove eri.
 
-*Istruzione v1.2 - Dev Cycle - 2026-10-20 — claude-opus-5-5 — esempi agnostici, passo = un intento, riletta mirata*
+*Istruzione v1.3 - Dev Cycle - 2026-10-29 — claude-sonnet-5-5 — Fase 2: un'operazione alla volta per agente, rimando all'esecuzione con più agenti*

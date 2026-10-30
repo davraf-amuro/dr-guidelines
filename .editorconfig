@@ -44,8 +44,8 @@ trim_trailing_whitespace = false
 [*.sh]
 end_of_line = lf
 
-# Batch files
-[*.{cmd,bat}]
+# Windows-specific files: CRLF, come in .gitattributes
+[*.{cmd,bat,ps1,sln}]
 end_of_line = crlf
 
 #####################

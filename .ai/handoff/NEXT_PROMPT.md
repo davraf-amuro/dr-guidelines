@@ -12,13 +12,12 @@ Regole chiave:
 Stato:
 - Audit e correzioni della suite completati (piano `.ai/plans/2026-10-20-audit-suite-fix/plan.md`, `COMPLETATO`)
 - Revisione docs/README/commenti e fix `$PSScriptRoot` committati
-- Tutti i 9 repo pubblicati su `origin/main` il 2026-10-20; working tree pulito
+- Tutti i 9 repo pubblicati su `origin/main` il 2026-10-20
+- 2026-10-29: piano `.ai/plans/2026-10-29-pending-handoff-e-issue-30/plan.md` — issue #30 (controllo fine riga nel Gate di Push, avviso dell'installer), footer a contatore minore, gate formale `dr-winsvc`, FAQ `gh`, `irm | iex` provata. Commit locali in `dr-guidelines` e `dr-winsvc`, **non pushati**
 
 Problemi aperti:
-1. Esito CI dopo il push: non verificato
-2. `README.md` FAQ "Non sono un programmatore": manca la nota che `/dr-scaffold` richiede `gh` autenticato
-3. Numerazione footer: `doc-versioning` dice +0.1, i file usano contatore minore (v3.24 → v3.25) — chiedere all'utente quale schema
-4. `docs/scaffolding-windows-service.md`: domande 1-3 del gate "Da verificare" — chiedere se `dr-winsvc` deve avere un gate formale
-5. Forma `irm | iex` non provata sul campo
+1. Working tree di `dr-guidelines` non conforme al nuovo controllo fine riga (`.ps1` in LF, `plan.md` in CRLF): normalizzare con la procedura del Gate di Push prima della push
+2. Push di `dr-guidelines` (chiude #30) e `dr-winsvc`: solo su richiesta dell'utente
+3. `docs/installazione-semplice.md`: da provare con un utente non tecnico
 
-Prossimo passo: esegui `gh run list --repo davraf-amuro/dr-guidelines --limit 3` e riporta l'esito della CI; se fallita, leggi il log con `gh run view <id> --log-failed` e proponi la correzione.
+Prossimo passo: esegui il controllo fine riga del Gate di Push (`.github/copilot-instructions.md`), proponi la normalizzazione, poi chiedi se fare push.
