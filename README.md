@@ -166,6 +166,7 @@ Dopo `dr-guidelines-install.ps1`, il progetto host contiene:
 | `CLAUDE.md` | creato o aggiornato | Sezione `<!-- dr-guidelines --> ... <!-- /dr-guidelines -->`. Il resto del file resta com'è |
 | `.ai/dr-scaffolding-catalog.json` | copia, sovrascritta con `-Update` | Catalogo di domini, tipologie e pacchetti, letto dalle skill `dr-scaffold*` |
 | `.ai/dr-guidelines-packages.json` | creato o aggiornato | Manifest dei pacchetti installati, con il **commit** di provenienza: fa da lock file. A ogni esecuzione l'installer confronta il commit vecchio con il nuovo e lo scrive a schermo; il commit si aggiorna solo alla prima installazione e con `-Update` |
+| `scripts/normalize-eol.ps1` | copia (campo `rootFiles` del core); con `-Update` sovrascritta solo se mai modificata, altrimenti `<file>.new` | Normalizza in place il fine riga secondo `.gitattributes`, anche sui file con modifiche in corso. L'installer lo esegue sui file che ha appena scritto; le skill di scaffolding e il Gate di Push lo usano. Regola: `line-endings.instructions.md` |
 | `briefs/` | creata vuota, solo se assente | Le tue richieste per l'agente, in Markdown, con nome e forma liberi. L'installer non ne legge né tocca mai il contenuto, nemmeno con `-Update` |
 
 > **`-Update` non perde le tue modifiche a `.gitignore`, `.editorconfig`, `.gitattributes`, `.github/copilot-instructions.md` e ai `rootFiles` dei pacchetti** (`Directory.Build.props`, `global.json`, …). L'installer confronta il file dell'host con la versione del commit installato in precedenza (registrato nel manifest): se non l'hai mai toccato lo aggiorna (`[UPD]`), se l'hai personalizzato e il pacchetto lo ha cambiato scrive la versione nuova in `<file>.new` (`[NEW]`) e lascia l'originale; se l'hai personalizzato e a monte non è cambiato nulla lo lascia com'è (`[SKIP]`). Confronta i due file, porta a mano le novità che ti servono, poi elimina il `.new`. Se la versione precedente non è ricostruibile (manifest senza commit, rete assente) l'installer sceglie la via prudente: `.new`.
@@ -247,6 +248,7 @@ Contenuto **core**. Le istruzioni di dominio (Minimal API, Windows Service, EF C
 | `mcp-server-discovery.instructions.md` | Ricerca e creazione di MCP server: cerca prima di creare |
 | `cross-package-references.instructions.md` | Come si cita una regola che vive in un altro pacchetto `dr-*`: rimando condizionale al manifest, mai secco |
 | `concurrency.instructions.md` | Preferire l'esecuzione parallela con operazioni indipendenti: fan-out e coda con N consumer, limite al parallelismo, cancellazione, errori per ramo, nessuna risorsa non thread-safe condivisa; serie dichiarata (tutti i linguaggi) |
+| `line-endings.instructions.md` | Dopo generatori (`dotnet new`, `dotnet ef`, `npm create`), copie e scritture da shell: fine riga allineati a `.gitattributes` con `scripts/normalize-eol.ps1`. Hook automatico rimandato; su Copilot e Codex a mano |
 
 ---
 
@@ -517,4 +519,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.27 — 2026-10-29 19:28 — claude-opus-5-5*
+*Revisione v3.28 — 2026-11-27 14:30 — claude-opus-5-5*

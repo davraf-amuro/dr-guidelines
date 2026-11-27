@@ -43,7 +43,8 @@ Fonte unica: `dev-cycle.instructions.md` — Fase 0. Compila quella checklist ne
 Dopo ogni modifica a un file:
 1. Rileggi la parte modificata — sempre per file scritti da script, generatori o comandi di shell; se lo strumento di modifica fallisce quando il testo non si applica esattamente (es. Edit di Claude Code), la sua conferma vale come riletta del punto modificato
 2. Confronta il contenuto con quanto richiesto
-3. Solo se corrispondono, dichiara la modifica completata
+3. File scritti da generatori, copie o scritture da shell → allinea il fine riga con `scripts/normalize-eol.ps1`; segui `line-endings.instructions.md`
+4. Solo se corrispondono, dichiara la modifica completata
 
 ## Ciclo di sviluppo obbligatorio
 
@@ -80,17 +81,27 @@ In caso di blocco:
 
 ### Controllo fine riga (sempre, qualsiasi stack)
 
-Oltre al comando di dominio, verifica che i file nel working tree rispettino il fine riga imposto da `.gitattributes`:
+Oltre al comando di dominio, due controlli sul fine riga imposto da `.gitattributes`. Correzione sempre con `scripts/normalize-eol.ps1` (portato dal core, regola `line-endings.instructions.md`): lavora in place e vale anche per i file con modifiche in corso.
+
+**1. Index — blocca la push.** Con tutto committato l'index coincide con l'ultimo commit, cioè con quello che si pubblica. Un file di testo deve stare nell'index in LF:
+
+```powershell
+git ls-files --eol | Select-String '^i/(crlf|mixed)\s+\S+\s+attr/text'
+```
+
+Nessuna riga → pulito. Righe presenti → **blocca la push** e:
+1. Elenca i file (ultimo campo di ogni riga)
+2. Chiedi conferma prima di normalizzare
+3. `pwsh scripts/normalize-eol.ps1 -Path <file>[,<altro>]`, poi `git add --renormalize <file>` e commit
+4. Riesegui il controllo
+
+**2. Working tree — avviso, non blocca.**
 
 ```powershell
 git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'
 ```
 
-Nessuna riga → controllo pulito. Righe presenti → **blocca la push** e:
-1. Elenca i file (ultimo campo di ogni riga)
-2. Chiedi conferma prima di normalizzare
-3. Normalizza **solo il working tree** dei file senza modifiche in corso (`git diff --quiet -- <file>` esce `0`): elimina il file e ripristinalo con `git checkout -- <file>`, che lo riscrive col fine riga di `.gitattributes`. File con modifiche in corso → segnalali, non toccarli
-4. Riesegui il controllo. Commit solo se cambia anche l'index (`git ls-files --eol` con `i/crlf` dove serve `eol=lf`): in quel caso `git add --renormalize <file>`
+Righe presenti → segnala i file e proponi `pwsh scripts/normalize-eol.ps1` (senza `-Path` prende anche questi file): git li converte già quando li aggiunge, quindi non arrivano nel commit, ma risultano modificati e sporcano diff e formatter. Non usare `git checkout -- <file>` per correggere il fine riga: scarta le modifiche in corso.
 
 Un `.editorconfig` con `end_of_line` diverso da `.gitattributes` rigenera il problema a ogni salvataggio: allineali.
 
@@ -98,4 +109,4 @@ Nessun comando di verifica applicabile al progetto (per esempio un repository di
 
 > Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
 
-*Istruzione v2.7 - Copilot Instructions (agnostico dallo stack) - 2026-10-29 — claude-sonnet-5-5, claude-opus-5-5 — Ciclo di sviluppo: un'operazione alla volta per agente, fasi parallele fra agenti secondo plan-tracking; su Copilot e Codex in serie*
+*Istruzione v2.8 - Copilot Instructions (agnostico dallo stack) - 2026-11-27 — claude-sonnet-5-5, claude-opus-5-5 — Controllo fine riga: blocco sull'index, avviso sul working tree, correzione con `scripts/normalize-eol.ps1` al posto di cancella + `git checkout`; Verifica post-modifica rimanda a `line-endings.instructions.md` (davraf-amuro/dr-guidelines#34)*

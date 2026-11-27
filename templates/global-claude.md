@@ -68,7 +68,7 @@ Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente da
 
 Exit code non-zero → **blocca push**, elenca file con violazioni, chiedi conferma prima di correggere. Nessun comando applicabile (repo di soli documenti) → dichiaralo prima della push.
 
-Sempre, qualsiasi stack: `git ls-files --eol | Select-String 'w/(crlf|mixed)\s+attr/[^\t]*eol=lf|w/(lf|mixed)\s+attr/[^\t]*eol=crlf'` deve restituire zero righe. Righe presenti → blocca push, elenca i file, chiedi conferma, normalizza solo il working tree (file senza modifiche: elimina + `git checkout -- <file>`).
+Sempre, qualsiasi stack: `git ls-files --eol | Select-String '^i/(crlf|mixed)\s+\S+\s+attr/text'` (index) deve restituire zero righe. Righe presenti → blocca push, elenca i file, chiedi conferma, `scripts/normalize-eol.ps1 -Path <file>` (se il progetto ha il core dr-guidelines; altrimenti converti il fine riga del file con un editor) + `git add --renormalize <file>` e commit. Working tree fuori norma (`w/crlf` dove serve `eol=lf`) → solo avviso, stessa correzione con lo script; mai `git checkout -- <file>` (scarta le modifiche).
 
 ## MCP Server — Ricerca prima di creare
 

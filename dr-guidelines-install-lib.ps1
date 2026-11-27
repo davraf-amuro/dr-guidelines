@@ -20,6 +20,18 @@ $Script:PackageRegistry = $null
 # il catalogo accanto alla libreria ha la precedenza sul raw pubblico, cosi' i due file
 # restano della stessa versione.
 $Script:PreferLocalSource = $false
+# File scritti nell'host durante l'installazione di un pacchetto: a fine giro passano da
+# scripts/normalize-eol.ps1 dell'host, che ne allinea il fine riga a .gitattributes (#34)
+$Script:DrWrittenFiles = [System.Collections.Generic.List[string]]::new()
+# Percorso, relativo alla radice dell'host, dello script di normalizzazione portato dal core
+# (stesso valore di rootFiles del core in scaffolding-catalog.json)
+$Script:DrEolScript = "scripts/normalize-eol.ps1"
+
+# Annota un file scritto nell'host, per la normalizzazione dei fine riga a fine pacchetto
+function Register-DrWrittenFile {
+    param([string]$Path)
+    $Script:DrWrittenFiles.Add([System.IO.Path]::GetFullPath($Path))
+}
 
 function Get-DrCatalog {
     if ($Script:Catalog) { return $Script:Catalog }
@@ -152,7 +164,10 @@ function Invoke-DrGitClone {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         throw "git non trovato nel PATH: serve per clonare $Repo."
     }
-    $output = & git clone --quiet --depth 1 "https://github.com/$Repo.git" $Destination 2>&1 | Out-String
+    # core.autocrlf=false: con il default di Git for Windows (true) i repo senza .gitattributes
+    # escono in CRLF e finiscono cosi' nell'host (#34). Un eol= esplicito nel .gitattributes
+    # del pacchetto vince comunque (es. *.ps1 eol=crlf del core).
+    $output = & git clone -c core.autocrlf=false -c core.eol=lf --quiet --depth 1 "https://github.com/$Repo.git" $Destination 2>&1 | Out-String
     if ($LASTEXITCODE -ne 0) {
         throw "git clone fallito per $Repo (exit $LASTEXITCODE; repo Private? verifica autenticazione git/gh). Output di git: $($output.Trim())"
     }
@@ -184,6 +199,7 @@ function Copy-GuidelineFile {
     $isUpdate = $Update -and (Test-Path $DestFile)
     # -ErrorAction Stop: una copia fallita ferma l'installazione prima di scrivere il manifest
     Copy-Item -Path $SrcFile -Destination $DestFile -Force -ErrorAction Stop
+    Register-DrWrittenFile $DestFile
     $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
     Write-Host "  $tag  $(Split-Path $DestFile -Leaf)" -ForegroundColor Green
 }
@@ -306,6 +322,7 @@ function Copy-ProtectedFileCore {
         $hostBlob = (git -C $TempRoot hash-object "--path=$gitPath" $dest 2>$null | Out-String).Trim()
         if ($baseBlob -and $baseBlob -eq $hostBlob) {
             Copy-Item -Path $src -Destination $dest -Force -ErrorAction Stop
+            Register-DrWrittenFile $dest
             Write-Host "  [UPD]  $gitPath" -ForegroundColor Green
             return
         }
@@ -324,6 +341,7 @@ function Copy-ProtectedFileCore {
 
     $replaced = Test-Path "$dest.new"
     Copy-Item -Path $src -Destination "$dest.new" -Force -ErrorAction Stop
+    Register-DrWrittenFile "$dest.new"
     $note = if ($replaced) { "; sostituito il .new precedente" } else { "" }
     Write-Host "  [NEW]  $gitPath.new (personalizzato nell'host: l'originale non e' stato toccato$note)" -ForegroundColor Yellow
     return "$gitPath.new"
@@ -389,6 +407,9 @@ function Copy-Skills {
             $isUpdate = $Update -and (Test-Path $destSkillDir)
             if (-not (Test-Path $destSkillDir)) { New-Item -ItemType Directory -Path $destSkillDir -Force -ErrorAction Stop | Out-Null }
             Copy-Item -Path (Join-Path $dir.FullName "*") -Destination $destSkillDir -Recurse -Force -ErrorAction Stop
+            foreach ($f in Get-ChildItem $dir.FullName -Recurse -File) {
+                Register-DrWrittenFile (Join-Path $destSkillDir $f.FullName.Substring($dir.FullName.Length + 1))
+            }
             $tag = if ($isUpdate) { "[UPD]" } else { "[OK] " }
             Write-Host "  $tag  $($dir.Name)/" -ForegroundColor Green
         }
@@ -515,6 +536,7 @@ function Copy-PackageSourceFiles {
 
         if (-not (Test-Path $dest)) {
             Copy-Item -Path $src -Destination $dest -ErrorAction Stop
+            Register-DrWrittenFile $dest
             Write-Host "  [OK]   $($sf.To)" -ForegroundColor Green
         } elseif (-not $Update) {
             Write-Host "  [SKIP] $($sf.To)" -ForegroundColor DarkGray
@@ -522,6 +544,7 @@ function Copy-PackageSourceFiles {
             Write-Host "  [=]    $($sf.To) invariato" -ForegroundColor DarkGray
         } else {
             Copy-Item -Path $src -Destination "$dest.new" -Force -ErrorAction Stop
+            Register-DrWrittenFile "$dest.new"
             $newFiles += "$($sf.To).new"
             Write-Host "  [NEW]  $($sf.To).new (l'originale non e' stato toccato)" -ForegroundColor Yellow
         }
@@ -575,6 +598,7 @@ function Copy-CoreConfigFiles {
             }
         } elseif (-not (Test-Path $mcpDest)) {
             Copy-Item -Path $mcpSrc -Destination $mcpDest -ErrorAction Stop
+            Register-DrWrittenFile $mcpDest
             Write-Host "  [OK]   .mcp.json" -ForegroundColor Green
         } elseif ((Get-FileHash $mcpSrc).Hash -ne (Get-FileHash $mcpDest).Hash) {
             Write-Host "  [WARN] .mcp.json esiste con contenuto diverso - non sovrascritto, confronta manualmente" -ForegroundColor Yellow
@@ -604,6 +628,7 @@ function Merge-ClaudeSettings {
 
     if (-not (Test-Path $dest)) {
         Copy-Item -Path $src -Destination $dest -Force -ErrorAction Stop
+        Register-DrWrittenFile $dest
         Write-Host "  [OK]   .claude/settings.json" -ForegroundColor Green
         return
     }
@@ -644,8 +669,8 @@ function Merge-ClaudeSettings {
         $out = $destJson | ConvertTo-Json -Depth 20
         # Il file viene riscritto (ConvertTo-Json cambia formattazione e ordine): copia di sicurezza prima
         Copy-Item -Path $dest -Destination "$dest.bak" -Force -ErrorAction Stop
-        # UTF-8 senza BOM: indipendente dalla versione di PowerShell
-        [System.IO.File]::WriteAllText($dest, $out, [System.Text.UTF8Encoding]::new($false))
+        # UTF-8 senza BOM e in LF: ConvertTo-Json emette CRLF su Windows (5.1 e 7)
+        Write-DrUtf8File -Path $dest -Content ($out + "`n")
         Write-Host "  [UPD]  .claude/settings.json - $added voci aggiunte (copia precedente: settings.json.bak)" -ForegroundColor Green
     } else {
         Write-Host "  [SKIP] .claude/settings.json - nessuna voce da aggiungere" -ForegroundColor DarkGray
@@ -717,9 +742,49 @@ function New-BriefsFolder {
 function Write-DrUtf8File {
     # UTF-8 senza BOM con qualsiasi versione di PowerShell: Set-Content -Encoding UTF8 scrive il
     # BOM su 5.1 e non su 7, e lo stesso file cambierebbe a seconda di chi lancia l'installer.
+    # Fine riga sempre LF: ConvertTo-Json e le here-string su Windows producono CRLF (#34).
+    # Scrive solo .md e .json: nessun file che richieda CRLF.
     param([string]$Path, [string]$Content)
     $full = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
-    [System.IO.File]::WriteAllText($full, $Content, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($full, ($Content -replace "`r`n?", "`n"), [System.Text.UTF8Encoding]::new($false))
+}
+
+function Invoke-DrEolNormalize {
+    # Allinea il fine riga dei file scritti in questo giro a .gitattributes dell'host, con lo
+    # script che il core porta nell'host (scripts/normalize-eol.ps1): la logica sta in un posto solo.
+    # Processo figlio con -ExecutionPolicy Bypass: sotto 'irm | iex' la policy della macchina
+    # (Restricted su Windows PowerShell) bloccherebbe '& script.ps1', e l'exit dello script
+    # in un scriptblock chiuderebbe la sessione dell'utente.
+    param([string]$HostRoot)
+
+    $files = @($Script:DrWrittenFiles | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -Unique)
+    if ($files.Count -eq 0) { return }
+
+    Write-Host "  Fine riga dei file scritti:" -ForegroundColor White
+    $script = Join-Path $HostRoot $Script:DrEolScript.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+    if (-not (Test-Path $script)) {
+        Write-Host "  [WARN] $Script:DrEolScript assente (core non installato o da aggiornare con -Update): fine riga non normalizzati, esegui il controllo del Gate di Push" -ForegroundColor Yellow
+        return
+    }
+
+    # Motore dalla cartella di installazione, non dal processo corrente: sotto ISE o un altro host
+    # il processo non e' un eseguibile che accetta -File
+    $exeName = if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh' } else { 'powershell.exe' }
+    if ($IsWindows -and $exeName -eq 'pwsh') { $exeName = 'pwsh.exe' }
+    $engine = Join-Path $PSHOME $exeName
+
+    # Elenco in un file, un percorso per riga: nessun limite di lunghezza e nessun problema con
+    # le virgole nel percorso dell'host
+    $listFile = Join-Path ([System.IO.Path]::GetTempPath()) ("dr-eol-" + [guid]::NewGuid().ToString("N") + ".txt")
+    try {
+        [System.IO.File]::WriteAllLines($listFile, [string[]]$files, [System.Text.UTF8Encoding]::new($false))
+        & $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -ListFile $listFile
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  [WARN] $Script:DrEolScript uscito con ${LASTEXITCODE}: controlla i fine riga con '$Script:DrEolScript -Check'" -ForegroundColor Yellow
+        }
+    } finally {
+        Remove-Item -Path $listFile -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Merge-ClaudeMdSection {
@@ -1008,6 +1073,7 @@ function Install-DrPackageContent {
     $pkg      = $Package
     $hostRoot = $HostRoot
     $manifest = Read-DrManifest -HostRoot $hostRoot
+    $Script:DrWrittenFiles.Clear()
 
     $tempDir = New-DrTempFolder
 
@@ -1075,6 +1141,9 @@ function Install-DrPackageContent {
             Write-Host "  CLAUDE.md:" -ForegroundColor White
             Merge-ClaudeMdSection -SrcClaudeMd (Join-Path $tempDir "CLAUDE.md") -DestClaudeMd (Join-Path $hostRoot "CLAUDE.md") -PackageName $PackageName -Update:$Update
         }
+
+        # Dopo tutte le copie del pacchetto: per il core lo script e' appena arrivato fra i rootFiles
+        Invoke-DrEolNormalize -HostRoot $hostRoot
 
         $newFiles = @($newFiles | Where-Object { $_ })
         if ($newFiles.Count -gt 0) {
