@@ -129,7 +129,7 @@
       "suggestedPackages": [],
       "optionalPackages": [],
       "docs": null,
-      "notes": "Va in test/, non in src/. I template dotnet new scrivono UTF-8 con BOM: serve 'dotnet format' in scrittura prima del primo push."
+      "notes": "Va in test/ (singolare: mai tests/), non in src/. I template dotnet new scrivono UTF-8 con BOM: serve 'dotnet format' in scrittura prima del primo push."
     },
     {
       "id": "vue-fe",
@@ -140,12 +140,12 @@
         "argsTemplate": "<nome> -- --ts --router --pinia --eslint --prettier",
         "postInstall": "npm install"
       },
-      "targetPath": ".",
+      "targetPath": "src",
       "defaultNameSuffix": "-fe",
       "suggestedPackages": ["dr-fe"],
       "optionalPackages": ["dr-ux-lcars", "dr-ux-kitt"],
       "docs": null,
-      "notes": "I flag di create-vue sono booleani puri: '--vitest=false' fa fallire il comando. Va creato PRIMA dell'install del core, perche' scrive un proprio .editorconfig/.gitignore/.gitattributes. Lo script 'lint' generato usa --fix, quindi non vale come gate di verifica."
+      "notes": "Va in src/<nome>-fe accanto ai progetti .NET, anche nel repo frontend separato: create-vue si lancia da src/, mai dalla radice del repository. I flag di create-vue sono booleani puri: '--vitest=false' fa fallire il comando. Va creato PRIMA dell'install del core, perche' scrive un proprio .editorconfig/.gitignore/.gitattributes. Lo script 'lint' generato usa --fix, quindi non vale come gate di verifica."
     }
   ],
   "packages": [
