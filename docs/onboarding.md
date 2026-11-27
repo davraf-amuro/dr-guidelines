@@ -125,7 +125,7 @@ Ricavate da `.github/instructions/`, `.github/copilot-instructions.md` e `CLAUDE
 | Dati sensibili mai in file committati; `.mcp.json` ignorato, `.mcp.example.json` committato | `sensitive-data.instructions.md` |
 | MCP server: cerca prima di creare; repo dedicato `mcp-<dominio>` | `mcp-server-discovery.instructions.md` |
 | Operazioni indipendenti: esecuzione parallela con limite, cancellazione ed errori per ramo; serie dichiarata | `concurrency.instructions.md` |
-| Nessun `git push` senza verifica pulita, o senza dichiarare che non c'è un comando di verifica | `copilot-instructions.md` — Gate di Push |
+| Nessun `git commit` + `git push` senza aver eseguito la verifica e citato comando ed exit code, o senza dichiarare con il motivo che non c'è un comando di verifica; mai `--no-verify` | `copilot-instructions.md` — Gate di Push |
 
 ---
 
@@ -190,4 +190,4 @@ Dettagli: `.github/instructions/sensitive-data.instructions.md`.
 
 ---
 
-*Revisione v4.3 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v4.4 — 2026-11-27 15:10 — claude-opus-5-5*

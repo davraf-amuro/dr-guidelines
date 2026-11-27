@@ -67,17 +67,32 @@ Brief indicato → leggilo, chiedi approfondimenti se trovi lacune o problemi, c
 
 ## Gate di Push — Verifica obbligatoria
 
-⛔ Prima di qualsiasi `git push`, esegui il comando di verifica dichiarato dall'istruzione di dominio del progetto (lint, formattazione, analisi statica).
+⛔ Prima di ogni `git push`, e del `git commit` che lo precede in un flusso commit+push, **esegui** il comando di verifica dichiarato dall'istruzione di dominio del progetto (lint, formattazione, analisi statica) e **cita nell'output il comando eseguito e il suo exit code**:
+
+> `dotnet format src/Ordini.Api/Ordini.Api.csproj --verify-no-changes` → exit 0
+
+- **Nessun esito citato = commit e push non consentiti.** "Verifica pulita" detto a parole, senza comando ed exit code, non vale.
+- Il comando va **eseguito** in questa sessione, sullo stato che si sta per committare: un esito di prima delle ultime modifiche non vale.
+- In .NET usa il percorso **relativo** del `.csproj` (o del file solution) dalla radice del repository, lo stesso della CI. Più progetti senza solution → un comando per progetto, ciascuno con il suo exit code.
+- Mai `--no-verify` su `git commit` o `git push`, salvo richiesta esplicita dell'utente in questa sessione.
+
+Nessun pacchetto di dominio installato, ma il repository contiene codice di uno di questi stack ("stack con lint noto") → usa il comando di riserva:
+
+| Stack | Comando di riserva |
+|-------|--------------------|
+| .NET | `dotnet format <percorso relativo>.csproj --verify-no-changes` (o del file solution) |
+| Node.js | `npm run lint`, se lo script `lint` è definito in `package.json` |
+| Python | `ruff check .` oppure `flake8` |
 
 | Exit code | Azione |
 |-----------|--------|
-| `0` | Verifica pulita — push consentita |
-| Non-zero | **BLOCCA la push** — segnala le violazioni |
+| `0` | Verifica pulita — commit e push consentiti |
+| Non-zero | **BLOCCA commit e push** — segnala le violazioni |
 
 In caso di blocco:
 1. Elenca i file con violazioni (dall'output del comando)
 2. Chiedi conferma prima di applicare correzioni automatiche
-3. Riesegui il check, poi procedi con la push
+3. Riesegui il check, cita il nuovo exit code, poi procedi con commit e push
 
 ### Controllo fine riga (sempre, qualsiasi stack)
 
@@ -105,8 +120,8 @@ Righe presenti → segnala i file e proponi `pwsh scripts/normalize-eol.ps1` (se
 
 Un `.editorconfig` con `end_of_line` diverso da `.gitattributes` rigenera il problema a ogni salvataggio: allineali.
 
-Nessun comando di verifica applicabile al progetto (per esempio un repository di soli documenti) → **dichiaralo esplicitamente nell'output** prima della push. L'assenza di target si dichiara, non si salta in silenzio.
+"Non applicabile" si dichiara **solo** se nessun pacchetto di dominio installato (`.ai/dr-guidelines-packages.json`) fornisce un comando di verifica e il repository non ha codice di uno stack con lint noto (tabella del comando di riserva; per esempio un repository di soli documenti o di soli script): dichiaralo esplicitamente nell'output prima del commit, con il motivo. L'assenza di target si dichiara, non si salta in silenzio, e non vale se il comando esiste ma è scomodo o lento.
 
-> Regola assoluta: nessun `git push` senza verifica pulita o assenza di target dichiarata.
+> Regola assoluta: nessun `git commit` + `git push` senza comando ed exit code `0` citati nell'output, oppure "non applicabile" dichiarato con il motivo.
 
-*Istruzione v2.8 - Copilot Instructions (agnostico dallo stack) - 2026-11-27 — claude-sonnet-5-5, claude-opus-5-5 — Controllo fine riga: blocco sull'index, avviso sul working tree, correzione con `scripts/normalize-eol.ps1` al posto di cancella + `git checkout`; Verifica post-modifica rimanda a `line-endings.instructions.md` (davraf-amuro/dr-guidelines#34)*
+*Istruzione v2.9 - Copilot Instructions (agnostico dallo stack) - 2026-11-27 — claude-sonnet-5-5, claude-opus-5-5 — Gate di Push: comando ed exit code citati nell'output, commit coperto, "non applicabile" ristretto, percorso relativo come in CI, `--no-verify` vietato (davraf-amuro/dr-guidelines#33)*
