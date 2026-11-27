@@ -292,4 +292,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.12 — 2026-11-27 17:05 — claude-opus-5-5*
+*Revisione v1.12 — 2026-11-27 15:50 — claude-opus-5-5*

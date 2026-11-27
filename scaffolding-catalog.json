@@ -186,7 +186,8 @@
         { "package": "dr-winsvc", "reason": "senza, i progetti Windows Service/Worker non hanno l'istruzione di architettura e l'audit applica solo le regole generiche" },
         { "package": "dr-minimalapi", "reason": "senza, i progetti con Endpoints/ non hanno l'istruzione di architettura Minimal API e l'audit applica solo le regole generiche" },
         { "package": "dr-efdb", "reason": "senza, DbContext ed EF Core non hanno provider e resilienza in avvio: le istruzioni del tipo di progetto rimandano a un file assente" },
-        { "package": "dr-fe", "reason": "senza, un frontend nella stessa solution non ha l'istruzione di organizzazione e la skill dr-audit-fe" }
+        { "package": "dr-fe", "reason": "senza, un frontend nella stessa solution non ha l'istruzione di organizzazione e la skill dr-audit-fe" },
+        { "package": "dr-devops", "reason": "senza, il deploy in Swarm non ha le regole dello stack: variabili nel blocco environment, sezione logging GELF e filtro dei log restano al ripiego della regola Serilog" }
       ],
       "description": "Base backend .NET condivisa: istruzioni di tipo progetto, coda produttore/consumatore, fan-out parallelo, logging Serilog con Subject; skill dr-audit-api; file di progetto .NET comuni (Directory.Build.props, global.json)."
     },
@@ -241,7 +242,8 @@
       "dependencies": [],
       "appliesTo": ["any"],
       "suggests": [
-        { "package": "dr-minimalapi", "reason": "senza, Data Protection e forwarded headers lato codice restano due requisiti da configurare a mano" }
+        { "package": "dr-minimalapi", "reason": "senza, Data Protection e forwarded headers lato codice restano due requisiti da configurare a mano" },
+        { "package": "dr-dotnet-backend", "reason": "senza, la scelta fra driver gelf e sink Serilog Graylog non ha la configurazione del sink: va presa dalla libreria di log dell'app" }
       ],
       "description": "Docker Swarm, Portainer, CI/CD GitLab. Non copre Dockerfile né compose per host singolo."
     },

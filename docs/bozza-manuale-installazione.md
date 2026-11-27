@@ -292,4 +292,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.19 — 2026-11-27 17:05 — claude-opus-5-5*
+*Revisione v1.19 — 2026-11-27 15:50 — claude-opus-5-5*

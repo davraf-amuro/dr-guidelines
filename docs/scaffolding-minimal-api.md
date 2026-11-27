@@ -250,4 +250,4 @@ public class ProdottoService(ProdottiProvider provider)
 
 ---
 
-*Revisione v1.5 — 2026-11-27 16:20 — claude-opus-5-5*
+*Revisione v1.5 — 2026-11-27 15:50 — claude-opus-5-5*
