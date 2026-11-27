@@ -521,4 +521,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.29 — 2026-11-27 16:20 — claude-opus-5-5*
+*Revisione v3.29 — 2026-11-27 15:50 — claude-opus-5-5*
