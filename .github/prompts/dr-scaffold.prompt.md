@@ -1,6 +1,6 @@
 ---
 agent: 'agent'
-description: 'Scaffolding guidato: workspace VS Code, solution .NET 10, progetti e pacchetti dr-*'
+description: 'Scaffolding guidato: workspace VS Code, solution .NET, progetti e pacchetti dr-*'
 tools: ['search/codebase']
 ---
 
@@ -67,11 +67,11 @@ pio --version        # solo kind embedded
 | git | sempre | qualsiasi versione | STOP |
 | PowerShell 7+ | sempre | `7.*` | STOP |
 | gh autenticato | sempre | `Logged in to github.com` | STOP — gli installer si scaricano con `gh api`, che richiede `gh` autenticato |
-| .NET SDK 10.x | kind `dotnet` | almeno una riga `10.*` | STOP |
+| .NET SDK 11.x o successivo | kind `dotnet` | almeno una riga `11.*` o superiore (major di `defaults.dotnetFramework` del catalogo) | STOP |
 | node + npm | kind `node`, o frontend richiesto | qualsiasi versione | STOP se il progetto è solo frontend, altrimenti blocca solo quel pezzo |
 | PlatformIO Core | kind `embedded` | `PlatformIO Core, version ...` | STOP |
 
-Su un progetto .NET l'install di `dr-dotnet-backend` copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Con un SDK che non lo soddisfa, **ogni** comando `dotnet` in quella cartella fallisce dopo l'install: per questo il gate va prima di scrivere.
+Su un progetto .NET l'install di `dr-dotnet-backend` copia un `global.json` che fissa un SDK minimo (`11.0.100`, `rollForward: latestMajor`: accetta anche SDK più nuovi, mai più vecchi). Con un SDK che non lo soddisfa, **ogni** comando `dotnet` in quella cartella fallisce dopo l'install: per questo il gate va prima di scrivere.
 
 Un dominio di soli contenuti (`kind: content`) non richiede toolchain: verifica git e fermati lì.
 
@@ -106,7 +106,7 @@ Riporta prima **in quale cartella ti trovi**: tutto nascerà lì dentro.
 2. **Solution .NET?**
    - `1` Sì — indica il nome (default: nome della cartella corrente in lowercase)
    - `2` No — solo progetti non-.NET
-3. **Formato solution:** `1` slnx *(default, formato dell'SDK 10)* · `2` sln (compatibilità Visual Studio più vecchio)
+3. **Formato solution:** `1` slnx *(default, formato dell'SDK dalla 10 in poi)* · `2` sln (compatibilità Visual Studio più vecchio)
 4. **Tipologie di progetto** (selezione multipla, numeri separati da virgola). Costruisci la lista da `projectTypes[]` del catalogo e per ognuna proponi il nome `<solution><defaultNameSuffix>`, modificabile.
 
 **Validazione nomi (obbligatoria):** ogni nome deve corrispondere a `^[A-Za-z][A-Za-z0-9._-]{0,63}$` (campo `defaults.namePattern` del catalogo). Nome non conforme → rifiuta e richiedi: finisce interpolato in percorsi e in `dotnet new`.
@@ -153,10 +153,10 @@ dotnet new sln -n <solution>            # default: <solution>.slnx
 # dotnet new sln -n <solution> -f sln   # solo se richiesto il formato legacy
 ```
 
-**3. Progetti .NET** — `dotnetTemplate` e `targetPath` dal catalogo:
+**3. Progetti .NET** — `dotnetTemplate` e `targetPath` dal catalogo; `<tfm>` = `defaults.dotnetFramework` del catalogo (oggi `net11.0`), mai scritto a mano:
 
 ```powershell
-dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-restore
+dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework <tfm> --no-restore
 ```
 
 La tipologia `minimal-api` usa il template `web` (ASP.NET Core vuoto), **non** `webapi`: la struttura `Endpoints/` delle guide parte dal template vuoto.
@@ -217,6 +217,14 @@ Pop-Location
 
 L'installer usa la directory corrente come root dell'host: `Push-Location`/`Pop-Location` sono obbligatori e il target è la **root del repo**. `Directory.Build.props` e `global.json` non arrivano dal core: li porta `dr-dotnet-backend` tramite i suoi `rootFiles`, quindi un repo frontend non li riceve semplicemente perché quel pacchetto non è tra i suoi.
 
+**7-bis. Adozione dei file .NET del pacchetto:** i progetti nascono al passo 3, prima dell'install, quindi l'installer vede `*.csproj` già presenti e scrive `Directory.Build.props.new` e `global.json.new` invece di imporli. Se **tutti** i progetti sono nati in questo scaffolding, il progetto è nuovo: adottali. Se c'erano `*.csproj` già esistenti agganciati al passo 4 (arrivo dalla Sezione B), **non adottarli**: riportali all'utente come proposte da confrontare.
+
+```powershell
+foreach ($f in 'Directory.Build.props', 'global.json') {
+    if ((Test-Path "$f.new") -and -not (Test-Path $f)) { Move-Item "$f.new" $f }
+}
+```
+
 **8. Formattazione — non è opzionale:**
 
 ```powershell
@@ -276,10 +284,10 @@ Verifica fallita → fermati e riportala, non proseguire.
 2. Leggi `dotnet sln <solution> list` per sapere cosa c'è già.
 3. Chiedi **tipologia** (lista da `projectTypes[]`) e **nome** (default `<solution><defaultNameSuffix>`), validando il nome con il pattern del catalogo.
 4. Dry-run + una conferma. La cartella del nuovo progetto (`<targetPath>\<nome>`) deve non esistere: se esiste, anche vuota → STOP, mai `--force` su `dotnet new`. Il resto del repository qui è popolato per definizione — c'è una solution: non è un motivo per fermarsi.
-5. Esegui:
+5. Esegui (`<tfm>` = `defaults.dotnetFramework` del catalogo, come in A.4 passo 3):
 
 ```powershell
-dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-restore
+dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework <tfm> --no-restore
 dotnet sln <solution> add <targetPath>\<nome>\<nome>.csproj
 dotnet build <solution> --nologo
 dotnet format <solution>
@@ -363,6 +371,11 @@ Pop-Location
 
 Un pacchetto che fallisce (rete, credenziali): riporta l'errore e **continua** con i successivi; un repo che fallisce non blocca gli altri. Nessun `-Update` qui: in questa sezione si **aggiunge**. Per aggiornare pacchetti già installati si usa `dr-get-latest` (install con `-Update`). Mai installare in una cartella senza `.git`.
 
+7-bis. **Progetto esistente** (stesse regole di `dr-scaffold-guidelines`, Fasi 3-4):
+   - prima dell'install esegui e cita il lint del Gate di Push del repo (termine di confronto);
+   - `Directory.Build.props.new` / `global.json.new` di `dr-dotnet-backend` **non** si rinominano: sono proposte da confrontare;
+   - dopo l'install `pwsh scripts/normalize-eol.ps1` (file già committati in CRLF);
+   - lint dopo l'install, citato: peggiorato solo per `CHARSET`/`ENDOFLINE` → proponi `dotnet format <percorso relativo>.csproj` in scrittura, solo con conferma; altre violazioni nuove → riportale.
 8. Riepiloga una riga per repo: pacchetti installati, falliti con motivo, repo saltati o scartati. Poi, quando pertinente, aggiungi la proposta `db-schema` in `.mcp.json` se è entrato `dr-efdb` e il promemoria di riavviare l'IDE perché le skill appena installate vengano caricate.
 
 ---
@@ -408,4 +421,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `scripts/normalize-eol.ps1` eseguito dopo `dotnet format`, `-Check` esce `0`
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Prompt v1.7 - Scaffold - 2026-11-27 — claude-opus-5-5 — frontend Vue in `src/<nome-fe>` da `targetPath` del catalogo; test in `test/`, mai `tests/` (davraf-amuro/dr-guidelines#35)*
+*Prompt v1.8 - Scaffold - 2026-11-27 — claude-opus-5-5 — gate SDK .NET 11+, `--framework <tfm>` dal catalogo, passo 7-bis di adozione dei `.new` solo per progetti nati nello scaffolding, Sezione C 7-bis per progetti esistenti (davraf-amuro/dr-guidelines#37, davraf-amuro/dr-dotnet-backend#7)*

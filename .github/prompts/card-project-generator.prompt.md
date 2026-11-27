@@ -1,4 +1,4 @@
-﻿---
+---
 agent: 'agent'
 description: 'Genera schede riassuntive per ogni progetto nella solution'
 tools: ['search/codebase']
@@ -40,7 +40,7 @@ Prima di generare la card standard, rileva il tipo del progetto e usa il templat
 | Segnale nel codice | Tipo rilevato | Template card standard |
 |--------------------|---------------|------------------------|
 | ``Workers/*.cs`` presente | Windows Service (.NET Worker Service) | ``.github/prompts/card-worker-service.prompt.md`` |
-| ``Endpoints/*.cs`` presente | Minimal API (.NET 10) | ``.github/prompts/card-minimal-api.prompt.md`` |
+| ``Endpoints/*.cs`` presente | Minimal API (.NET) | ``.github/prompts/card-minimal-api.prompt.md`` |
 | ``package.json`` presente (senza ``.csproj``) | Frontend SPA/SSR | Usa template generico, sezione Stack da ``package.json`` |
 | Nessuno dei precedenti | Tipo non rilevato | Usa template generico sotto |
 
@@ -128,4 +128,4 @@ Per ogni nuovo tipo di progetto:
 - [ ] Ambiente Test compilato (o dichiarato `non pubblicato`)
 - [ ] Ambiente Produzione compilato (o dichiarato `non pubblicato`)
 
-*Prompt v2.4 - Card Project Generator - 2026-10-09 — claude-opus-5-5 — footer nel formato unico (2026-10-20)*
+*Prompt v2.5 - Card Project Generator - 2026-11-27 — claude-opus-5-5 — etichetta Minimal API senza versione fissa; BOM tolto (davraf-amuro/dr-guidelines#37)*

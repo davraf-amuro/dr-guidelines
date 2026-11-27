@@ -1,4 +1,4 @@
-# Scaffolding: Minimal API .NET 10
+# Scaffolding: Minimal API .NET
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-minimalapi` installati) di creare una nuova Minimal API. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
@@ -250,4 +250,4 @@ public class ProdottoService(ProdottiProvider provider)
 
 ---
 
-*Revisione v1.4 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v1.5 — 2026-11-27 16:20 — claude-opus-5-5*

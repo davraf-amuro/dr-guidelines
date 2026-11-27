@@ -61,7 +61,7 @@ npm --version        # solo se ci sarà un frontend
 | git | una versione qualsiasi | Installalo: l'installer scarica i pacchetti con `git clone` |
 | PowerShell 7+ | `7.*` | Installalo: gli installer girano su `pwsh`. Imposta anche `pwsh` come terminale predefinito di VS Code: **Terminale** → freccia accanto al `+` → **Seleziona profilo predefinito** → **PowerShell** (non "Windows PowerShell"), poi apri un terminale nuovo |
 | `gh` autenticato | `Logged in to github.com` | Esegui `gh auth login` con scope `repo`: la forma `gh api` del passo 3 lo richiede |
-| .NET SDK 10 | almeno una riga `10.*` | Solo per progetti .NET: senza, nessun progetto .NET è creabile |
+| .NET SDK 11 o successivo | almeno una riga `11.*` o superiore | Solo per progetti .NET: senza, nessun progetto .NET è creabile |
 | node + npm | una versione qualsiasi | Solo per il frontend: il resto del progetto procede lo stesso |
 
 `/dr-scaffold` ripete questo controllo da solo prima di scrivere qualsiasi cosa. Farlo prima ti evita di arrivare fino al passo 5 per scoprire che manca qualcosa.
@@ -179,7 +179,7 @@ Alcune possono arrivare già decise dal passaggio precedente: in quel caso la sk
 |---|---|
 | Workspace multi-repo? | **No**, al primo progetto. Serve solo se frontend e backend staranno in repository git separati |
 | Nome della solution | Proposto: nome della cartella in minuscolo |
-| Formato | `slnx`, il default dell'SDK 10. `sln` solo per Visual Studio più vecchio |
+| Formato | `slnx`, il default dell'SDK dalla 10 in poi. `sln` solo per Visual Studio più vecchio |
 | Tipologie di progetto | Minimal API, Worker/Windows Service, class library, test xUnit, frontend Vue |
 | Nomi dei progetti | Proposti con suffisso: `ordini.api`, `ordini.service`, `ordini.tests`, `ordini-fe` |
 | Pacchetti `dr-*` | Già preselezionati in base alle tipologie. `dr-efdb` e `dr-devops` sono opzionali: `dr-devops` se il deploy è su Docker Swarm/Portainer o la pipeline è GitLab CI/CD; Docker su host singolo non è ancora coperto (dr-devops#1). Per il frontend Vue sono opzionali `dr-ux-lcars` (tema grafico LCARS) e `dr-ux-kitt` (tema grafico K.I.T.T.) |
@@ -231,6 +231,16 @@ La procedura cambia poco:
 
 L'installer non sovrascrive i file: uno già presente viene saltato con `[SKIP]`. Uniche modifiche a file esistenti: le voci mancanti in `.claude/settings.json`, la sezione `<!-- dr-guidelines -->` in `CLAUDE.md` e il manifest `.ai/dr-guidelines-packages.json`, che registra un nuovo commit solo alla prima installazione del pacchetto o con `-Update`. Il resto resta intatto.
 
+Su un progetto .NET esistente tre cose in più:
+
+| Cosa vedi | Perché | Cosa fai |
+|---|---|---|
+| `Directory.Build.props.new` e `global.json.new` con un `[WARN]` | `dr-dotnet-backend` non impone i due file a un progetto che ha già `*.csproj`: cambierebbero build e lint | Confrontali; se li vuoi, togli `.new` e riesegui il lint |
+| Il lint fallisce con `ENDOFLINE` | Il core porta `.gitattributes` in LF, i file già committati restano in CRLF nel working tree | `pwsh scripts/normalize-eol.ps1` dalla root: cambia solo il fine riga |
+| Il lint fallisce con `CHARSET` | `.editorconfig` del core vuole UTF-8 senza BOM, i template `dotnet new` lo scrivono con BOM | `dotnet format <percorso relativo>.csproj` in scrittura, poi riesegui il lint |
+
+`/dr-scaffold-guidelines` esegue il lint prima e dopo l'install e te li mette a confronto.
+
 ---
 
 ## 🆘 Se qualcosa va storto
@@ -242,7 +252,7 @@ L'installer non sovrascrive i file: uno già presente viene saltato con `[SKIP]`
 | `git clone fallito per davraf-amuro/...` | Rete o URL; se il repo è Private, git senza credenziali | Verifica la rete; per un repo Private `gh auth setup-git`, poi riprova |
 | La riga `Progetto:` mostra la cartella sbagliata | Mancava `Set-Location` | Annulla (riga sotto) e rilancia dalla cartella giusta |
 | `/dr-scaffold` non compare | Le skill si leggono all'avvio | `Developer: Reload Window` |
-| Ogni comando `dotnet` fallisce dopo l'installazione | `global.json` di `dr-dotnet-backend` richiede l'SDK 10 | `dotnet --list-sdks`: installa l'SDK 10 |
+| Ogni comando `dotnet` fallisce dopo l'installazione | `global.json` di `dr-dotnet-backend` richiede almeno l'SDK 11 | `dotnet --list-sdks`: installa l'SDK 11 o successivo |
 | `Nessun pacchetto dr-* copre ...` | Nessun pacchetto per quel dominio | Scegli se proseguire con il solo core o aprire una issue: la skill te lo propone |
 | Hai corretto un pacchetto `dr-*` ma nel progetto non cambia niente | La correzione non è pushata su `main` | Push nel repo del pacchetto, poi `/dr-get-latest` |
 
@@ -282,4 +292,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.11 — 2026-11-27 15:40 — claude-opus-5-5*
+*Revisione v1.12 — 2026-11-27 17:05 — claude-opus-5-5*
