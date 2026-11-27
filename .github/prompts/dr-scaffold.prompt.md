@@ -223,6 +223,14 @@ I template `dotnet new` scrivono UTF-8 **con BOM** mentre `.editorconfig` del co
 
 Per il frontend: lo script `lint` generato da `create-vue` usa `--fix` (corregge invece di verificare), quindi non vale come gate; per verificare serve `oxlint .` / `eslint .` senza `--fix`.
 
+**8-bis. Fine riga — non è opzionale:** in ogni repository creato, dopo `dotnet format`:
+
+```powershell
+pwsh scripts/normalize-eol.ps1
+```
+
+`dotnet new`, `dotnet sln` e gli installer su Windows con `core.autocrlf=true` lasciano file in CRLF o misti dove `.gitattributes` vuole LF; `dotnet format` corregge solo i sorgenti C#. Senza `-Path` lo script prende i file nuovi e modificati e anche quelli già committati che restano fuori norma nel working tree (commit iniziale prima dell'install del core). Regola: `line-endings.instructions.md`.
+
 **9. Passi finali:**
 
 - Se tra i pacchetti c'è `dr-efdb`, **proponi** di installare il server MCP `db-schema` ([davraf-amuro/dr-mcp-dbschema](https://github.com/davraf-amuro/dr-mcp-dbschema)) con il suo `setup.ps1` (`-Client vscode` per Copilot): comandi e limiti in `mcp-server-discovery.instructions.md`, sezione "Server già disponibili nella suite". Senza quel tool lo scaffolding CRUD (`docs/scaffolding-crud.md`) deve chiedere i campi a mano.
@@ -240,6 +248,7 @@ Per il frontend: lo script `lint` generato da `create-vue` usa `--fix` (corregge
 | 7 | `Get-Content .ai\dr-guidelines-packages.json` | una voce per pacchetto, data odierna |
 | 7 | `git status --short` | `.mcp.json` assente (ignorato dal `.gitignore` del core) |
 | 8 | `dotnet format <solution>.slnx --verify-no-changes` | exit code `0` |
+| 8-bis | `pwsh scripts/normalize-eol.ps1 -Check` | exit code `0` |
 
 Verifica fallita → fermati e riportala, non proseguire.
 
@@ -270,7 +279,10 @@ dotnet new <template> -n <nome> -o <targetPath>\<nome> --framework net10.0 --no-
 dotnet sln <solution> add <targetPath>\<nome>\<nome>.csproj
 dotnet build <solution> --nologo
 dotnet format <solution>
+pwsh scripts/normalize-eol.ps1
 ```
+
+   `normalize-eol.ps1` allinea a `.gitattributes` il fine riga dei file generati (vedi A.4 passo 8-bis).
 
 6. Se serve un riferimento tra progetti, **chiedi** quale progetto deve referenziare quale — non dedurlo:
 
@@ -378,6 +390,7 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] Dry-run mostrato e conferma unica ottenuta
 - [ ] Install eseguiti dalla root del repository, core per primo
 - [ ] `dotnet format` eseguito dopo l'install del core
+- [ ] `scripts/normalize-eol.ps1` eseguito dopo `dotnet format`, `-Check` esce `0`
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Prompt v1.5 - Scaffold - 2026-10-20 — claude-opus-5-5 — Sezione C: mappa del workspace per root git, casi multi-repo, monorepo misto e contenitore*
+*Prompt v1.6 - Scaffold - 2026-11-27 — claude-opus-5-5 — passo 8-bis e Sezione B: fine riga normalizzati con `scripts/normalize-eol.ps1` dopo `dotnet format` (davraf-amuro/dr-guidelines#34)*

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-20",
+  "updatedAt": "2026-11-27",
   "defaults": {
     "dotnetFramework": "net10.0",
     "solutionFormat": "slnx",
@@ -159,7 +159,8 @@
         { "package": "dr-minimalapi", "reason": "senza, la validazione da schema DB usa il ripiego minimo di input-validation invece del mapping completo; lo scope dei commenti degli endpoint resta quello generico di code-organization" },
         { "package": "dr-dotnet-backend", "reason": "senza, nei progetti .NET il logging applica solo le regole agnostiche di logging.instructions, senza la configurazione Serilog e l'enricher del Subject" }
       ],
-      "description": "Core: instructions e skill trasversali, file di configurazione radice, sezione CLAUDE.md.",
+      "description": "Core: instructions e skill trasversali, file di configurazione radice, sezione CLAUDE.md, script di normalizzazione dei fine riga.",
+      "rootFiles": ["scripts/normalize-eol.ps1"],
       "obsoleteArtifacts": [
         ".claude/skills/dr-pianifica-issue",
         ".claude/skills/dr-segnala-miglioria",
