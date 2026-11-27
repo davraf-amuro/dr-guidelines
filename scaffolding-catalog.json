@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "updatedAt": "2026-11-27",
   "defaults": {
-    "dotnetFramework": "net10.0",
+    "dotnetFramework": "net11.0",
     "solutionFormat": "slnx",
     "sourcePath": "src",
     "testPath": "test",
@@ -12,7 +12,7 @@
     {
       "id": "dotnet",
       "label": "Progetto .NET",
-      "prerequisites": ["SDK .NET 10", "git", "PowerShell 7"]
+      "prerequisites": ["SDK .NET 11 o successivo", "git", "PowerShell 7"]
     },
     {
       "id": "node",
@@ -85,7 +85,7 @@
   "projectTypes": [
     {
       "id": "minimal-api",
-      "label": "Minimal API (.NET 10)",
+      "label": "Minimal API (.NET)",
       "kind": "dotnet",
       "dotnetTemplate": "web",
       "targetPath": "src",
@@ -97,7 +97,7 @@
     },
     {
       "id": "worker-service",
-      "label": "Windows Service / Worker (.NET 10)",
+      "label": "Windows Service / Worker (.NET)",
       "kind": "dotnet",
       "dotnetTemplate": "worker",
       "targetPath": "src",
@@ -109,7 +109,7 @@
     },
     {
       "id": "classlib",
-      "label": "Class Library (.NET 10)",
+      "label": "Class Library (.NET)",
       "kind": "dotnet",
       "dotnetTemplate": "classlib",
       "targetPath": "src",
@@ -121,7 +121,7 @@
     },
     {
       "id": "xunit-test",
-      "label": "Progetto di test xUnit (.NET 10)",
+      "label": "Progetto di test xUnit (.NET)",
       "kind": "dotnet",
       "dotnetTemplate": "xunit",
       "targetPath": "test",
@@ -181,6 +181,7 @@
       "dependencies": [],
       "appliesTo": ["dotnet"],
       "rootFiles": ["Directory.Build.props", "global.json"],
+      "existingProjectMarkers": ["*.csproj", "*.sln", "*.slnx"],
       "suggests": [
         { "package": "dr-winsvc", "reason": "senza, i progetti Windows Service/Worker non hanno l'istruzione di architettura e l'audit applica solo le regole generiche" },
         { "package": "dr-minimalapi", "reason": "senza, i progetti con Endpoints/ non hanno l'istruzione di architettura Minimal API e l'audit applica solo le regole generiche" },

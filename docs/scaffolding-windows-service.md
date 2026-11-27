@@ -1,4 +1,4 @@
-# Scaffolding: Windows Service .NET 10
+# Scaffolding: Windows Service .NET
 
 Questa guida mostra cosa succede quando si chiede a Claude Code (con i pacchetti `dr-guidelines` e `dr-winsvc` installati) di creare un nuovo Windows Service. Descrive le domande preliminari, la struttura generata e le convenzioni applicate.
 
@@ -235,4 +235,4 @@ sc.exe delete "<ServiceName>"
 
 ---
 
-*Revisione v1.4 — 2026-10-29 19:05 — claude-opus-5-5*
+*Revisione v1.5 — 2026-11-27 16:20 — claude-opus-5-5*

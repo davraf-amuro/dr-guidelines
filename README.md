@@ -76,7 +76,7 @@ Set-Location C:\Progetti\ordini
 Lo scaffolding non è uno script: è guidato dall'agente. Il flusso di `/dr-scaffold`:
 
 1. **Dominio** — ricava il dominio dalla richiesta leggendo la `intentMap` del catalogo. Nessuna corrispondenza → lo dichiara e propone una issue, invece di assumere uno stack
-2. **Gate prerequisiti** — git, PowerShell 7 (requisito unico, vedi sopra) e `gh` autenticato sempre; SDK .NET 10 solo per i domini .NET; node/npm solo per il frontend. Nessuna scrittura finché il gate non passa
+2. **Gate prerequisiti** — git, PowerShell 7 (requisito unico, vedi sopra) e `gh` autenticato sempre; SDK .NET 11 o successivo solo per i domini .NET; node/npm solo per il frontend. Nessuna scrittura finché il gate non passa
 3. **Stato della cartella** — delega al pezzo giusto: cartella con solo il core → `/dr-scaffold-solution`; solution esistente → `/dr-scaffold-project`; progetti senza pacchetti → `/dr-scaffold-guidelines`
 4. **Raccolta risposte** — nome e formato della solution, tipologie di progetto con nomi proposti, pacchetti `dr-*` per repository, eventuale workspace multi-repo
 5. **Dry-run e conferma unica** — mostra l'albero e i comandi, chiede una sola conferma
@@ -177,6 +177,8 @@ I pacchetti di dominio installano le proprie `.github/instructions/`, `.github/p
 
 **Sorgenti applicativi (campo `sourceFiles`).** Un pacchetto può distribuire file di codice: ogni voce va da `from` (percorso nel pacchetto) a `to` (percorso nell'host). La cartella di arrivo si sceglie con `-SourceRoot`; il default è la radice. Percorsi assoluti o con `..` fermano l'installazione prima di scrivere. I sorgenti copiati sono tuoi e non si sovrascrivono mai: con `-Update` la versione nuova va in `<file>.new` e l'installer elenca i `.new` da confrontare a mano. Oggi nessun pacchetto usa il campo. Dettagli in [`docs/bozza-manuale-installazione.md`](docs/bozza-manuale-installazione.md).
 
+> **Progetto .NET già esistente.** Se nell'host c'è già un `*.csproj`/`*.sln`/`*.slnx`, `dr-dotnet-backend` non impone `Directory.Build.props` e `global.json` mancanti: li scrive come `<file>.new` con un avviso, perché alzerebbero il livello di analisi e cambierebbero il risultato del lint su codice che prima passava. Per adottarli: confrontali, togli `.new` e riesegui il lint del Gate di Push. Lo scaffolding (`/dr-scaffold-solution`) li adotta da solo, perché lì il progetto è nuovo. Campo del catalogo: `existingProjectMarkers`.
+
 > **Il core non è un pacchetto .NET.** `Directory.Build.props` e `global.json` appartengono a `dr-dotnet-backend`. Un frontend, un firmware o un repository di documenti non li riceve. Un progetto .NET li ottiene con quel pacchetto, che arriva da solo con `dr-minimalapi` e `dr-winsvc`.
 
 ---
@@ -268,7 +270,7 @@ Risolve il dominio, verifica i prerequisiti, rileva lo stato della cartella e de
 
 ### `/dr-scaffold-solution` — Solution da Zero
 
-Solution .NET 10 (formato `slnx`), progetti in `src/` e `test/`, frontend Vue, eventuale workspace VS Code multi-repo, `git init` e pacchetti `dr-*`. Tutte le domande prima, dry-run dell'albero, **una sola** conferma.
+Solution .NET (versione da `defaults.dotnetFramework` del catalogo, oggi `net11.0`; formato `slnx`), progetti in `src/` e `test/`, frontend Vue, eventuale workspace VS Code multi-repo, `git init` e pacchetti `dr-*`. Tutte le domande prima, dry-run dell'albero, **una sola** conferma.
 
 **Uso:**
 ```
@@ -500,7 +502,7 @@ Poi riavvia Claude Code per caricare il server.
 ### Q: Posso avere le guidelines attive su tutto il PC, senza installarle in ogni progetto?
 **A:** In parte. `/dr-install-global` scrive la sezione linee guida in `~/.claude/CLAUDE.md`, caricato in ogni sessione. Non sostituisce l'installazione nel progetto: istruzioni modulari, skill e configurazione radice arrivano solo installando nel repository. In caso di conflitto vale il `CLAUDE.md` del progetto.
 
-### Q: Posso usare .NET 8 invece di .NET 10?
+### Q: Posso usare un'altra versione di .NET invece di .NET 11?
 **A:** Sì. Dopo l'installazione di `dr-dotnet-backend`, modifica `Directory.Build.props` e `global.json` nel tuo progetto. Un `-Update` di quel pacchetto non li sovrascrive: se cambiano a monte, la versione nuova arriva in `Directory.Build.props.new` / `global.json.new`, da confrontare a mano.
 
 ### Q: GitHub Copilot non segue le istruzioni
@@ -519,4 +521,4 @@ Poi riavvia Claude Code per caricare il server.
 
 ---
 
-*Revisione v3.28 — 2026-11-27 14:30 — claude-opus-5-5*
+*Revisione v3.29 — 2026-11-27 16:20 — claude-opus-5-5*

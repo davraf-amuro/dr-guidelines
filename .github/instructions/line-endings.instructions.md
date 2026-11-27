@@ -15,6 +15,7 @@ Dopo ogni comando che **crea o riscrive file** nel repository senza passare dall
 - generatori: `dotnet new`, `dotnet ef migrations add`, `dotnet add package`, `dotnet sln add`, `npm create`, `npm init`
 - scritture da PowerShell: `Set-Content`, `Out-File`, `ConvertTo-Json | ...`, here-string scritte su file
 - copie da altri repository o cartelle (`Copy-Item`, `cp`)
+- installazione del core su un repository **esistente**: `.gitattributes` ed `.editorconfig` arrivano dopo i file già committati, che con `core.autocrlf=true` restano in CRLF nel working tree (il lint .NET fallisce con `ENDOFLINE`); qui lo script va lanciato senza `-Path`
 
 Non serve dopo una modifica fatta con lo strumento di modifica dell'agente (es. Edit di Claude Code) su un file già allineato.
 
@@ -60,4 +61,4 @@ Lo porta nell'host l'installer del core (`scripts/normalize-eol.ps1`). Lo script
 
 ---
 
-*Istruzione v1.0 - Line Endings - 2026-11-27 — claude-opus-5-5 — prima versione: normalizzazione con `scripts/normalize-eol.ps1` dopo generatori e scritture da shell (davraf-amuro/dr-guidelines#34)*
+*Istruzione v1.1 - Line Endings - 2026-11-27 — claude-opus-5-5 — caso dell'install del core su un repository esistente (davraf-amuro/dr-dotnet-backend#7)*

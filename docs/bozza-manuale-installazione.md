@@ -38,7 +38,7 @@ npm --version     # solo se il progetto avrà un frontend
 
 | Requisito | Esito atteso | Se manca |
 |---|---|---|
-| .NET SDK 10.x | almeno una riga `10.*` | STOP — nessun progetto .NET è creabile |
+| .NET SDK 11.x o successivo | almeno una riga `11.*` o superiore | STOP — nessun progetto .NET è creabile |
 | git | qualsiasi versione | STOP — l'installer clona i pacchetti |
 | PowerShell 7+ | `7.*` | STOP — gli installer girano su `pwsh`, che va impostato anche come terminale predefinito di VS Code (profilo **PowerShell**, non "Windows PowerShell") |
 | `gh` autenticato | `Logged in to github.com` | STOP per la forma `gh api` e per `/dr-scaffold`, che lo richiede sempre. Con i repo `dr-*` Public la forma `irm ... \| iex` non lo usa |
@@ -54,7 +54,7 @@ npm --version     # solo se il progetto avrà un frontend
 | `gh` | `davraf-amuro`, scopes `gist`, `read:org`, `repo`, `workflow` |
 | node / npm | `v26.5.0` / `10.7.0` |
 
-**Perché il gate va prima di scrivere:** su un progetto .NET l'installer di `dr-dotnet-backend` copia un `global.json` che pinna l'SDK (`10.0.100`, `rollForward: latestMinor`). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
+**Perché il gate va prima di scrivere:** su un progetto .NET l'installer di `dr-dotnet-backend` copia un `global.json` che fissa un SDK minimo (`11.0.100`, `rollForward: latestMajor`: accetta anche SDK più nuovi, mai più vecchi). Se l'SDK installato non lo soddisfa, **ogni** comando `dotnet` successivo in quella cartella fallisce con un errore che sembra un problema di `dotnet new` e invece è il pin.
 
 I prerequisiti da verificare dipendono dal dominio: l'SDK .NET serve solo ai domini .NET, node/npm a quelli frontend, PlatformIO a quelli firmware. Un progetto di soli contenuti richiede solo git.
 
@@ -150,7 +150,7 @@ Contenuto atteso in una cartella **non .NET** (è il caso della cartella vuota):
 | Elemento | Presente? | Note |
 |---|---|---|
 | `.editorconfig`, `.gitignore`, `.gitattributes` | Sì | Sempre copiati dal core |
-| `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
+| `Directory.Build.props`, `global.json` | **No** | Non appartengono al core: li installa `dr-dotnet-backend`, che li dichiara nei propri `rootFiles` del catalogo. Un host senza quel pacchetto non li riceve. Su un host che ha già `*.csproj`/`*.sln`/`*.slnx` (campo `existingProjectMarkers`) non vengono imposti: arrivano come `<file>.new` con un `[WARN]` (dr-dotnet-backend#7, provato il 2026-11-27 su un progetto `net10.0` esistente: lint invariato rispetto ai due file; il lint però cambia per `ENDOFLINE`, risolto da `scripts/normalize-eol.ps1`, e per `CHARSET` sui file con BOM, risolto da `dotnet format` in scrittura). ⚠️ Descrive l'installer dopo `aee84a4` (2026-09-16). Il 2026-08-12 girava la versione precedente, che rilevava lo stack e saltava questi file sugli host non .NET: esito equivalente, meccanismo diverso, da riverificare |
 | `.claude/settings.json` | Sì | Copiato se assente; se esiste, vengono aggiunte solo le voci `permissions.allow` mancanti, senza toccare le altre chiavi |
 | `.mcp.json` | Solo con `-WithMcp` | Generato da `.mcp.example.json`, solo perché assente; senza lo switch l'installer stampa `[sugg]`. Il `.gitignore` copiato lo esclude dai commit |
 | `.github/copilot-instructions.md` | Sì | Lo copia solo il core; serve al rimando `@.github/copilot-instructions.md` in `CLAUDE.md` |
@@ -292,4 +292,4 @@ Aggiunti il 2026-10-11 (issue dr-guidelines#15). Prima l'installer copiava solo 
 
 ---
 
-*Revisione v1.18 — 2026-10-29 19:05 — claude-opus-5-5*
+*Revisione v1.19 — 2026-11-27 17:05 — claude-opus-5-5*

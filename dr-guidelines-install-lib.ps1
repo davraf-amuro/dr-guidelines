@@ -26,6 +26,10 @@ $Script:DrWrittenFiles = [System.Collections.Generic.List[string]]::new()
 # Percorso, relativo alla radice dell'host, dello script di normalizzazione portato dal core
 # (stesso valore di rootFiles del core in scaffolding-catalog.json)
 $Script:DrEolScript = "scripts/normalize-eol.ps1"
+# Ricerca dei marker di progetto esistente (existingProjectMarkers del catalogo): livelli sotto la
+# radice dell'host e cartelle da saltare (generate, dipendenze, metadati di IDE e di git)
+$Script:DrMarkerScanDepth = 4
+$Script:DrMarkerSkipDirs  = @('.git', '.vs', 'bin', 'obj', 'node_modules', 'dist', 'packages', 'TestResults')
 
 # Annota un file scritto nell'host, per la normalizzazione dei fine riga a fine pacchetto
 function Register-DrWrittenFile {
@@ -135,6 +139,9 @@ function Get-DrPackageRegistry {
             AppliesTo         = @($p.appliesTo         | Where-Object { $_ })
             Dependencies      = @($p.dependencies      | Where-Object { $_ })
             RootFiles         = @($p.rootFiles         | Where-Object { $_ })
+            # Pattern di file che indicano un progetto gia' esistente (es. *.csproj): con almeno un
+            # riscontro i rootFiles mancanti arrivano come '<file>.new', non imposti (dr-dotnet-backend#7)
+            ExistingProjectMarkers = @($p.existingProjectMarkers | Where-Object { $_ })
             ObsoleteArtifacts = @($p.obsoleteArtifacts | Where-Object { $_ })
             # File che valgono solo nel repo del pacchetto: presenti nel clone, mai copiati negli host
             CoreOnlyArtifacts = @($p.coreOnlyArtifacts | Where-Object { $_ })
@@ -459,19 +466,71 @@ function Remove-ObsoleteArtifacts {
     }
 }
 
+function Test-DrExistingProject {
+    # Vero se nell'host c'e' almeno un file che corrisponde ai pattern (es. *.csproj, *.slnx),
+    # fino a $Script:DrMarkerScanDepth livelli sotto la radice, escluse le cartelle generate,
+    # di dipendenze e i collegamenti (giunzioni, link simbolici: niente cicli)
+    param([string]$HostRoot, [string[]]$Markers)
+
+    if (-not $Markers -or $Markers.Count -eq 0) { return $false }
+    $queue = [System.Collections.Generic.Queue[object]]::new()
+    $queue.Enqueue([PSCustomObject]@{ Dir = $HostRoot; Depth = 0 })
+    while ($queue.Count -gt 0) {
+        $item = $queue.Dequeue()
+        try {
+            foreach ($pattern in $Markers) {
+                if (@([System.IO.Directory]::GetFiles($item.Dir, $pattern)).Count -gt 0) { return $true }
+            }
+            if ($item.Depth -ge $Script:DrMarkerScanDepth) { continue }
+            foreach ($sub in [System.IO.DirectoryInfo]::new($item.Dir).GetDirectories()) {
+                if ($sub.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
+                if ($Script:DrMarkerSkipDirs -contains $sub.Name) { continue }
+                $queue.Enqueue([PSCustomObject]@{ Dir = $sub.FullName; Depth = $item.Depth + 1 })
+            }
+        } catch [System.UnauthorizedAccessException] {
+            continue
+        }
+    }
+    return $false
+}
+
 function Copy-PackageRootFiles {
-    param([string]$TempRoot, [string]$HostRoot, [string[]]$RootFiles, [string]$BaselineCommit, [switch]$Update)
+    param([string]$TempRoot, [string]$HostRoot, [string[]]$RootFiles, [string]$BaselineCommit, [string[]]$ExistingProjectMarkers = @(), [switch]$Update)
 
     # File di radice propri di un pacchetto di dominio (es. Directory.Build.props per .NET).
     # Chi installa il pacchetto ha gia' dichiarato il dominio: nessun rilevamento dello stack,
     # altrimenti in una cartella vuota i file verrebbero saltati proprio quando servono.
     # L'host li personalizza di solito: con -Update si sovrascrivono solo se mai modificati.
+    # Progetto gia' esistente (ExistingProjectMarkers trovati): un rootFile mancante non si impone,
+    # perche' cambierebbe build e lint di codice che prima passava (dr-dotnet-backend#7). Va in
+    # '<file>.new': lo adotta chi lo ha confrontato, le skill di scaffolding lo adottano da sole.
     if (-not $RootFiles -or $RootFiles.Count -eq 0) { return }
+
+    $existing = Test-DrExistingProject -HostRoot $HostRoot -Markers $ExistingProjectMarkers
+    $proposed = @()
 
     Write-Host "  File di configurazione del pacchetto:" -ForegroundColor White
     foreach ($file in $RootFiles) {
+        $src  = Join-Path $TempRoot $file
+        $dest = Join-Path $HostRoot $file
+        if ($existing -and (Test-Path $src -PathType Leaf) -and -not (Test-Path $dest)) {
+            $destDir = Split-Path $dest -Parent
+            if ($destDir -and -not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null }
+            Copy-Item -Path $src -Destination "$dest.new" -Force -ErrorAction Stop
+            Register-DrWrittenFile "$dest.new"
+            $rel = ($file -replace '\\', '/')
+            Write-Host "  [NEW]  $rel.new (progetto esistente: non imposto, cambierebbe la configurazione del codice gia' presente)" -ForegroundColor Yellow
+            $proposed += "$rel.new"
+            continue
+        }
         Copy-ProtectedFile -TempRoot $TempRoot -HostRoot $HostRoot -RelativePath $file -BaselineCommit $BaselineCommit -Update:$Update
     }
+
+    if ($proposed.Count -gt 0) {
+        Write-Host "  [WARN] Progetto esistente: per adottare i file proposti confrontali, rinominali senza '.new' e riesegui il lint del Gate di Push prima di committare. Fine riga dei file gia' committati: $Script:DrEolScript senza -Path" -ForegroundColor Yellow
+    }
+    # Nessun valore restituito per i proposti: l'avviso sopra e' gia' il loro elenco; i '.new' dei
+    # file personalizzati arrivano invece dall'output di Copy-ProtectedFile, come prima
 }
 
 function Resolve-DrSourceRoot {
@@ -1125,7 +1184,7 @@ function Install-DrPackageContent {
 
         $newFiles = @()
         if ($pkg.RootFiles) {
-            $newFiles += @(Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -BaselineCommit $baselineCommit -Update:$Update)
+            $newFiles += @(Copy-PackageRootFiles -TempRoot $tempDir -HostRoot $hostRoot -RootFiles $pkg.RootFiles -BaselineCommit $baselineCommit -ExistingProjectMarkers $pkg.ExistingProjectMarkers -Update:$Update)
         }
 
         if ($pkg.SourceFiles) {
