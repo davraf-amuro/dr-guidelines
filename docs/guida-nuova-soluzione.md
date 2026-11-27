@@ -158,7 +158,7 @@ Descrivi cosa vuoi costruire, con parole tue:
 
 Tipologie di progetto e pacchetti non sono scritti nella skill: arrivano dal catalogo [`scaffolding-catalog.json`](../scaffolding-catalog.json).
 
-> **Nota sul frontend Vue.** Il catalogo chiede di creare il frontend **prima** di installare il core, perché `create-vue` scrive propri `.editorconfig`, `.gitignore` e `.gitattributes`. In questa guida il core è già installato al passo 3. `npm create vue@latest <nome>` scrive in una sottocartella nuova, quindi i due gruppi di file non dovrebbero scontrarsi, ma il percorso non è ancora stato provato sul campo. Se vuoi andare sul sicuro al primo progetto, parti dal solo backend e aggiungi il frontend dopo.
+> **Nota sul frontend Vue.** Il catalogo chiede di creare il frontend **prima** di installare il core, perché `create-vue` scrive propri `.editorconfig`, `.gitignore` e `.gitattributes`. In questa guida il core è già installato al passo 3. `npm create vue@latest <nome>` scrive in una sottocartella nuova dentro `src/` (`src/ordini-fe`, accanto ai progetti .NET), quindi i due gruppi di file non dovrebbero scontrarsi, ma il percorso non è ancora stato provato sul campo. Se vuoi andare sul sicuro al primo progetto, parti dal solo backend e aggiungi il frontend dopo.
 
 ### Cosa succede, in ordine
 
@@ -169,7 +169,7 @@ Tipologie di progetto e pacchetti non sono scritti nella skill: arrivano dal cat
 | 3 | Stato cartella | Vede che manca la solution e passa a `/dr-scaffold-solution` | Può chiederti conferma per creare la solution |
 | 4 | Domande | Nome della solution, tipologie di progetto e loro nomi, pacchetti per repository | Sì, tutte insieme |
 | 5 | Anteprima | Mostra l'albero di cartelle e i comandi che eseguirà | **Una sola conferma** |
-| 6 | Esecuzione | `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend → `git init` + commit → pacchetti `dr-*` → `dotnet format` | No |
+| 6 | Esecuzione | `dotnet new sln` → progetti in `src/` e `test/` → aggancio alla solution → frontend in `src/<nome>-fe` → `git init` + commit → pacchetti `dr-*` → `dotnet format` | No |
 
 ### Le domande del punto 4
 
@@ -282,4 +282,4 @@ Il taccuino delle prove, con esiti e correzioni, è [`bozza-manuale-installazion
 
 ---
 
-*Revisione v1.10 — 2026-10-20 21:00 — claude-opus-5-5*
+*Revisione v1.11 — 2026-11-27 15:40 — claude-opus-5-5*

@@ -21,7 +21,7 @@ Questo prompt è l'equivalente portabile delle skill `dr-scaffold*`. Il flusso, 
 | Vuota, o con soli file di appoggio (README, .gitignore, LICENSE) o file del core già installati (`.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, config radice) | **Sezione A** — solution da zero |
 | Contiene già `*.slnx` o `*.sln` | **Sezione B** — aggiungi un progetto |
 | Contiene `*.csproj` sciolti ma **nessuna solution** | **Sezione A**, dopo aver detto quali progetti hai trovato e che verranno agganciati alla solution nuova |
-| Contiene solo `package.json` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi **Sezione A** in modalità multi-repo |
+| Contiene solo `package.json` nella radice o in `src/*/` (repo frontend) e la richiesta è .NET | Chiedi se la parte .NET va in un repo separato, poi **Sezione A** in modalità multi-repo |
 | Contiene progetti ma manca il manifest `.ai/dr-guidelines-packages.json` (o è incompleto) | **Sezione C** — installa i pacchetti |
 | Contiene tutto | Elenca cosa c'è e chiedi cosa manca. Non procedere per inerzia |
 | **Qualsiasi altro stato senza solution** — cartella non vuota, nessun `*.slnx`/`*.sln`, nessun `*.csproj`, nessun `package.json` (es. repo di docs o tooling) | **Sezione A**, che in A.3 elenca il contenuto inatteso e chiede prima di scrivere |
@@ -125,7 +125,7 @@ Per ogni repository che nascerà, proponi come pre-selezionati il core `dr-guide
 
 Mostra l'albero completo, i comandi in ordine e i pacchetti per repo. Poi **una sola** domanda di conferma. Dopo la conferma non chiedere più nulla, salvo divergenze reali.
 
-Due livelli, con regole diverse. **Root del repository**: i file del core già installati (`.git/`, `.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.vscode/`, un `*.code-workspace`, config radice dei pacchetti `dr-*`) sono attesi — lasciali intatti e prosegui. **Cartelle di progetto** (`src/<nome>`, `test/<nome>`, frontend): devono non esistere; se esistono, anche vuote → STOP, non sovrascrivere, non fondere. I contenitori `src/` e `test/` possono esistere. Altro contenuto nella root (sorgenti, cartelle sconosciute, un `*.slnx`/`*.sln` già presente) → elenca cosa hai trovato e chiedi: una solution nella root significa Sezione B, non Sezione A.
+Due livelli, con regole diverse. **Root del repository**: i file del core già installati (`.git/`, `.github/`, `.claude/`, `.ai/`, `CLAUDE.md`, `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.vscode/`, un `*.code-workspace`, config radice dei pacchetti `dr-*`) sono attesi — lasciali intatti e prosegui. **Cartelle di progetto** (`src/<nome>`, `test/<nome>`, frontend `src/<nome-fe>`; test sempre in `test/`, mai `tests/`): devono non esistere; se esistono, anche vuote → STOP, non sovrascrivere, non fondere. I contenitori `src/` e `test/` possono esistere. Altro contenuto nella root (sorgenti, cartelle sconosciute, un `*.slnx`/`*.sln` già presente) → elenca cosa hai trovato e chiedi: una solution nella root significa Sezione B, non Sezione A.
 
 ### A.4 Esecuzione, in questo ordine
 
@@ -173,8 +173,12 @@ Se nella cartella c'erano già `*.csproj` sciolti (caso di arrivo dalla Sezione 
 
 **5. Frontend — prima dell'install dei pacchetti:**
 
+Con `targetPath` del tipo `vue-fe` dal catalogo (`src`): il frontend finisce in `src/<nome-fe>`, accanto ai progetti .NET, mai nella root del repository.
+
 ```powershell
-Set-Location <root-repo-frontend>
+Set-Location <root-repo-frontend>        # in un repo unico: la root dello stesso repo del backend
+New-Item -ItemType Directory -Force <targetPath> | Out-Null
+Set-Location <targetPath>
 npm create vue@latest <nome-fe> -- --ts --router --pinia --eslint --prettier
 Set-Location <nome-fe>
 npm install
@@ -264,7 +268,7 @@ Verifica fallita → fermati e riportala, non proseguire.
    |---|---|
    | Cartella vuota, o soli file di appoggio | "Non c'è nessuna solution qui. Ne creo una e ci aggiungo `<tipologia>`?" |
    | `*.csproj` sciolti, nessun file solution | "Trovo `<N>` progetti senza solution: `<elenco>`. Creo la solution, aggancio quelli esistenti e poi aggiungo `<tipologia>`?" |
-   | Solo `package.json` e la tipologia chiesta è .NET | "Questo è un repo frontend: la solution .NET va in un repo separato. Procedo con il workspace multi-repo?" |
+   | Solo `package.json` (radice o `src/*/`) e la tipologia chiesta è .NET | "Questo è un repo frontend: la solution .NET va in un repo separato. Procedo con il workspace multi-repo?" |
    | Una sottocartella di primo livello contiene una solution | "La solution è in `<sottocartella>`, non qui. Lavoro lì dentro?" — se sì, prosegui da quel percorso |
 
    Accettato → **Sezione A**, con tipologia e nome già raccolti qui: non richiederli. Rifiutato → fermati: senza solution non c'è niente a cui agganciare un progetto.
@@ -284,6 +288,17 @@ pwsh scripts/normalize-eol.ps1
 
    `normalize-eol.ps1` allinea a `.gitattributes` il fine riga dei file generati (vedi A.4 passo 8-bis).
 
+   Tipologia `vue-fe` → al posto dei comandi .NET, dalla root del repository e con `targetPath` del catalogo (`src`):
+
+```powershell
+New-Item -ItemType Directory -Force <targetPath> | Out-Null
+Set-Location <targetPath>
+npm create vue@latest <nome> -- --ts --router --pinia --eslint --prettier
+Set-Location <nome>
+npm install
+pwsh (Join-Path (git rev-parse --show-toplevel) scripts/normalize-eol.ps1)
+```
+
 6. Se serve un riferimento tra progetti, **chiedi** quale progetto deve referenziare quale — non dedurlo:
 
 ```powershell
@@ -297,7 +312,7 @@ dotnet add <targetPath>\<consumatore>\<consumatore>.csproj reference <targetPath
 ## Sezione C — Installa i pacchetti dr-* in un progetto esistente
 
 1. **Guard:** se la cartella corrente contiene sia `dr-guidelines-install.ps1` sia `dr-guidelines-install-lib.ps1` (o è un pacchetto dominio), fermati: "Sei in un repo sorgente dr-*: i pacchetti non si installano dentro se stessi."
-2. **Unità di installazione = root del repository git.** I file del core sono letti solo dalla root: un `.csproj` in `src/` e un `package.json` in `web/` dello stesso repo condividono le stesse linee guida.
+2. **Unità di installazione = root del repository git.** I file del core sono letti solo dalla root: un `.csproj` in `src/` e un `package.json` in `src/<nome>-fe/` dello stesso repo condividono le stesse linee guida.
 3. **Mappa il workspace.** Cartelle candidate: `folders[]` di un `*.code-workspace` nella cartella corrente o nella padre, e le sottocartelle fino a 2 livelli che contengono `.git` (escludi `node_modules`, `bin`, `obj`, `dist`). Per ognuna trova la root git (`git -C <cartella> rev-parse --show-toplevel`), elimina i duplicati e applica il guard del punto 1: un repo sorgente `dr-*` si scarta.
 4. Rileva lo stack **di ogni repo** (fino a 3 livelli sotto la root) per filtrare i pacchetti per `appliesTo`:
 
@@ -393,4 +408,4 @@ In `CLAUDE.md` l'installer inserisce solo la sezione tra `<!-- dr-guidelines -->
 - [ ] `scripts/normalize-eol.ps1` eseguito dopo `dotnet format`, `-Check` esce `0`
 - [ ] Verifiche della sezione eseguite, esiti riportati
 
-*Prompt v1.6 - Scaffold - 2026-11-27 — claude-opus-5-5 — passo 8-bis e Sezione B: fine riga normalizzati con `scripts/normalize-eol.ps1` dopo `dotnet format` (davraf-amuro/dr-guidelines#34)*
+*Prompt v1.7 - Scaffold - 2026-11-27 — claude-opus-5-5 — frontend Vue in `src/<nome-fe>` da `targetPath` del catalogo; test in `test/`, mai `tests/` (davraf-amuro/dr-guidelines#35)*
