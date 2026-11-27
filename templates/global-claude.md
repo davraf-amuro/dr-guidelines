@@ -58,15 +58,15 @@ Esenzioni: cartella `.ai/` (scrittura libera) e skill invocate esplicitamente da
 
 ## Gate di Push — Lint obbligatorio
 
-⛔ Prima di ogni `git push`:
+⛔ Prima di ogni `git push`, e del `git commit` che lo precede, **esegui** il lint e **cita nell'output comando ed exit code** (es. `` `dotnet format src/Ordini.Api/Ordini.Api.csproj --verify-no-changes` → exit 0 ``). Nessun esito citato = niente commit né push. Se il progetto ha un'istruzione di dominio con il suo comando, vale quella:
 
 | Tipo | Comando |
 |------|---------|
-| .NET | `dotnet format <percorso>.csproj --verify-no-changes` |
+| .NET | `dotnet format <percorso relativo>.csproj --verify-no-changes` (dalla radice del repository, come in CI) |
 | Node.js | `npm run lint` (se lo script `lint` è definito in `package.json`) |
 | Python | `ruff check .` oppure `flake8` |
 
-Exit code non-zero → **blocca push**, elenca file con violazioni, chiedi conferma prima di correggere. Nessun comando applicabile (repo di soli documenti) → dichiaralo prima della push.
+Exit code non-zero → **blocca commit e push**, elenca file con violazioni, chiedi conferma prima di correggere. "Non applicabile" solo se il repository non ha codice di uno stack con lint noto (repo di soli documenti): dichiaralo con il motivo prima del commit. Mai `--no-verify`, salvo richiesta esplicita dell'utente in questa sessione.
 
 Sempre, qualsiasi stack: `git ls-files --eol | Select-String '^i/(crlf|mixed)\s+\S+\s+attr/text'` (index) deve restituire zero righe. Righe presenti → blocca push, elenca i file, chiedi conferma, `scripts/normalize-eol.ps1 -Path <file>` (se il progetto ha il core dr-guidelines; altrimenti converti il fine riga del file con un editor) + `git add --renormalize <file>` e commit. Working tree fuori norma (`w/crlf` dove serve `eol=lf`) → solo avviso, stessa correzione con lo script; mai `git checkout -- <file>` (scarta le modifiche).
 

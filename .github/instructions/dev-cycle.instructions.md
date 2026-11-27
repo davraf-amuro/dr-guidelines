@@ -67,6 +67,7 @@ Prima di dichiarare il task completato, verifica:
 - [ ] Tutti i file modificati sono stati riletti e verificati
 - [ ] Nessuna modifica al di fuori dello scope dichiarato in Fase 1
 - [ ] Le checklist specifiche dell'istruzione modulare pertinente sono soddisfatte
+- [ ] Il task termina in commit+push → prima del commit ho **eseguito** la verifica di dominio e **citato nell'output** comando ed exit code, oppure dichiarato "non applicabile" con il motivo (Gate di Push in `copilot-instructions.md`)
 
 ---
 
@@ -109,4 +110,4 @@ Se ti accorgi di aver proceduto senza verificare il file precedente:
 → Fermati. Dichiara: "Ho saltato la verifica di [file]. Torno indietro."
 → Rileggi il file saltato → verifica → poi riprendi da dove eri.
 
-*Istruzione v1.3 - Dev Cycle - 2026-10-29 — claude-sonnet-5-5 — Fase 2: un'operazione alla volta per agente, rimando all'esecuzione con più agenti*
+*Istruzione v1.4 - Dev Cycle - 2026-11-27 — claude-opus-5-5 — Fase 4: voce di checklist per i task che terminano in commit+push, con comando ed exit code citati (davraf-amuro/dr-guidelines#33)*
